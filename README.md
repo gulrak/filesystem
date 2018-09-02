@@ -90,7 +90,7 @@ uses system includes, so they "pollute" your global namespace.
 There is no documentation in this release, as any `std::filesystem` documentation
 would work, besides the few differences explained in the next section. So you might
 head over to https://en.cppreference.com/w/cpp/filesystem for a description of
-the compunents of this library.
+the components of this library.
 
 
 ## Differences
