@@ -193,16 +193,19 @@ the standard.
 
 #### fs.op.copy
 
-Then there is `fs::copy`. The tests in the suite fail partially on GCC/Clang. They
-complain about a copy call with `fs::copy_options::recursive` combined with
-`fs::copy_options::create_symlinks` or `fs::copy_options::create_hard_links` if the
+Then there is `fs::copy`. The tests in the suite fail partially with C++17 `std::filesystem`
+on GCC/Clang. They complain about a copy call with `fs::copy_options::recursive` combined
+with `fs::copy_options::create_symlinks` or `fs::copy_options::create_hard_links` if the
 source is a directory. There is nothing in the standard that forbids this combination
 and it is the only way to deep-copy a tree while only create links for the files.
 There is [LWG #2682](https://wg21.cmeerw.net/lwg/issue2682) that supports this
 interpretation, but the issue ignores the usefulness of the combination with recursive
-and the justification for the proposed solution is "we did it so for almost two years".
+and part of the justification for the proposed solution is "we did it so for almost two years".
+But this makes `fs::copy` with `fs::copy_options::create_symlinks` or `fs::copy_options::create_hard_links`
+just a more complicated syntax for the `fs::create_symlink` or `fs::create_hardlink` operation
+and I don't want to believe, that this was the intention of the original writing.
 As there is another issue related to copy, with a different take on the description,
-I keep it as I read it, as it is not contradicting the standard and useful. Let's see
+I keep my version the way I read the description, as it is not contradicting the standard and useful. Let's see
 what final solution the LWG comes up with in the end.
 
 
