@@ -1,4 +1,34 @@
-#define CATCH_CONFIG_MAIN
+//---------------------------------------------------------------------------------------
+//
+// Copyright (c) 2018, Steffen Schümann <s.schuemann@pobox.com>
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice, this
+//    list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+//    this list of conditions and the following disclaimer in the documentation
+//    and/or other materials provided with the distribution.
+//
+// 3. Neither the name of the copyright holder nor the names of its contributors
+//    may be used to endorse or promote products derived from this software without
+//    specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+// DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+//---------------------------------------------------------------------------------------
 #include <algorithm>
 #include <cstdio>
 #include <fstream>
@@ -6,7 +36,6 @@
 #include <iostream>
 #include <random>
 #include <thread>
-#include "catch.hpp"
 #ifndef WIN32
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -22,6 +51,9 @@ using ifstream = std::ifstream;
 using ofstream = std::ofstream;
 using fstream = std::fstream;
 }  // namespace ghc
+#ifdef __GNUC__
+#define GCC_VERSION (__GNUC__*10000 + __GNUC_MINOR__*100 + __GNUC_PATCHLEVEL__)
+#endif
 #else
 #include "../filesystem.h"
 namespace fs = ghc::filesystem;
@@ -31,6 +63,9 @@ using ofstream = filesystem::ofstream;
 using fstream = filesystem::fstream;
 }  // namespace ghc
 #endif
+
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
 
 //#define TEST_LWG_2935_BEHAVIOUR
 #define TEST_LWG_2937_BEHAVIOUR
@@ -163,7 +198,7 @@ TEST_CASE("30.10.8.4.1 path constructors and destructor", "[filesystem][path][fs
         CHECK("//host/foo/bar" == fs::path("//host/foo/bar"));
     }
 
-#ifndef GHC_OS_WINDOWS
+#if !defined(GHC_OS_WINDOWS) && !(defined(GCC_VERSION) && GCC_VERSION < 80100)
     std::locale loc;
     bool testUTF8Locale = false;
     try {
