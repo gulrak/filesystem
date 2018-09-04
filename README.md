@@ -176,7 +176,7 @@ it's "free" to return that.
 
 ### Differences in Behavior
 
-#### fs.path
+#### fs.path [ref](https://en.cppreference.com/w/cpp/filesystem/path)
 
 As the complete inner mechanics of this implementation `fs::path` are working
 on the generic format, it is the internal representation. So creating any mixed
@@ -204,7 +204,7 @@ ASSERT(p1 == p2);
 For all non-host-leading paths the behaviour will match the one described by
 the standard.
 
-#### fs.op.copy
+#### fs.op.copy [ref](https://en.cppreference.com/w/cpp/filesystem/copy)
 
 Then there is `fs::copy`. The tests in the suite fail partially with C++17 `std::filesystem`
 on GCC/Clang. They complain about a copy call with `fs::copy_options::recursive` combined
