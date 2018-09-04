@@ -42,10 +42,23 @@ if you can't use it.
 
 ## Tests
 
-The header comes with a set of unit-tests and uses CMake as a build tool.
+The header comes with a set of unit-tests and uses [CMake](https://cmake.org/)
+as a build tool and [Catch2](https://github.com/catchorg/Catch2) as test framework.
+
+To build the tests from inside the project directory under macOS or Linux just:
+
+```cpp
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Debug ..
+make
+```
+
+This generates `filesystem_test`, the binary that runs all tests.
+
 If the default compiler is a GCC 8 or newer, or Clang 8 or newer, it
 additionally builds a version of the test binary compiled against GCCs/Clangs
-`std::filesystem` implementation,
+`std::filesystem` implementation, named `std_filesystem_test`
 as an additional test of conformance. Ideally all tests should compile and
 succeed with all filesystem implementations, but in reality, there are
 some differences in behavior.
