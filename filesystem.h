@@ -3437,7 +3437,7 @@ inline void last_write_time(const path& p, file_time_type new_time, std::error_c
 #endif
 #endif
 #else
-    struct ::timespec times[2] = {{.tv_nsec = UTIME_OMIT}, {.tv_sec = std::chrono::duration_cast<std::chrono::seconds>(d).count(), .tv_nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(d).count() % 1000000000}};
+    struct ::timespec times[2] = {{.tv_sec = 0, .tv_nsec = UTIME_OMIT}, {.tv_sec = std::chrono::duration_cast<std::chrono::seconds>(d).count(), .tv_nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(d).count() % 1000000000}};
     if (::utimensat(AT_FDCWD, p.c_str(), times, AT_SYMLINK_NOFOLLOW) != 0) {
         ec = std::error_code(errno, std::system_category());
     }
