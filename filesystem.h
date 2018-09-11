@@ -160,9 +160,9 @@ public:
     template <class InputIterator>
     path(InputIterator first, InputIterator last, format fmt = auto_format);
     template <class Source, typename = path_from_string<Source>>
-    path(const Source& source, const std::locale &loc, format fmt = auto_format);
+    path(const Source& source, const std::locale& loc, format fmt = auto_format);
     template <class InputIterator>
-    path(InputIterator first, InputIterator last, const std::locale &loc, format fmt = auto_format);
+    path(InputIterator first, InputIterator last, const std::locale& loc, format fmt = auto_format);
     ~path();
 
     // 30.10.8.4.2 assignments
@@ -555,7 +555,7 @@ public:
     class proxy
     {
     public:
-        const directory_entry& operator*() const & noexcept { return _dir_entry; }
+        const directory_entry& operator*() const& noexcept { return _dir_entry; }
         directory_entry operator*() && noexcept { return std::move(_dir_entry); }
 
     private:
@@ -1648,21 +1648,21 @@ inline path::path(string_type&& source, format fmt)
 }
 
 template <class Source, typename>
-inline path::path(const Source& source, const std::locale &loc, format fmt)
+inline path::path(const Source& source, const std::locale& loc, format fmt)
     : path(source, fmt)
 {
     std::string locName = loc.name();
-    if (!(locName.length() >= 5 && (locName.substr(locName.length()-5) == "UTF-8" || locName.substr(locName.length()-5) == "utf-8"))) {
+    if (!(locName.length() >= 5 && (locName.substr(locName.length() - 5) == "UTF-8" || locName.substr(locName.length() - 5) == "utf-8"))) {
         throw filesystem_error("This implementation only supports UTF-8 locales!", path(_path), detail::make_error_code(detail::portable_error::not_supported));
     }
 }
 
 template <class InputIterator>
-inline path::path(InputIterator first, InputIterator last, const std::locale &loc, format fmt)
+inline path::path(InputIterator first, InputIterator last, const std::locale& loc, format fmt)
     : path(std::basic_string<typename std::iterator_traits<InputIterator>::value_type>(first, last), fmt)
 {
     std::string locName = loc.name();
-    if (!(locName.length() >= 5 && (locName.substr(locName.length()-5) == "UTF-8" || locName.substr(locName.length()-5) == "utf-8"))) {
+    if (!(locName.length() >= 5 && (locName.substr(locName.length() - 5) == "UTF-8" || locName.substr(locName.length() - 5) == "utf-8"))) {
         throw filesystem_error("This implementation only supports UTF-8 locales!", path(_path), detail::make_error_code(detail::portable_error::not_supported));
     }
 }
@@ -2620,7 +2620,7 @@ inline path canonical(const path& p, std::error_code& ec)
     path work = p.is_absolute() ? p : absolute(p, ec);
     path root = work.root_path();
     path result;
-    
+
     auto fs = status(work, ec);
     if (ec) {
         return path();
@@ -2695,7 +2695,7 @@ inline void copy(const path& from, const path& to, copy_options options, std::er
     std::error_code tec;
     file_status fs_from, fs_to;
     ec.clear();
-    if ((options & (copy_options::skip_symlinks|copy_options::copy_symlinks|copy_options::create_symlinks)) != copy_options::none) {
+    if ((options & (copy_options::skip_symlinks | copy_options::copy_symlinks | copy_options::create_symlinks)) != copy_options::none) {
         fs_from = symlink_status(from, ec);
     }
     else {
@@ -2707,7 +2707,7 @@ inline void copy(const path& from, const path& to, copy_options options, std::er
         }
         return;
     }
-    if ((options & (copy_options::skip_symlinks|copy_options::create_symlinks)) != copy_options::none) {
+    if ((options & (copy_options::skip_symlinks | copy_options::create_symlinks)) != copy_options::none) {
         fs_to = symlink_status(to, tec);
     }
     else {
@@ -2750,7 +2750,7 @@ inline void copy(const path& from, const path& to, copy_options options, std::er
             }
         }
         for (const directory_entry& x : directory_iterator(from)) {
-            copy(x.path(), to/x.path().filename(), options | static_cast<copy_options>(0x8000));
+            copy(x.path(), to / x.path().filename(), options | static_cast<copy_options>(0x8000));
         }
     }
     return;
@@ -3476,13 +3476,13 @@ inline void permissions(const path& p, perms prms, perm_options opts, std::error
     }
 #ifdef GHC_OS_WINDOWS
     int mode = 0;
-    if ((prms & perms::owner_read)  == perms::owner_read) {
+    if ((prms & perms::owner_read) == perms::owner_read) {
         mode |= _S_IREAD;
     }
-    if ((prms & perms::owner_write)  == perms::owner_write) {
+    if ((prms & perms::owner_write) == perms::owner_write) {
         mode |= _S_IWRITE;
     }
-    if(::_wchmod(p.wstring().c_str(), mode) != 0) {
+    if (::_wchmod(p.wstring().c_str(), mode) != 0) {
         ec = std::error_code(::GetLastError(), std::system_category());
     }
 #else
@@ -4187,8 +4187,8 @@ inline bool directory_entry::operator>=(const directory_entry& rhs) const noexce
     return _path >= rhs._path;
 }
 
-    //-----------------------------------------------------------------------------
-    // 30.10.13 class directory_iterator
+//-----------------------------------------------------------------------------
+// 30.10.13 class directory_iterator
 
 #ifdef GHC_OS_WINDOWS
 class directory_iterator::impl
