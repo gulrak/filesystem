@@ -100,6 +100,9 @@
 //#define LWG_2935_BEHAVIOUR
 #define LWG_2937_BEHAVIOUR
 
+// ghc::filesystem version in decimal (major * 10000 + minor * 100 + patch)
+#define GHC_FILESYSTEM_VERSION 10000L
+
 namespace ghc {
 namespace filesystem {
 

@@ -106,6 +106,10 @@ namespace fs = ghc::filesystem;
 Be aware, as a header-only library, it is not hiding the fact, that it
 uses system includes, so they "pollute" your global namespace.
 
+There is a version macro `GHC_FILESYSTEM_VERSION` defined in case future changes
+might make it needed to react on the version, but I don't plan to break anything.
+It's the version as decimal number `(major * 10000 + minor * 100 + patch)`.
+
 
 ## Documentation
 
