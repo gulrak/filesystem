@@ -1,12 +1,14 @@
 # Filesystem
 
-This is a header-only filesystem helper library, based closely on the
-filesystem parts of C++17 but implemented for C++11 or C++14.
+This is a header-only single-file std::filesystem compatible helper library,
+based on the C++17 specs, but implemented for C++11 or C++14 (so not 100%
+conforming to the C++17 standard). It is currently tested on macOS 10.12, Windows 10,
+and Ubuntu 18.04 but should work on other versions too, as long as you have a
+C++11 compatible compiler.
 
-*This is a still work in progress, but I would call this a first candidate
-for completeness. It could still use some polishing, I didn't benchmark
-much yet, but I'll try to optimize some parts and refactor others.
-Feedback is welcome.*
+*It could still use some polishing, test coverage is above 90%, I didn't benchmark
+much yet, but I'll try to optimize some parts and refactor others. Feedback
+is welcome.*
 
 
 ## Motivation
@@ -39,6 +41,12 @@ cry out if you try to use it there, but if there is demand, I can try to
 help. Still, it shouldn't replace `std::filesystem` where full C++17 is
 available, it doesn't try to be a "better" `std::filesystem`, just a drop-in
 if you can't use it.
+
+Tests are currently run with:
+
+* macOS 10.12: XCode 9.2 (clang-900.0.39.2), GCC 8.1.0, Clang 8.0.0 (HEAD, homebrew)
+* Windows 10: Visual Studio 2017 15.7.4, MingW GCC 5.3
+* Linux: Ubuntu 18.04LTS GCC 7.3 & GCC 8.0.1
 
 
 ## Tests
