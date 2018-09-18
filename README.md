@@ -54,12 +54,9 @@ Tests are currently run with:
 The header comes with a set of unit-tests and uses [CMake](https://cmake.org/)
 as a build tool and [Catch2](https://github.com/catchorg/Catch2) as test framework.
 
-It is important to point out, that one test (in path iterators) currently fails on
-all platforms by design. This is a known conformance-issue
-([see known issues)](#general-known-issues) and the test is there to not hide
-the fact and to remember me to think about a way to enhance conformance, without
-degrading performance considerably.
-
+All tests agains this implementation should succeed, depending on your environment
+it might be that there are some warnings, e.g. if you have no rights to create
+Symlinks on Windows or at least the test thinks so, but these are just informative.
 
 To build the tests from inside the project directory under macOS or Linux just:
 
@@ -77,7 +74,7 @@ additionally builds a version of the test binary compiled against GCCs/Clangs
 `std::filesystem` implementation, named `std_filesystem_test`
 as an additional test of conformance. Ideally all tests should compile and
 succeed with all filesystem implementations, but in reality, there are
-some differences in behavior.
+some differences in behavior and might be issues in these implementations.
 
 
 ## Usage
@@ -248,15 +245,11 @@ what final solution the LWG comes up with in the end.
 
 ### General Known Issues
 
-#### fs.path - iterator/const_iterator [(ref)](https://en.cppreference.com/w/cpp/filesystem/path)
-
-The iterator for path elements is tagged as a [`BidirectionalIterator`](https://en.cppreference.com/w/cpp/named_req/BidirectionalIterator)
-but currently brakes one of its requirements derived from `ForwardIterator` namely:
-_If `a` and `b` are both dereferenceable, then `a == b` if and only if `*a` and `*b` are bound to the same object._
-This is due to the fact, that this implementation generates the iteration results on-the-fly.
-In practice this is not really much of a problem, as still `*a == *b` is valid and usually
-there should not be comparision of pointers, but still it is a conformance issue and one of
-the unit test fails knowingly to not hide the fact.
+There are still some methods that break the `noexcept` clause, some
+are related to LWG defects, some are due to my implementation. I
+work on fixing the later ones, and might in cases where there is no
+way of implementing the feature without risk of an exception, break
+conformance and remove the `noexcept`.
 
 ### Windows
 
