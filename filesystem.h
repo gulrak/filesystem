@@ -2046,7 +2046,7 @@ inline path path::root_path() const
 inline path path::relative_path() const
 {
     std::string root = root_path()._path;
-    return path(_path.substr(std::min(root.length(), _path.length())), generic_format);
+    return path(_path.substr((std::min)(root.length(), _path.length())), generic_format);
 }
 
 inline path path::parent_path() const
@@ -3388,7 +3388,7 @@ inline file_time_type last_write_time(const path& p, std::error_code& ec) noexce
     time_t result = 0;
     ec.clear();
     file_status fs = detail::status_ex(p, ec, nullptr, nullptr, nullptr, &result);
-    return ec ? file_time_type::min() : std::chrono::system_clock::from_time_t(result);
+    return ec ? (file_time_type::min)() : std::chrono::system_clock::from_time_t(result);
 }
 
 inline void last_write_time(const path& p, file_time_type new_time)
@@ -3604,7 +3604,7 @@ inline uintmax_t remove_all(const path& p)
 inline uintmax_t remove_all(const path& p, std::error_code& ec) noexcept
 {
     ec.clear();
-    size_t count = 0;
+    uintmax_t count = 0;
     if (p == "/") {
         ec = detail::make_error_code(detail::portable_error::not_supported);
         return static_cast<uintmax_t>(-1);
