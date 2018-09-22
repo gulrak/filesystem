@@ -763,14 +763,6 @@ TEST_CASE("30.10.8.5 path iterators", "[filesystem][path][fs.path.itr]")
         CHECK(p1 == p2);
     }
 
-    {
-        fs::path p("/foo/bar/text.txt");
-        auto i1 = p.begin();
-        auto i2 = p.begin();
-        CHECK(*i1 == *i2);
-        CHECK(&(*i1) == &(*i2));  // Check for ForwardIterator multipass guarantee
-    }
-
     if (has_host_root_name_support()) {
         CHECK("foo" == *(--fs::path("//host/foo").end()));
         CHECK("//host" == iterateResult(fs::path("//host")));
