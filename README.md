@@ -100,7 +100,7 @@ If you want to also use the `fstream` wrapper with `path` support as fallback,
 you might use:
 
 ```cpp
-#if defined(__has_include) && __has_include(<filesystem>)
+#if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include) && __has_include(<filesystem>)
 #include <filesystem>
 namespace fs {
 using namespace std::filesystem;
@@ -118,6 +118,9 @@ using fstream = ghc::filesystem::fstream;
 } 
 #endif
 ```
+
+Now you have e.g. `fs::ofstream out(somePath);` and it is either the wrapper or
+the C++17 `std::ofstream`.
 
 Be aware, as a header-only library, it is not hiding the fact, that it
 uses system includes, so they "pollute" your global namespace.
