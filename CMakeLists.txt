@@ -27,3 +27,8 @@ if (CMAKE_COMPILER_IS_GNUCXX AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 8.0 O
     target_compile_definitions(std_filesystem_test PRIVATE USE_STD_FS)
     target_link_libraries(std_filesystem_test -lstdc++fs)
 endif()
+if(CMAKE_CXX_COMPILER_ID MATCHES MSVC AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 19.15 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 19.15))
+    add_executable(std_filesystem_test test/filesystem_test.cpp filesystem.h test/catch.hpp)
+    set_property(TARGET std_filesystem_test PROPERTY CXX_STANDARD 17)
+    target_compile_definitions(std_filesystem_test PRIVATE USE_STD_FS)
+endif()

@@ -52,9 +52,16 @@ using ofstream = std::ofstream;
 using fstream = std::fstream;
 }  // namespace ghc
 #ifdef __GNUC__
-#define GCC_VERSION (__GNUC__*10000 + __GNUC_MINOR__*100 + __GNUC_PATCHLEVEL__)
+#define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#endif
+#ifdef _MSC_VER
+#define IS_WCHAR_PATH
+#endif
+#ifdef WIN32
+#define GHC_OS_WINDOWS
 #endif
 #else
+#define NOMINMAX
 #include "../filesystem.h"
 namespace fs = ghc::filesystem;
 namespace ghc {
@@ -134,7 +141,19 @@ static void generateFile(const fs::path& pathname, int withSize = -1)
 static bool is_symlink_creation_supported()
 {
     HKEY key;
-    auto err = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock", 0, KEY_READ, &key);
+    REGSAM flags = KEY_READ;
+#ifdef _WIN64
+    flags |= KEY_WOW64_64KEY;
+#else
+    BOOL f64 = FALSE;
+    if (IsWow64Process(GetCurrentProcess(), &f64) && f64) {
+        flags |= KEY_WOW64_64KEY;
+    }
+    else {
+        flags |= KEY_WOW64_32KEY;
+    }
+#endif
+    auto err = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock", 0, flags, &key);
     if (err != ERROR_SUCCESS) {
         return false;
     }
@@ -234,10 +253,17 @@ TEST_CASE("30.10.8.4.2 path assignments", "[filesystem][path][fs.path.assign]")
     REQUIRE(p1 == p3);
     p3 = fs::path{"/usr/local"};
     REQUIRE(p2 == p3);
+#ifdef IS_WCHAR_PATH
+    p3 = fs::path::string_type{L"/foo/bar"};
+    REQUIRE(p1 == p3);
+    p3.assign(fs::path::string_type{L"/usr/local"});
+    REQUIRE(p2 == p3);
+#else
     p3 = fs::path::string_type{"/foo/bar"};
     REQUIRE(p1 == p3);
     p3.assign(fs::path::string_type{"/usr/local"});
     REQUIRE(p2 == p3);
+#endif
     p3 = std::u16string(u"/foo/bar");
     REQUIRE(p1 == p3);
     p3 = U"/usr/local";
@@ -346,13 +372,16 @@ TEST_CASE("30.10.8.4.5 path modifiers", "[filesystem][path][fs.path.modifiers]")
     CHECK(p2 == "foo");
 }
 
-
 TEST_CASE("30.10.8.4.6 path native format observers", "[filesystem][path][fs.path.native.obs]")
 {
 #ifdef GHC_OS_WINDOWS
+#ifdef IS_WCHAR_PATH
+    CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").native() == fs::path::string_type(L"ä\\€"));
+#else
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").native() == fs::path::string_type("\xc3\xa4\\\xe2\x82\xac"));
     CHECK(!::strcmp(fs::u8path("\xc3\xa4\\\xe2\x82\xac").c_str(), "\xc3\xa4\\\xe2\x82\xac"));
     CHECK((std::string)fs::u8path("\xc3\xa4\\\xe2\x82\xac") == std::string("\xc3\xa4\\\xe2\x82\xac"));
+#endif
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").string() == std::string("\xc3\xa4\\\xe2\x82\xac"));
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").wstring() == std::wstring(L"ä\\€"));
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").u8string() == std::string("\xc3\xa4\\\xe2\x82\xac"));
@@ -1041,15 +1070,16 @@ TEST_CASE("30.10.14 class recursive_directory_iterator", "[filesystem][recursive
         CHECK(!ec);
         CHECK(fs::recursive_directory_iterator(t.path(), ec) == fs::recursive_directory_iterator());
         CHECK(!ec);
+        generateFile(t.path() / "test");
         fs::recursive_directory_iterator rd1(t.path());
-        CHECK(fs::recursive_directory_iterator(rd1) == fs::recursive_directory_iterator());
+        CHECK(fs::recursive_directory_iterator(rd1) != fs::recursive_directory_iterator());
         fs::recursive_directory_iterator rd2(t.path());
-        CHECK(fs::recursive_directory_iterator(std::move(rd2)) == fs::recursive_directory_iterator());
+        CHECK(fs::recursive_directory_iterator(std::move(rd2)) == rd1);
         fs::recursive_directory_iterator rd3(t.path(), fs::directory_options::skip_permission_denied);
         CHECK(rd3.options() == fs::directory_options::skip_permission_denied);
         fs::recursive_directory_iterator rd4;
         rd4 = std::move(rd3);
-        CHECK(rd4 == fs::recursive_directory_iterator());
+        CHECK(rd4 == rd1);
         fs::recursive_directory_iterator rd5;
         rd5 = rd4;
     }
@@ -1807,7 +1837,11 @@ static fs::file_time_type timeFromString(const std::string& str)
     if (is.fail()) {
         throw std::exception();
     }
+#ifdef IS_WCHAR_PATH
+    return fs::file_time_type::min();
+#else
     return fs::file_time_type::clock::from_time_t(std::mktime(&tm));
+#endif
 }
 
 TEST_CASE("30.10.15.25 last_write_time", "[filesystem][operations][fs.op.last_write_time]")
