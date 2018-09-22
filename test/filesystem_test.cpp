@@ -1525,7 +1525,7 @@ public:
         _hasFifo = true;
         struct ::sockaddr_un addr;
         addr.sun_family = AF_UNIX;
-        std::strcpy(addr.sun_path, "socket");
+        std::strncpy(addr.sun_path, "socket", sizeof(addr.sun_path));
         int fd = socket(PF_UNIX, SOCK_STREAM, 0);
         bind(fd, (struct sockaddr*)&addr, sizeof addr);
         _hasSocket = true;

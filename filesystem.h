@@ -1006,48 +1006,67 @@ detail::EnableBitmask<Enum>& operator^=(Enum& X, Enum Y)
 
 namespace detail {
 
-inline bool in_range(char32_t c, char32_t lo, char32_t hi)
+inline bool in_range(uint32_t c, uint32_t lo, uint32_t hi)
 {
-    return ((char32_t)(c - lo) < (hi - lo + 1));
+    return ((uint32_t)(c - lo) < (hi - lo + 1));
 }
 
-inline bool is_surrogate(char32_t c)
+inline bool is_surrogate(uint32_t c)
 {
     return in_range(c, 0xd800, 0xdfff);
 }
 
-inline bool is_high_surrogate(char32_t c)
+inline bool is_high_surrogate(uint32_t c)
 {
     return (c & 0xfffffc00) == 0xd800;
 }
 
-inline bool is_low_surrogate(char32_t c)
+inline bool is_low_surrogate(uint32_t c)
 {
     return (c & 0xfffffc00) == 0xdc00;
 }
 
-inline void appendUTF8(std::string& str, char32_t unicode)
+inline void appendUTF8(std::string& str, uint32_t unicode)
 {
     if (unicode <= 0x7f) {
         str.push_back(static_cast<char>(unicode));
     }
     else if (unicode >= 0x80 && unicode <= 0x7ff) {
-        str.push_back(static_cast<char>(unicode / 64 + 192));
-        str.push_back(static_cast<char>(unicode % 64 + 128));
+        str.push_back(static_cast<char>((unicode >> 6) + 192));
+        str.push_back(static_cast<char>((unicode & 0x3f) + 128));
     }
     else if ((unicode >= 0x800 && unicode <= 0xd7ff) || (unicode >= 0xe000 && unicode <= 0xffff)) {
-        str.push_back(static_cast<char>(unicode / 4096 + 224));
-        str.push_back(static_cast<char>((unicode % 4096) / 64 + 128));
-        str.push_back(static_cast<char>(unicode % 64 + 128));
+        str.push_back(static_cast<char>((unicode >> 12) + 224));
+        str.push_back(static_cast<char>(((unicode & 0xfff) >> 6) + 128));
+        str.push_back(static_cast<char>((unicode & 0x3f) + 128));
     }
     else {
-        str.push_back(static_cast<char>(unicode / 262144 + 240));
-        str.push_back(static_cast<char>((unicode % 262144) / 4096 + 128));
-        str.push_back(static_cast<char>((unicode % 4096) / 64 + 128));
-        str.push_back(static_cast<char>(unicode % 64 + 128));
+        str.push_back(static_cast<char>((unicode>>18) + 240));
+        str.push_back(static_cast<char>(((unicode & 0x3ffff) >> 12) + 128));
+        str.push_back(static_cast<char>(((unicode & 0xfff) >> 6) + 128));
+        str.push_back(static_cast<char>((unicode & 0x3f) + 128));
     }
 }
 
+// Thanks to Bjoern Hoehrmann (https://bjoern.hoehrmann.de/utf-8/decoder/dfa/)
+// and Taylor R Campbell for the ideas to this DFA approach of UTF-8 decoding;
+// Generating debugging and shrinking my own DFA from scratch was a day of fun!
+enum utf8_states_t { S_STRT = 0, S_RJCT = 8 };
+static const uint32_t utf8_state_info[] = {
+    0x11111111u, 0x11111111u, 0x77777777u, 0x77777777u,
+    0x88888888u, 0x88888888u, 0x88888888u, 0x88888888u,
+    0x22222299u, 0x22222222u, 0x22222222u, 0x22222222u,
+    0x3333333au, 0x33433333u, 0x9995666bu, 0x99999999u,
+    0x88888880u, 0x22818108u, 0x88888881u, 0x88888882u,
+    0x88888884u, 0x88888887u, 0x88888886u, 0x82218108u,
+    0x82281108u, 0x88888888u, 0x88888883u, 0x88888885u
+};
+static inline unsigned consumeUtf8Fragment(const unsigned state, const uint8_t fragment, uint32_t& codepoint) {
+    uint8_t category = fragment < 128 ? 0 : (utf8_state_info[(fragment >> 3) & 0xf] >> ((fragment & 7) << 2)) & 0xf;
+    codepoint = (state ? (codepoint << 6) | (fragment & 0x3f) : (0xff >> category) & fragment);
+    return state == S_RJCT ? S_RJCT : (utf8_state_info[category + 16] >> (state << 2)) & 0xf;
+}
+    
 template <class StringType>
 inline StringType fromUtf8(const std::string& utf8String)
 {
@@ -1057,57 +1076,33 @@ inline StringType fromUtf8(const std::string& utf8String)
     StringType result;
     result.reserve(utf8String.length());
     std::string::const_iterator iter = utf8String.begin();
+    unsigned utf8_state = S_STRT;
+    std::uint32_t codepoint = 0;
     while (iter < utf8String.end()) {
-        char c = *iter;
-        std::uint32_t codepoint = 0;
-        if (c & 0x80) {
-            if (!(c & 0x40)) {
-                throw std::runtime_error("Error in UTF-8 encoding!");
+        if(!(utf8_state = consumeUtf8Fragment(utf8_state, (uint8_t)*iter++, codepoint))) {
+            if (sizeof(typename StringType::value_type) == 4) {
+                result += codepoint;
             }
-            if (c & 0x20) {
-                if (c & 0x10) {
-                    if (iter + 4 > utf8String.end()) {
-                        throw std::runtime_error("Error in UTF-8 encoding!");
-                    }
-                    codepoint = static_cast<std::uint32_t>(*iter++ & 0x7) << 18u;
-                    codepoint |= static_cast<std::uint32_t>(*iter++ & 0x3F) << 12u;
-                    codepoint |= static_cast<std::uint32_t>(*iter++ & 0x3F) << 6u;
-                    codepoint |= static_cast<std::uint32_t>(*iter++ & 0x3F);
+            else {
+                if (codepoint <= 0xffff) {
+                    result += (typename StringType::value_type)codepoint;
                 }
                 else {
-                    if (iter + 3 > utf8String.end()) {
-                        throw std::runtime_error("Error in UTF-8 encoding!");
-                    }
-                    codepoint = static_cast<std::uint32_t>(*iter++ & 0xF) << 12u;
-                    codepoint |= static_cast<std::uint32_t>(*iter++ & 0x3F) << 6u;
-                    codepoint |= static_cast<std::uint32_t>(*iter++ & 0x3F);
+                    codepoint -= 0x10000;
+                    result += (typename StringType::value_type)((codepoint >> 10) + 0xd800);
+                    result += (typename StringType::value_type)((codepoint & 0x3ff) + 0xdc00);
                 }
             }
-            else {
-                if (iter + 2 > utf8String.end()) {
-                    throw std::runtime_error("Error in UTF-8 encoding!");
-                }
-                codepoint = static_cast<std::uint32_t>(*iter++ & 0x1F) << 6u;
-                codepoint |= static_cast<std::uint32_t>(*iter++ & 0x3F);
-            }
+            codepoint = 0;
         }
-        else {
-            codepoint = static_cast<std::uint32_t>(*iter++);
+        else if(utf8_state == S_RJCT) {
+            result += (typename StringType::value_type)0xfffd;
+            utf8_state = S_STRT;
+            codepoint = 0;
         }
-
-        if (sizeof(typename StringType::value_type) == 4) {
-            result += codepoint;
-        }
-        else {
-            if (codepoint <= 0xFFFF) {
-                result += (typename StringType::value_type)codepoint;
-            }
-            else {
-                codepoint -= 0x10000;
-                result += (typename StringType::value_type)((codepoint >> 10) + 0xD800);
-                result += (typename StringType::value_type)((codepoint & 0x3FF) + 0xDC00);
-            }
-        }
+    }
+    if(utf8_state) {
+        result += (typename StringType::value_type)0xfffd;
     }
     return result;
 }
@@ -1130,7 +1125,7 @@ inline std::string toUtf8(const std::basic_string<charT, traits, Alloc>& unicode
                     appendUTF8(result, (char32_t(c) << 10) + *iter - 0x35fdc00);
                 }
                 else {
-                    throw std::runtime_error("Error in UTF-16 encoding!");
+                    appendUTF8(result, 0xfffd);
                 }
             }
             else {
