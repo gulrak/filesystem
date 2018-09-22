@@ -45,7 +45,7 @@ if you can't use it.
 Tests are currently run with:
 
 * macOS 10.12: XCode 9.2 (clang-900.0.39.2), GCC 8.1.0, Clang 8.0.0 (HEAD, homebrew)
-* Windows 10: Visual Studio 2017 15.7.4, MingW GCC 5.3
+* Windows 10: Visual Studio 2017 15.8.5, MingW GCC 5.3
 * Linux: Ubuntu 18.04LTS GCC 7.3 & GCC 8.0.1
 
 
@@ -83,10 +83,11 @@ As it is a header-only library, it should be enough to copy the header
 into your project folder oder point your include path to this directory and
 simply include the `filesystem.h` header.
 
-Everything is in the namespace `ghc::filesystem`, so one way to use it could be:
+Everything is in the namespace `ghc::filesystem`, so one way to use it only as
+a fallback could be:
 
 ```cpp
-#if defined(__cplusplus) && __cplusplus >= 201703L
+#if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include) && __has_include(<filesystem>)
 #include <filesystem>
 namespace fs = std::filesystem;
 #else
@@ -95,16 +96,26 @@ namespace fs = ghc::filesystem;
 #endif
 ```
 
-If you are paranoid you can add the feature tests of C++17 to ensure your compiler
-already has std::filesystem when using `-std=c++17`:
+If you want to also use the `fstream` wrapper with `path` support as fallback,
+you might use:
 
 ```cpp
 #if defined(__has_include) && __has_include(<filesystem>)
 #include <filesystem>
-namespace fs = std::filesystem;
+namespace fs {
+using namespace std::filesystem;
+using ifstream = std::ifstream;
+using ofstream = std::ofstream;
+using fstream = std::fstream;
+}
 #else
 #include "filesystem.h"
-namespace fs = ghc::filesystem;
+namespace fs {
+using namespace ghc::filesystem;
+using ifstream = ghc::filesystem::ifstream;
+using ofstream = ghc::filesystem::ofstream;
+using fstream = ghc::filesystem::fstream;
+} 
 #endif
 ```
 

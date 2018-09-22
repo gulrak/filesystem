@@ -45,12 +45,12 @@
 
 #ifdef USE_STD_FS
 #include <filesystem>
-namespace fs = std::filesystem;
-namespace ghc {
+namespace fs {
+using namespace std::filesystem;
 using ifstream = std::ifstream;
 using ofstream = std::ofstream;
 using fstream = std::fstream;
-}  // namespace ghc
+}
 #ifdef __GNUC__
 #define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #endif
@@ -63,12 +63,12 @@ using fstream = std::fstream;
 #else
 #define NOMINMAX
 #include "../filesystem.h"
-namespace fs = ghc::filesystem;
-namespace ghc {
-using ifstream = filesystem::ifstream;
-using ofstream = filesystem::ofstream;
-using fstream = filesystem::fstream;
-}  // namespace ghc
+namespace fs {
+using namespace ghc::filesystem;
+using ifstream = ghc::filesystem::ifstream;
+using ofstream = ghc::filesystem::ofstream;
+using fstream = ghc::filesystem::fstream;
+}
 #endif
 
 #define CATCH_CONFIG_MAIN
@@ -128,7 +128,7 @@ private:
 
 static void generateFile(const fs::path& pathname, int withSize = -1)
 {
-    ghc::ofstream outfile(pathname.string());
+    fs::ofstream outfile(pathname.string());
     if (withSize < 0) {
         outfile << "Hello world!" << std::endl;
     }
