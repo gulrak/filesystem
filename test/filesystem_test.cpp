@@ -217,7 +217,7 @@ TEST_CASE("30.10.8.4.1 path constructors and destructor", "[filesystem][path][fs
         CHECK("//host/foo/bar" == fs::path("//host/foo/bar"));
     }
 
-#if !defined(GHC_OS_WINDOWS) && !(defined(GCC_VERSION) && GCC_VERSION < 80100)
+#if !defined(GHC_OS_WINDOWS) && !(defined(GCC_VERSION) && GCC_VERSION < 80100) && !defined(USE_STD_FS)
     std::locale loc;
     bool testUTF8Locale = false;
     try {
@@ -1074,12 +1074,14 @@ TEST_CASE("30.10.14 class recursive_directory_iterator", "[filesystem][recursive
         fs::recursive_directory_iterator rd1(t.path());
         CHECK(fs::recursive_directory_iterator(rd1) != fs::recursive_directory_iterator());
         fs::recursive_directory_iterator rd2(t.path());
-        CHECK(fs::recursive_directory_iterator(std::move(rd2)) == rd1);
+        CHECK(fs::recursive_directory_iterator(std::move(rd2)) != fs::recursive_directory_iterator());
         fs::recursive_directory_iterator rd3(t.path(), fs::directory_options::skip_permission_denied);
         CHECK(rd3.options() == fs::directory_options::skip_permission_denied);
         fs::recursive_directory_iterator rd4;
         rd4 = std::move(rd3);
-        CHECK(rd4 == rd1);
+        CHECK(rd4 != fs::recursive_directory_iterator());
+        CHECK_NOTHROW(++rd4);
+        CHECK(rd4 == fs::recursive_directory_iterator());
         fs::recursive_directory_iterator rd5;
         rd5 = rd4;
     }
@@ -1165,7 +1167,7 @@ TEST_CASE("30.10.15.3 copy", "[filesystem][operations][fs.op.copy]")
         generateFile("dir1/file2");
         fs::create_directory("dir1/dir2");
         generateFile("dir1/dir2/file3");
-        CHECK_NOTHROW(fs::copy("dir1", "dir3", fs::copy_options::create_symlinks | fs::copy_options::recursive));
+        REQUIRE_NOTHROW(fs::copy("dir1", "dir3", fs::copy_options::create_symlinks | fs::copy_options::recursive));
         CHECK(!ec);
         CHECK(fs::exists("dir3/file1"));
         CHECK(fs::is_symlink("dir3/file1"));
@@ -1186,7 +1188,7 @@ TEST_CASE("30.10.15.3 copy", "[filesystem][operations][fs.op.copy]")
         auto f2hl = fs::hard_link_count("dir1/file2");
         auto f3hl = fs::hard_link_count("dir1/dir2/file3");
         CHECK_NOTHROW(fs::copy("dir1", "dir3", fs::copy_options::create_hard_links | fs::copy_options::recursive, ec));
-        CHECK(!ec);
+        REQUIRE(!ec);
         CHECK(fs::exists("dir3/file1"));
         CHECK(fs::hard_link_count("dir1/file1") == f1hl + 1);
         CHECK(fs::exists("dir3/file2"));

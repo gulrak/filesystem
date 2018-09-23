@@ -13,7 +13,7 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
     target_link_libraries(filesystem_test_cov PRIVATE --coverage)
 endif()
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 8.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0))
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 7.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.0))
     include_directories(/usr/local/opt/llvm/include)
     link_directories(/usr/local/opt/llvm/lib)
     add_executable(std_filesystem_test test/filesystem_test.cpp filesystem.h test/catch.hpp)
