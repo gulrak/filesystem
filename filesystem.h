@@ -101,7 +101,7 @@
 #define LWG_2937_BEHAVIOUR
 
 // ghc::filesystem version in decimal (major * 10000 + minor * 100 + patch)
-#define GHC_FILESYSTEM_VERSION 10001L
+#define GHC_FILESYSTEM_VERSION 10002L
 
 namespace ghc {
 namespace filesystem {
@@ -1041,7 +1041,7 @@ inline void appendUTF8(std::string& str, uint32_t unicode)
         str.push_back(static_cast<char>((unicode & 0x3f) + 128));
     }
     else {
-        str.push_back(static_cast<char>((unicode>>18) + 240));
+        str.push_back(static_cast<char>((unicode >> 18) + 240));
         str.push_back(static_cast<char>(((unicode & 0x3ffff) >> 12) + 128));
         str.push_back(static_cast<char>(((unicode & 0xfff) >> 6) + 128));
         str.push_back(static_cast<char>((unicode & 0x3f) + 128));
@@ -1059,14 +1059,15 @@ static const uint32_t utf8_state_info[] = {
     0x3333333au, 0x33433333u, 0x9995666bu, 0x99999999u,
     0x88888880u, 0x22818108u, 0x88888881u, 0x88888882u,
     0x88888884u, 0x88888887u, 0x88888886u, 0x82218108u,
-    0x82281108u, 0x88888888u, 0x88888883u, 0x88888885u
+    0x82281108u, 0x88888888u, 0x88888883u, 0x88888885u,
 };
-static inline unsigned consumeUtf8Fragment(const unsigned state, const uint8_t fragment, uint32_t& codepoint) {
+static inline unsigned consumeUtf8Fragment(const unsigned state, const uint8_t fragment, uint32_t& codepoint)
+{
     uint8_t category = fragment < 128 ? 0 : (utf8_state_info[(fragment >> 3) & 0xf] >> ((fragment & 7) << 2)) & 0xf;
     codepoint = (state ? (codepoint << 6) | (fragment & 0x3f) : (0xff >> category) & fragment);
     return state == S_RJCT ? S_RJCT : (utf8_state_info[category + 16] >> (state << 2)) & 0xf;
 }
-    
+
 template <class StringType>
 inline StringType fromUtf8(const std::string& utf8String)
 {
@@ -1079,7 +1080,7 @@ inline StringType fromUtf8(const std::string& utf8String)
     unsigned utf8_state = S_STRT;
     std::uint32_t codepoint = 0;
     while (iter < utf8String.end()) {
-        if(!(utf8_state = consumeUtf8Fragment(utf8_state, (uint8_t)*iter++, codepoint))) {
+        if (!(utf8_state = consumeUtf8Fragment(utf8_state, (uint8_t)*iter++, codepoint))) {
             if (sizeof(typename StringType::value_type) == 4) {
                 result += codepoint;
             }
@@ -1095,13 +1096,13 @@ inline StringType fromUtf8(const std::string& utf8String)
             }
             codepoint = 0;
         }
-        else if(utf8_state == S_RJCT) {
+        else if (utf8_state == S_RJCT) {
             result += (typename StringType::value_type)0xfffd;
             utf8_state = S_STRT;
             codepoint = 0;
         }
     }
-    if(utf8_state) {
+    if (utf8_state) {
         result += (typename StringType::value_type)0xfffd;
     }
     return result;
@@ -2615,7 +2616,7 @@ inline path canonical(const path& p)
 
 inline path canonical(const path& p, std::error_code& ec)
 {
-    if(p.empty()) {
+    if (p.empty()) {
         ec = detail::make_error_code(detail::portable_error::not_found);
         return path();
     }
@@ -3817,7 +3818,7 @@ inline path weakly_canonical(const path& p, std::error_code& ec) noexcept
                     return path();
                 }
                 scan = false;
-                if(!result.empty()) {
+                if (!result.empty()) {
                     result = canonical(result, ec) / pe;
                     if (ec) {
                         break;
@@ -3833,7 +3834,7 @@ inline path weakly_canonical(const path& p, std::error_code& ec) noexcept
         }
     }
     if (scan) {
-        if(!result.empty()) {
+        if (!result.empty()) {
             result = canonical(result, ec);
         }
     }
