@@ -284,3 +284,24 @@ for more interaction with the Windows permission system, but currently setting
 or reading permissions with this implementation will most certainly not lead
 to the expected behavior.
 
+
+## Release Notes
+
+### v1.0.1
+
+* Bugfix: `ghc::filesystem::canonical` now sees empty path as non-existant and reports
+  an error. Due to this `ghc::filesystem::weakly_canonical` now returns relative
+  paths for non-existant argument paths. [#1]
+* Bugfix: `ghc::filesystem::remove_all` now also counts directories removed [#2]
+* Bugfix: `recursive_directory_iterator` tests didn't respect equality domain issues
+  and dereferencable constraints, leading to fails on `std::filesystem` tests.
+* Bugfix: Some `noexcept` tagged methods and functions could indirectly throw exceptions
+  due to UFT-8 decoding issues.
+* `std_filesystem_test` is now also generated if LLVM/clang 7.0.0 is found.
+
+
+### v1.0.0
+
+This was the first public release version. It implements the full range of
+C++17 std::filesystem, as far as possible without other C++17 dependencies.
+
