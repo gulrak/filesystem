@@ -1885,7 +1885,8 @@ TEST_CASE("30.10.15.26 permissions", "[filesystem][operations][fs.op.permissions
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
     generateFile("foo", 512);
-    CHECK_NOTHROW(fs::permissions("foo", fs::perms::owner_write, fs::perm_options::remove));
+    auto allWrite = fs::perms::owner_write | fs::perms::group_write | fs::perms::others_write;
+    CHECK_NOTHROW(fs::permissions("foo", allWrite, fs::perm_options::remove));
     CHECK((fs::status("foo").permissions() & fs::perms::owner_write) != fs::perms::owner_write);
     CHECK_THROWS_AS(fs::resize_file("foo", 1024), fs::filesystem_error);
     CHECK(fs::file_size("foo") == 512);
