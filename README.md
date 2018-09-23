@@ -44,7 +44,7 @@ if you can't use it.
 
 Tests are currently run with:
 
-* macOS 10.12: XCode 9.2 (clang-900.0.39.2), GCC 8.1.0, Clang 8.0.0 (HEAD, homebrew)
+* macOS 10.12: XCode 9.2 (clang-900.0.39.2), GCC 8.1.0, Clang 7.0.0
 * Windows 10: Visual Studio 2017 15.8.5, MingW GCC 5.3
 * Linux: Ubuntu 18.04LTS GCC 7.3 & GCC 8.0.1
 
@@ -69,7 +69,7 @@ make
 
 This generates `filesystem_test`, the binary that runs all tests.
 
-If the default compiler is a GCC 8 or newer, or Clang 8 or newer, it
+If the default compiler is a GCC 8 or newer, or Clang 7 or newer, it
 additionally builds a version of the test binary compiled against GCCs/Clangs
 `std::filesystem` implementation, named `std_filesystem_test`
 as an additional test of conformance. Ideally all tests should compile and
@@ -220,8 +220,8 @@ unified path with `"C:\foo\bar"` via `native()` and `"C:/foo/bar"` via
 Additionally this implementation follows the standards suggestion to handle
 posix paths of the form `"//host/path"` and USC path on windows also as having
 a root-name (e.g. `"//host"`). The GCC implementation didn't choose to do that
-while testing on Ubuntu 18.04 and macOS with GCC 8.1.0 or Clang 8. This difference will
-show as warnings under std::filesystem. This leads to a change in the
+while testing on Ubuntu 18.04 and macOS with GCC 8.1.0 or Clang 7.0.0. This difference
+will show as warnings under std::filesystem. This leads to a change in the
 algorithm described in the standard for `operator/=(path& p)` where any path
 `p` with `p.is_absolute()` will degrade to an assignment, while this implementation
 has the exception where `*this == *this.root_name()` and `p == preferred_seperator`
@@ -291,8 +291,8 @@ to the expected behavior.
 
 * Bugfix: `ghc::filesystem::canonical` now sees empty path as non-existant and reports
   an error. Due to this `ghc::filesystem::weakly_canonical` now returns relative
-  paths for non-existant argument paths. [#1]
-* Bugfix: `ghc::filesystem::remove_all` now also counts directories removed [#2]
+  paths for non-existant argument paths. [(#1)](https://github.com/gulrak/filesystem/issues/1)
+* Bugfix: `ghc::filesystem::remove_all` now also counts directories removed [(#2)](https://github.com/gulrak/filesystem/issues/2)
 * Bugfix: `recursive_directory_iterator` tests didn't respect equality domain issues
   and dereferencable constraints, leading to fails on `std::filesystem` tests.
 * Bugfix: Some `noexcept` tagged methods and functions could indirectly throw exceptions
