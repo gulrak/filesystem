@@ -1101,7 +1101,7 @@ TEST_CASE("30.10.15.1 absolute", "[filesystem][operations][fs.op.absolute]")
 
 TEST_CASE("30.10.15.2 canonical", "[filesystem][operations][fs.op.canonical]")
 {
-    CHECK(fs::canonical("") == fs::current_path());
+    CHECK_THROWS_AS(fs::canonical(""), fs::filesystem_error);
     CHECK(fs::canonical(fs::current_path()) == fs::current_path());
 
     CHECK(fs::canonical(".") == fs::current_path());
@@ -1462,6 +1462,7 @@ TEST_CASE("30.10.15.13 exists", "[filesystem][operations][fs.op.exists]")
 {
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
+    CHECK(!fs::exists(""));
     CHECK(!fs::exists("foo"));
     CHECK(!fs::exists("foo", ec));
     CHECK(!ec);
@@ -2130,9 +2131,9 @@ TEST_CASE("30.10.15.38 temporary_directory_path", "[filesystem][operations][fs.o
 
 TEST_CASE("30.10.15.39 weakly_canonical", "[filesystem][operations][fs.op.weakly_canonical]")
 {
-    CHECK(fs::weakly_canonical("foo/bar") == fs::current_path() / "foo/bar");
-    CHECK(fs::weakly_canonical("foo/./bar") == fs::current_path() / "foo/bar");
-    CHECK(fs::weakly_canonical("foo/../bar") == fs::current_path() / "bar");
+    CHECK(fs::weakly_canonical("foo/bar") == "foo/bar");
+    CHECK(fs::weakly_canonical("foo/./bar") == "foo/bar");
+    CHECK(fs::weakly_canonical("foo/../bar") == "bar");
 
     {
         TemporaryDirectory t(TempOpt::change_path);

@@ -2615,6 +2615,10 @@ inline path canonical(const path& p)
 
 inline path canonical(const path& p, std::error_code& ec)
 {
+    if(p.empty()) {
+        ec = detail::make_error_code(detail::portable_error::not_found);
+        return path();
+    }
     path work = p.is_absolute() ? p : absolute(p, ec);
     path root = work.root_path();
     path result;
@@ -3813,9 +3817,14 @@ inline path weakly_canonical(const path& p, std::error_code& ec) noexcept
                     return path();
                 }
                 scan = false;
-                result = canonical(result, ec) / pe;
-                if (ec) {
-                    break;
+                if(!result.empty()) {
+                    result = canonical(result, ec) / pe;
+                    if (ec) {
+                        break;
+                    }
+                }
+                else {
+                    result /= pe;
                 }
             }
         }
@@ -3824,7 +3833,9 @@ inline path weakly_canonical(const path& p, std::error_code& ec) noexcept
         }
     }
     if (scan) {
-        result = canonical(result, ec);
+        if(!result.empty()) {
+            result = canonical(result, ec);
+        }
     }
     return ec ? path() : result.lexically_normal();
 }
