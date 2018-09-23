@@ -3628,7 +3628,7 @@ inline uintmax_t remove_all(const path& p, std::error_code& ec) noexcept
     if (ec) {
         return static_cast<uintmax_t>(-1);
     }
-    return count;
+    return ++count;
 }
 
 inline void rename(const path& from, const path& to)

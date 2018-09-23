@@ -1983,7 +1983,7 @@ TEST_CASE("30.10.15.31 remove_all", "[filesystem][operations][fs.op.remove_all]"
     fs::create_directories("dir1/dir1b");
     generateFile("dir1/dir1a/f1");
     generateFile("dir1/dir1b/f2");
-    CHECK(fs::remove_all("dir1") == 2);
+    CHECK(fs::remove_all("dir1") == 5);
     CHECK(fs::directory_iterator(t.path()) == fs::directory_iterator());
 }
 
