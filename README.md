@@ -287,7 +287,13 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.0.1
+### v1.0.2 (wip)
+
+* Updated catch2 to v2.4.0.
+* Refactored `fs.op.permissions` test to work with all tested `std::filesystem`
+  implementations (gcc, clang, msvc++).
+
+### [v1.0.1](https://github.com/gulrak/filesystem/tree/v1.0.1)
 
 * Bugfix: `ghc::filesystem::canonical` now sees empty path as non-existant and reports
   an error. Due to this `ghc::filesystem::weakly_canonical` now returns relative
@@ -300,7 +306,7 @@ to the expected behavior.
 * `std_filesystem_test` is now also generated if LLVM/clang 7.0.0 is found.
 
 
-### v1.0.0
+### [v1.0.0](https://github.com/gulrak/filesystem/tree/v1.0.0)
 
 This was the first public release version. It implements the full range of
 C++17 std::filesystem, as far as possible without other C++17 dependencies.
