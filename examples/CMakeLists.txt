@@ -1,5 +1,6 @@
 
 add_executable(fs_dir dir.cpp ../filesystem.h)
+target_compile_definitions(fs_dir PRIVATE _CRT_SECURE_NO_WARNINGS)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 7.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.0))
     add_executable(std_fs_dir dir.cpp)
@@ -14,4 +15,7 @@ endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES MSVC AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 19.15 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 19.15))
     add_executable(std_fs_dir dir.cpp)
     set_property(TARGET std_fs_dir PROPERTY CXX_STANDARD 17)
+	set_property(TARGET std_fs_dir PROPERTY CXX_STANDARD_REQUIRED ON)
+	target_compile_options(std_fs_dir PRIVATE "/Zc:__cplusplus")
+	target_compile_definitions(std_fs_dir PRIVATE _CRT_SECURE_NO_WARNINGS)
 endif()

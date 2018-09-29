@@ -345,9 +345,15 @@ private:
     path _p1, _p2;
 };
 
-class path::iterator : public std::iterator<std::bidirectional_iterator_tag, iterator>
+class path::iterator
 {
 public:
+    using value_type = const path;
+    using difference_type = std::ptrdiff_t;
+    using pointer = const path*;
+    using reference = const path&;
+    using iterator_category = std::bidirectional_iterator_tag;
+
     iterator();
     iterator(const string_type::const_iterator& first, const string_type::const_iterator& last, const string_type::const_iterator& pos);
     iterator& operator++();
@@ -356,8 +362,8 @@ public:
     iterator operator--(int);
     bool operator==(const iterator& other) const;
     bool operator!=(const iterator& other) const;
-    const path& operator*() const;
-    const path* operator->() const;
+    const reference operator*() const;
+    const pointer operator->() const;
 
 private:
     string_type::const_iterator increment(const std::string::const_iterator& pos) const;
@@ -900,8 +906,9 @@ typedef basic_ofstream<char> ofstream;
 typedef basic_ofstream<wchar_t> wofstream;
 typedef basic_fstream<char> fstream;
 typedef basic_fstream<wchar_t> wfstream;
-    
-class u8arguments {
+
+class u8arguments
+{
 public:
     u8arguments(int& argc, char**& argv);
     ~u8arguments()
@@ -909,6 +916,7 @@ public:
         _refargc = _argc;
         _refargv = _argv;
     }
+
 private:
     int _argc;
     char** _argv;
@@ -919,7 +927,6 @@ private:
     std::vector<char*> _argp;
 #endif
 };
-
 
 //-------------------------------------------------------------------------------------------------
 //  Implementation
@@ -1073,13 +1080,8 @@ inline void appendUTF8(std::string& str, uint32_t unicode)
 // Generating debugging and shrinking my own DFA from scratch was a day of fun!
 enum utf8_states_t { S_STRT = 0, S_RJCT = 8 };
 static const uint32_t utf8_state_info[] = {
-    0x11111111u, 0x11111111u, 0x77777777u, 0x77777777u,
-    0x88888888u, 0x88888888u, 0x88888888u, 0x88888888u,
-    0x22222299u, 0x22222222u, 0x22222222u, 0x22222222u,
-    0x3333333au, 0x33433333u, 0x9995666bu, 0x99999999u,
-    0x88888880u, 0x22818108u, 0x88888881u, 0x88888882u,
-    0x88888884u, 0x88888887u, 0x88888886u, 0x82218108u,
-    0x82281108u, 0x88888888u, 0x88888883u, 0x88888885u,
+    0x11111111u, 0x11111111u, 0x77777777u, 0x77777777u, 0x88888888u, 0x88888888u, 0x88888888u, 0x88888888u, 0x22222299u, 0x22222222u, 0x22222222u, 0x22222222u, 0x3333333au, 0x33433333u,
+    0x9995666bu, 0x99999999u, 0x88888880u, 0x22818108u, 0x88888881u, 0x88888882u, 0x88888884u, 0x88888887u, 0x88888886u, 0x82218108u, 0x82281108u, 0x88888888u, 0x88888883u, 0x88888885u,
 };
 static inline unsigned consumeUtf8Fragment(const unsigned state, const uint8_t fragment, uint32_t& codepoint)
 {
@@ -1202,10 +1204,10 @@ inline void postprocess_path_with_format(path::string_type& p, path::format fmt)
 }  // namespace detail
 
 inline u8arguments::u8arguments(int& argc, char**& argv)
-: _argc(argc)
-, _argv(argv)
-, _refargc(argc)
-, _refargv(argv)
+    : _argc(argc)
+    , _argv(argv)
+    , _refargc(argc)
+    , _refargv(argv)
 {
 #ifdef GHC_OS_WINDOWS
     LPWSTR* p;
@@ -2418,12 +2420,12 @@ inline bool path::iterator::operator!=(const path::iterator& other) const
     return _iter != other._iter;
 }
 
-inline const path& path::iterator::operator*() const
+inline const path::iterator::reference path::iterator::operator*() const
 {
     return _current;
 }
 
-inline const path* path::iterator::operator->() const
+inline const path::iterator::pointer path::iterator::operator->() const
 {
     return &_current;
 }
