@@ -132,10 +132,49 @@ It's the version as decimal number `(major * 10000 + minor * 100 + patch)`.
 
 ## Documentation
 
-There is no documentation in this release, as any `std::filesystem` documentation
+There is almost no documentation in this release, as any `std::filesystem` documentation
 would work, besides the few differences explained in the next section. So you might
 head over to https://en.cppreference.com/w/cpp/filesystem for a description of
 the components of this library.
+
+The only additions to the standard are documented here:
+
+
+### `ghc::filesystem::ifstream`, `ghc::filesystem::ofstream`, `ghc::filesystem::fstream`
+
+These are simple wrappers around `std::ifstream`, `std::ofstream` and `std::fstream`.
+They simply add an `open()` method and a constuctor with an `ghc::filesystem::path`
+argument as the `fstream` variants in C++17 have them.
+
+### `ghc::filesystem::u8arguments`
+
+This is a helper class that acts neutral on non-Windows platforms but on Windows it
+fetches the command line arguments als Unicode strings from the OS with
+
+```cpp
+::CommandLineToArgvW(::GetCommandLineW(), &argc)
+```
+
+and then converts them to UTF-8, and replaces `argc` and `argv`. It is a guard-like
+class that reverts its changes when going out of scope.
+
+So basic usage is:
+
+```cpp
+namespace fs = ghc::filesystem;
+
+int main(int argc, char* argv[])
+{
+    fs::u8arguments u8guard(argc, argv);
+
+    // now use argc/argv as usual, they have utf-8 enconding on windows
+    // ...
+
+    return 0;
+}
+```
+
+That way `argv` is UTF-8 encoded as long as the scope from `main` is valid.
 
 
 ## Differences
@@ -292,6 +331,13 @@ to the expected behavior.
 * Updated catch2 to v2.4.0.
 * Refactored `fs.op.permissions` test to work with all tested `std::filesystem`
   implementations (gcc, clang, msvc++).
+* Added helper class `ghc::filesystem::u8arguments` as `argv` converter, to
+  help follow the UTF-8 path on windows. Simply instantiate it with `argc` and
+  `argv` and it will fetch the Unicode version of the command line and convert
+  it to UTF-8. The destructor reverts the change.
+* Added `examples` folder with hopefully some usefull example usage. Examples are
+  tested (and build) with `ghc::filesystem` and C++17 `std::filesystem` when
+  available.
 
 ### [v1.0.1](https://github.com/gulrak/filesystem/tree/v1.0.1)
 

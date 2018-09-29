@@ -900,6 +900,26 @@ typedef basic_ofstream<char> ofstream;
 typedef basic_ofstream<wchar_t> wofstream;
 typedef basic_fstream<char> fstream;
 typedef basic_fstream<wchar_t> wfstream;
+    
+class u8arguments {
+public:
+    u8arguments(int& argc, char**& argv);
+    ~u8arguments()
+    {
+        _refargc = _argc;
+        _refargv = _argv;
+    }
+private:
+    int _argc;
+    char** _argv;
+    int& _refargc;
+    char**& _refargv;
+#ifdef GHC_OS_WINDOWS
+    std::vector<std::string> _args;
+    std::vector<char*> _argp;
+#endif
+};
+
 
 //-------------------------------------------------------------------------------------------------
 //  Implementation
@@ -1180,6 +1200,26 @@ inline void postprocess_path_with_format(path::string_type& p, path::format fmt)
 }
 
 }  // namespace detail
+
+inline u8arguments::u8arguments(int& argc, char**& argv)
+: _argc(argc)
+, _argv(argv)
+, _refargc(argc)
+, _refargv(argv)
+{
+#ifdef GHC_OS_WINDOWS
+    LPWSTR* p;
+    p = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
+    _args.reserve(argc);
+    _argp.reserve(argc);
+    for (size_t i = 0; i < argc; ++i) {
+        _args.push_back(detail::toUtf8(std::wstring(p[i])));
+        _argp.push_back((char*)_args[i].data());
+    }
+    argv = _argp.data();
+    ::LocalFree(p);
+#endif
+}
 
 template <class Source, typename>
 inline path::path(const Source& source, format fmt)
