@@ -122,7 +122,11 @@ using fstream = ghc::filesystem::fstream;
 Now you have e.g. `fs::ofstream out(somePath);` and it is either the wrapper or
 the C++17 `std::ofstream`.
 
-Be aware, as a header-only library, it is not hiding the fact, that it
+Note, that on MSVC this detection only works starting from version 15.7 on and when setting
+the `/Zc:__cplusplus` compile switch, as the compiler allways reports `199711L`
+without that switch ([see](https://blogs.msdn.microsoft.com/vcblog/2018/04/09/msvc-now-correctly-reports-__cplusplus/)).
+
+Be aware too, as a header-only library, it is not hiding the fact, that it
 uses system includes, so they "pollute" your global namespace.
 
 There is a version macro `GHC_FILESYSTEM_VERSION` defined in case future changes
