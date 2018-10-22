@@ -89,7 +89,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <functional>
-#include <locale>
+#include <clocale>
 #include <memory>
 #include <stack>
 #include <stdexcept>
