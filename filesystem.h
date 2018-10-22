@@ -362,8 +362,8 @@ public:
     iterator operator--(int);
     bool operator==(const iterator& other) const;
     bool operator!=(const iterator& other) const;
-    const reference operator*() const;
-    const pointer operator->() const;
+    reference operator*() const;
+    pointer operator->() const;
 
 private:
     string_type::const_iterator increment(const std::string::const_iterator& pos) const;
@@ -2420,12 +2420,12 @@ inline bool path::iterator::operator!=(const path::iterator& other) const
     return _iter != other._iter;
 }
 
-inline const path::iterator::reference path::iterator::operator*() const
+inline path::iterator::reference path::iterator::operator*() const
 {
     return _current;
 }
 
-inline const path::iterator::pointer path::iterator::operator->() const
+inline path::iterator::pointer path::iterator::operator->() const
 {
     return &_current;
 }
