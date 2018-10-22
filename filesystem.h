@@ -62,21 +62,22 @@
 #error "Operating system currently not supported!"
 #endif
 
-#ifndef GHC_OS_WINDOWS
+#ifdef GHC_OS_WINDOWS
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <wchar.h>
+#include <windows.h>
+#include <winioctl.h>
+#else
 #include <dirent.h>
 #include <fcntl.h>
+#include <langinfo.h>
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/statvfs.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
-#else
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <wchar.h>
-#include <windows.h>
-#include <winioctl.h>
 #endif
 #ifdef GHC_OS_MACOS
 #include <Availability.h>
@@ -917,11 +918,17 @@ public:
         _refargv = _argv;
     }
 
+    bool valid() const
+    {
+        return _isvalid;
+    }
+
 private:
     int _argc;
     char** _argv;
     int& _refargc;
     char**& _refargv;
+    bool _isvalid;
 #ifdef GHC_OS_WINDOWS
     std::vector<std::string> _args;
     std::vector<char*> _argp;
@@ -1203,25 +1210,6 @@ inline void postprocess_path_with_format(path::string_type& p, path::format fmt)
 
 }  // namespace detail
 
-inline u8arguments::u8arguments(int& argc, char**& argv)
-    : _argc(argc)
-    , _argv(argv)
-    , _refargc(argc)
-    , _refargv(argv)
-{
-#ifdef GHC_OS_WINDOWS
-    LPWSTR* p;
-    p = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
-    _args.reserve(argc);
-    _argp.reserve(argc);
-    for (size_t i = 0; i < argc; ++i) {
-        _args.push_back(detail::toUtf8(std::wstring(p[i])));
-        _argp.push_back((char*)_args[i].data());
-    }
-    argv = _argp.data();
-    ::LocalFree(p);
-#endif
-}
 
 template <class Source, typename>
 inline path::path(const Source& source, format fmt)
@@ -1666,6 +1654,34 @@ inline file_status status_ex(const path& p, std::error_code& ec, file_status* sl
 }
 
 }  // namespace detail
+
+
+inline u8arguments::u8arguments(int& argc, char**& argv)
+    : _argc(argc)
+    , _argv(argv)
+    , _refargc(argc)
+    , _refargv(argv)
+    , _isvalid(false)
+{
+#ifdef GHC_OS_WINDOWS
+    LPWSTR* p;
+    p = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
+    _args.reserve(argc);
+    _argp.reserve(argc);
+    for (size_t i = 0; i < argc; ++i) {
+        _args.push_back(detail::toUtf8(std::wstring(p[i])));
+        _argp.push_back((char*)_args[i].data());
+    }
+    argv = _argp.data();
+    ::LocalFree(p);
+    _isvalid = true;
+#else
+    std::setlocale(LC_ALL, "");
+    if(!detail::compare_no_case(::nl_langinfo(CODESET), "UTF-8")) {
+        _isvalid = true;
+    }
+#endif
+}
 
 //-----------------------------------------------------------------------------
 // 30.10.8.4.1 constructors and destructor

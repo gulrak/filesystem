@@ -152,7 +152,7 @@ argument as the `fstream` variants in C++17 have them.
 
 ### `ghc::filesystem::u8arguments`
 
-This is a helper class that acts neutral on non-Windows platforms but on Windows it
+This is a helper class that currently checks for UTF-8 encoding on non-Windows platforms but on Windows it
 fetches the command line arguments als Unicode strings from the OS with
 
 ```cpp
@@ -170,6 +170,10 @@ namespace fs = ghc::filesystem;
 int main(int argc, char* argv[])
 {
     fs::u8arguments u8guard(argc, argv);
+    if(u8guard.valid()) {
+        std::cerr << "Bad encoding, needs UTF-8." << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
     // now use argc/argv as usual, they have utf-8 enconding on windows
     // ...
