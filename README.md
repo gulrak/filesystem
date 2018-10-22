@@ -4,7 +4,9 @@ This is a header-only single-file std::filesystem compatible helper library,
 based on the C++17 specs, but implemented for C++11 or C++14 (so not 100%
 conforming to the C++17 standard). It is currently tested on macOS 10.12, Windows 10,
 and Ubuntu 18.04 but should work on other versions too, as long as you have a
-C++11 compatible compiler.
+C++11 compatible compiler. It is of course in its own namespace `ghc::filesystem`
+to not interfere with a regular `std::filesystem` should you use it in a mixed C++17
+environment.
 
 *It could still use some polishing, test coverage is above 90%, I didn't benchmark
 much yet, but I'll try to optimize some parts and refactor others. Feedback
@@ -252,7 +254,7 @@ it's "free" to return that.
 
 ### Differences in Behavior
 
-#### fs.path [(ref)](https://en.cppreference.com/w/cpp/filesystem/path)
+#### fs.path ([ref](https://en.cppreference.com/w/cpp/filesystem/path))
 
 As the complete inner mechanics of this implementation `fs::path` are working
 on the generic format, it is the internal representation. So creating any mixed
@@ -280,7 +282,7 @@ ASSERT(p1 == p2);
 For all non-host-leading paths the behaviour will match the one described by
 the standard.
 
-#### fs.op.copy [(ref)](https://en.cppreference.com/w/cpp/filesystem/copy)
+#### fs.op.copy ([ref](https://en.cppreference.com/w/cpp/filesystem/copy))
 
 Then there is `fs::copy`. The tests in the suite fail partially with C++17 `std::filesystem`
 on GCC/Clang. They complain about a copy call with `fs::copy_options::recursive` combined
@@ -347,8 +349,8 @@ to the expected behavior.
 
 * Bugfix: `ghc::filesystem::canonical` now sees empty path as non-existant and reports
   an error. Due to this `ghc::filesystem::weakly_canonical` now returns relative
-  paths for non-existant argument paths. [(#1)](https://github.com/gulrak/filesystem/issues/1)
-* Bugfix: `ghc::filesystem::remove_all` now also counts directories removed [(#2)](https://github.com/gulrak/filesystem/issues/2)
+  paths for non-existant argument paths. ([#1](https://github.com/gulrak/filesystem/issues/1))
+* Bugfix: `ghc::filesystem::remove_all` now also counts directories removed ([#2](https://github.com/gulrak/filesystem/issues/2))
 * Bugfix: `recursive_directory_iterator` tests didn't respect equality domain issues
   and dereferencable constraints, leading to fails on `std::filesystem` tests.
 * Bugfix: Some `noexcept` tagged methods and functions could indirectly throw exceptions
