@@ -31,6 +31,10 @@ int main(int argc, char* argv[])
 {
 #ifdef GHC_FILESYSTEM_VERSION
     fs::u8arguments u8guard(argc, argv);
+    if(!u8guard.valid()) {
+        std::cerr << "Invalid character encoding, UTF-8 based encoding needed." << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
 #endif
     if(argc > 2) {
         std::cerr << "USAGE: dir <path>" << std::endl;
