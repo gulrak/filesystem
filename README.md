@@ -135,6 +135,10 @@ There is a version macro `GHC_FILESYSTEM_VERSION` defined in case future changes
 might make it needed to react on the version, but I don't plan to break anything.
 It's the version as decimal number `(major * 10000 + minor * 100 + patch)`.
 
+**Note:** Starting from v1.0.2 only even path versions will be used for releases
+and odd patch version will only be used for in between commits while working on
+the next version.
+
 
 ## Documentation
 
@@ -185,6 +189,11 @@ int main(int argc, char* argv[])
 ```
 
 That way `argv` is UTF-8 encoded as long as the scope from `main` is valid.
+
+**Note:** On macOS, while debugging under Xcode the code currently will return
+`false` as Xcode starts the application with `US-ASCII` as encoding, no matter what
+encoding is actually used and even setting `LC_ALL` in the product scheme doesn't
+change anything. I still need to investigate this.
 
 
 ## Differences
@@ -348,6 +357,9 @@ to the expected behavior.
 * Added `examples` folder with hopefully some usefull example usage. Examples are
   tested (and build) with `ghc::filesystem` and C++17 `std::filesystem` when
   available.
+* Starting with this version, only even patch level versions will be tagged and
+  odd patch levels mark in-between non-stable wip states.
+* Tests can now also be run against MS version of std::filesystem for comparison.
 
 ### [v1.0.1](https://github.com/gulrak/filesystem/tree/v1.0.1)
 
