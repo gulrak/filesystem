@@ -360,6 +360,10 @@ to the expected behavior.
 * Starting with this version, only even patch level versions will be tagged and
   odd patch levels mark in-between non-stable wip states.
 * Tests can now also be run against MS version of std::filesystem for comparison.
+* Added missing `fstream` include.
+* Removed non-conforming C99 `timespec`/`timeval` usage.
+* Fixed some integer type mismatches that could lead to warnings.
+* Fixed `chrono` conversion issues in test and example on clang 7.0.0.
 
 ### [v1.0.1](https://github.com/gulrak/filesystem/tree/v1.0.1)
 

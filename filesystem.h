@@ -89,6 +89,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <functional>
+#include <fstream>
 #include <clocale>
 #include <memory>
 #include <stack>
@@ -1094,7 +1095,7 @@ static inline unsigned consumeUtf8Fragment(const unsigned state, const uint8_t f
 {
     uint8_t category = fragment < 128 ? 0 : (utf8_state_info[(fragment >> 3) & 0xf] >> ((fragment & 7) << 2)) & 0xf;
     codepoint = (state ? (codepoint << 6) | (fragment & 0x3f) : (0xff >> category) & fragment);
-    return state == S_RJCT ? S_RJCT : (utf8_state_info[category + 16] >> (state << 2)) & 0xf;
+    return state == S_RJCT ? static_cast<unsigned>(S_RJCT) : static_cast<unsigned>((utf8_state_info[category + 16] >> (state << 2)) & 0xf);
 }
 
 template <class StringType>
@@ -1463,7 +1464,7 @@ inline path resolveSymlink(const path& p, std::error_code& ec)
             ec = std::error_code(errno, std::system_category());
             return path();
         }
-        else if (rc < bufferSize) {
+        else if (rc < static_cast<int>(bufferSize)) {
             return path(std::string(buffer.data(), rc));
         }
         bufferSize *= 2;
@@ -3481,8 +3482,11 @@ inline void last_write_time(const path& p, file_time_type new_time, std::error_c
 #if __MAC_OS_X_VERSION_MIN_REQUIRED < 101300
     struct ::stat fs;
     if (::stat(p.c_str(), &fs) == 0) {
-        struct ::timeval tv[2] = {{.tv_sec = fs.st_atimespec.tv_sec, .tv_usec = static_cast<int>(fs.st_atimespec.tv_nsec / 1000)},
-                                  {.tv_sec = std::chrono::duration_cast<std::chrono::seconds>(d).count(), .tv_usec = static_cast<int>(std::chrono::duration_cast<std::chrono::microseconds>(d).count() % 1000000)}};
+        struct ::timeval tv[2];
+        tv[0].tv_sec = fs.st_atimespec.tv_sec;
+        tv[0].tv_usec = static_cast<int>(fs.st_atimespec.tv_nsec / 1000);
+        tv[1].tv_sec = std::chrono::duration_cast<std::chrono::seconds>(d).count();
+        tv[1].tv_usec = static_cast<int>(std::chrono::duration_cast<std::chrono::microseconds>(d).count() % 1000000);
         if (::utimes(p.c_str(), tv) == 0) {
             return;
         }
@@ -3490,7 +3494,11 @@ inline void last_write_time(const path& p, file_time_type new_time, std::error_c
     ec = std::error_code(errno, std::system_category());
     return;
 #else
-    struct ::timespec times[2] = {{.tv_nsec = UTIME_OMIT}, {.tv_sec = std::chrono::duration_cast<std::chrono::seconds>(d).count(), .tv_nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(d).count() % 1000000000}};
+    struct ::timespec times[2];
+    times[0].tv_sec = 0;
+    times[0].tv_nsec = UTIME_OMIT;
+    times[1].tv_sec = std::chrono::duration_cast<std::chrono::seconds>(d).count();
+    times[1].tv_nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(d).count() % 1000000000;
     if (::utimensat(AT_FDCWD, p.c_str(), times, AT_SYMLINK_NOFOLLOW) != 0) {
         ec = std::error_code(errno, std::system_category());
     }
@@ -3498,7 +3506,11 @@ inline void last_write_time(const path& p, file_time_type new_time, std::error_c
 #endif
 #endif
 #else
-    struct ::timespec times[2] = {{.tv_sec = 0, .tv_nsec = UTIME_OMIT}, {.tv_sec = std::chrono::duration_cast<std::chrono::seconds>(d).count(), .tv_nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(d).count() % 1000000000}};
+    struct ::timespec times[2];
+    times[0].tv_sec = 0;
+    times[0].tv_nsec = UTIME_OMIT;
+    times[1].tv_sec = std::chrono::duration_cast<std::chrono::seconds>(d).count();
+    times[1].tv_nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(d).count() % 1000000000;
     if (::utimensat(AT_FDCWD, p.c_str(), times, AT_SYMLINK_NOFOLLOW) != 0) {
         ec = std::error_code(errno, std::system_category());
     }

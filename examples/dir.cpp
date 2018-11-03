@@ -14,7 +14,8 @@ template<typename TP>
 std::time_t to_time_t(TP tp)
 {
     // Based on trick from: Nico Josuttis, C++17 - The Complete Guide
-    return std::chrono::system_clock::to_time_t(std::chrono::system_clock::now() + (tp - TP::clock::now()));
+    std::chrono::system_clock::duration dt = std::chrono::duration_cast<std::chrono::system_clock::duration>(tp - TP::clock::now());
+    return std::chrono::system_clock::to_time_t(std::chrono::system_clock::now() + dt);
 }
 
 static std::string perm_to_str(fs::perms prms)

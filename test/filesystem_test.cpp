@@ -77,6 +77,14 @@ using fstream = ghc::filesystem::fstream;
 //#define TEST_LWG_2935_BEHAVIOUR
 #define TEST_LWG_2937_BEHAVIOUR
 
+template<typename TP>
+std::time_t to_time_t(TP tp)
+{
+    // Based on trick from: Nico Josuttis, C++17 - The Complete Guide
+    std::chrono::system_clock::duration dt = std::chrono::duration_cast<std::chrono::system_clock::duration>(tp - TP::clock::now());
+    return std::chrono::system_clock::to_time_t(std::chrono::system_clock::now() + dt);
+}
+
 namespace Catch {
 template <>
 struct StringMaker<fs::path>
@@ -88,6 +96,18 @@ template <>
 struct StringMaker<fs::perms>
 {
     static std::string convert(fs::perms const& value) { return std::to_string(static_cast<unsigned int>(value)); }
+};
+
+template <>
+struct StringMaker<fs::file_time_type>
+{
+    static std::string convert(fs::file_time_type const& value) {
+        std::time_t t = to_time_t(value);
+        std::tm ttm = *std::localtime(&t);
+        std::ostringstream os;
+        os << std::put_time(&ttm, "%Y-%m-%d %H:%M:%S");
+        return os.str();
+    }
 };
 }  // namespace Catch
 
@@ -1858,7 +1878,8 @@ TEST_CASE("30.10.15.25 last_write_time", "[filesystem][operations][fs.op.last_wr
     CHECK(std::abs(std::chrono::duration_cast<std::chrono::seconds>(fs::last_write_time("foo") - now).count()) < 3);
     CHECK_THROWS_AS(fs::last_write_time("bar"), fs::filesystem_error);
     CHECK_NOTHROW(ft = fs::last_write_time("bar", ec));
-    CHECK(ft == fs::file_time_type::min());
+    bool equal = (ft == fs::file_time_type::min());
+    CHECK(equal); // Workaround a problem in catch with clang 7 and time_points.
     CHECK(ec);
     ec.clear();
     if (is_symlink_creation_supported()) {
