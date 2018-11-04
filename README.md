@@ -345,7 +345,7 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.0.2 (wip)
+### [v1.0.2](https://github.com/gulrak/filesystem/tree/v1.0.2)
 
 * Updated catch2 to v2.4.0.
 * Refactored `fs.op.permissions` test to work with all tested `std::filesystem`
