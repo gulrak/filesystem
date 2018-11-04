@@ -1878,8 +1878,7 @@ TEST_CASE("30.10.15.25 last_write_time", "[filesystem][operations][fs.op.last_wr
     CHECK(std::abs(std::chrono::duration_cast<std::chrono::seconds>(fs::last_write_time("foo") - now).count()) < 3);
     CHECK_THROWS_AS(fs::last_write_time("bar"), fs::filesystem_error);
     CHECK_NOTHROW(ft = fs::last_write_time("bar", ec));
-    bool equal = (ft == fs::file_time_type::min());
-    CHECK(equal); // Workaround a problem in catch with clang 7 and time_points.
+    CHECK(ft == fs::file_time_type::min());
     CHECK(ec);
     ec.clear();
     if (is_symlink_creation_supported()) {
