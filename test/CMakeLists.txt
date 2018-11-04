@@ -1,5 +1,8 @@
 
 add_executable(filesystem_test filesystem_test.cpp ../filesystem.h catch.hpp)
+if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
+    target_compile_definitions(filesystem_test PRIVATE _CRT_SECURE_NO_WARNINGS)
+endif()
 if(CMAKE_GENERATOR STREQUAL Xcode)
     add_executable(filesystem_test_cov filesystem_test.cpp ../filesystem.h catch.hpp)
     target_compile_options(filesystem_test_cov PRIVATE "$<$<CONFIG:DEBUG>:--coverage>")
@@ -26,5 +29,5 @@ if(CMAKE_CXX_COMPILER_ID MATCHES MSVC AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQ
     add_executable(std_filesystem_test filesystem_test.cpp ../filesystem.h catch.hpp)
     set_property(TARGET std_filesystem_test PROPERTY CXX_STANDARD 17)
 	target_compile_options(std_filesystem_test PRIVATE "/Zc:__cplusplus")
-    target_compile_definitions(std_filesystem_test PRIVATE USE_STD_FS)
+    target_compile_definitions(std_filesystem_test PRIVATE USE_STD_FS _CRT_SECURE_NO_WARNINGS)
 endif()

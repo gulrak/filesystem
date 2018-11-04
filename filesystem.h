@@ -1669,7 +1669,7 @@ inline u8arguments::u8arguments(int& argc, char**& argv)
     p = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
     _args.reserve(argc);
     _argp.reserve(argc);
-    for (size_t i = 0; i < argc; ++i) {
+    for (size_t i = 0; i < static_cast<size_t>(argc); ++i) {
         _args.push_back(detail::toUtf8(std::wstring(p[i])));
         _argp.push_back((char*)_args[i].data());
     }
