@@ -345,6 +345,12 @@ to the expected behavior.
 
 ## Release Notes
 
+### v1.0.3 (wip)
+
+* Bigfix for #3, fixed missing inlines and added test to ensure including into
+  multiple implementation files works as expected.
+* Building tests with `-Wall -Wextra -Werror` and fixed resulting issues.
+
 ### [v1.0.2](https://github.com/gulrak/filesystem/tree/v1.0.2)
 
 * Updated catch2 to v2.4.0.
