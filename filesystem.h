@@ -1099,12 +1099,12 @@ inline unsigned consumeUtf8Fragment(const unsigned state, const uint8_t fragment
 }
 
 template <class StringType>
-inline StringType fromUtf8(const std::string& utf8String)
+inline StringType fromUtf8(const std::string& utf8String, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
 {
     if (sizeof(typename StringType::value_type) == 1) {
         return StringType(utf8String.begin(), utf8String.end());
     }
-    StringType result;
+    StringType result(alloc);
     result.reserve(utf8String.length());
     std::string::const_iterator iter = utf8String.begin();
     unsigned utf8_state = S_STRT;
@@ -1327,7 +1327,7 @@ inline void create_hardlink(const path& target_name, const path& new_hardlink, s
     }
 }
 #else
-inline void create_symlink(const path& target_name, const path& new_symlink, bool to_directory, std::error_code& ec)
+inline void create_symlink(const path& target_name, const path& new_symlink, bool, std::error_code& ec)
 {
     if (::symlink(target_name.c_str(), new_symlink.c_str()) != 0) {
         ec = std::error_code(errno, std::system_category());
@@ -1568,6 +1568,7 @@ inline file_status symlink_status_ex(const path& p, std::error_code& ec, uintmax
     }
     return ec ? file_status(file_type::none) : fs;
 #else
+    (void)sz; (void)nhl; (void)lwt;
     struct ::stat fs;
     auto result = ::lstat(p.c_str(), &fs);
     if (result == 0) {
@@ -1618,6 +1619,7 @@ inline file_status status_ex(const path& p, std::error_code& ec, file_status* sl
     }
     return detail::status_from_INFO(p, &attr, ec, sz, lwt);
 #else
+    (void)recurse_count;
     struct ::stat st;
     auto result = ::lstat(p.c_str(), &st);
     if (result == 0) {
@@ -1984,7 +1986,7 @@ inline path::operator path::string_type() const
 template <class EcharT, class traits, class Allocator>
 inline std::basic_string<EcharT, traits, Allocator> path::string(const Allocator& a) const
 {
-    return detail::fromUtf8<std::basic_string<EcharT, traits, Allocator>>(native());
+    return detail::fromUtf8<std::basic_string<EcharT, traits, Allocator>>(native(), a);
 }
 
 inline std::string path::string() const
@@ -2017,7 +2019,7 @@ inline std::u32string path::u32string() const
 template <class EcharT, class traits, class Allocator>
 std::basic_string<EcharT, traits, Allocator> path::generic_string(const Allocator& a) const
 {
-    detail::fromUtf8<std::basic_string<EcharT, traits, Allocator>>(_path);
+    detail::fromUtf8<std::basic_string<EcharT, traits, Allocator>>(_path, a);
 }
 
 inline const std::string& path::generic_string() const
@@ -2884,7 +2886,7 @@ inline bool copy_file(const path& from, const path& to, copy_options options, st
         ec = std::error_code(errno, std::system_category());
         return false;
     }
-    std::shared_ptr<void> guard_out(nullptr, [out](void* ptr) { ::close(out); });
+    std::shared_ptr<void> guard_out(nullptr, [out](void*) { ::close(out); });
     int mode = O_CREAT | O_WRONLY | O_TRUNC;
     if (!overwrite) {
         mode |= O_EXCL;
@@ -2893,7 +2895,7 @@ inline bool copy_file(const path& from, const path& to, copy_options options, st
         ec = std::error_code(errno, std::system_category());
         return false;
     }
-    std::shared_ptr<void> guard_in(nullptr, [in](void* ptr) { ::close(in); });
+    std::shared_ptr<void> guard_in(nullptr, [in](void*) { ::close(in); });
     ssize_t br, bw;
     while ((br = ::read(in, buffer.data(), buffer.size())) > 0) {
         int offset = 0;
@@ -4140,7 +4142,7 @@ inline bool directory_entry::is_socket() const
 
 inline bool directory_entry::is_socket(std::error_code& ec) const noexcept
 {
-    return filesystem::is_socket(status());
+    return filesystem::is_socket(status(ec));
 }
 
 inline bool directory_entry::is_symlink() const
@@ -4693,7 +4695,7 @@ inline void recursive_directory_iterator::pop()
     }
 }
 
-inline void recursive_directory_iterator::pop(std::error_code& ec)
+inline void recursive_directory_iterator::pop(std::error_code&)
 {
     pop();
 }

@@ -1854,7 +1854,8 @@ TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.24 is_symlink", "[filesystem][ope
 
 static fs::file_time_type timeFromString(const std::string& str)
 {
-    struct ::tm tm = {0};
+    struct ::tm tm;
+    ::memset(&tm, 0, sizeof(::tm));
     std::istringstream is(str);
     is >> std::get_time(&tm, "%Y-%m-%dT%H:%M:%S");
     if (is.fail()) {
