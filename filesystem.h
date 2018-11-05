@@ -68,6 +68,7 @@
 #include <wchar.h>
 #include <windows.h>
 #include <winioctl.h>
+#include <shellapi.h>
 #else
 #include <dirent.h>
 #include <fcntl.h>
@@ -86,11 +87,11 @@
 #include <algorithm>
 #include <cctype>
 #include <chrono>
+#include <clocale>
 #include <cstdlib>
 #include <cstring>
-#include <functional>
 #include <fstream>
-#include <clocale>
+#include <functional>
 #include <memory>
 #include <stack>
 #include <stdexcept>
@@ -920,9 +921,9 @@ public:
     }
 
     bool valid() const
-    {
-        return _isvalid;
-    }
+	{
+		return _isvalid;
+	}
 
 private:
     int _argc;
@@ -1210,7 +1211,6 @@ inline void postprocess_path_with_format(path::string_type& p, path::format fmt)
 }
 
 }  // namespace detail
-
 
 template <class Source, typename>
 inline path::path(const Source& source, format fmt)
@@ -1658,7 +1658,6 @@ inline file_status status_ex(const path& p, std::error_code& ec, file_status* sl
 
 }  // namespace detail
 
-
 inline u8arguments::u8arguments(int& argc, char**& argv)
     : _argc(argc)
     , _argv(argv)
@@ -1680,7 +1679,7 @@ inline u8arguments::u8arguments(int& argc, char**& argv)
     _isvalid = true;
 #else
     std::setlocale(LC_ALL, "");
-    if(!detail::compare_no_case(::nl_langinfo(CODESET), "UTF-8")) {
+    if (!detail::compare_no_case(::nl_langinfo(CODESET), "UTF-8")) {
         _isvalid = true;
     }
 #endif
