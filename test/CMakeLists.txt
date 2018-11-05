@@ -31,3 +31,5 @@ if(CMAKE_CXX_COMPILER_ID MATCHES MSVC AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQ
 	target_compile_options(std_filesystem_test PRIVATE "/Zc:__cplusplus")
     target_compile_definitions(std_filesystem_test PRIVATE USE_STD_FS _CRT_SECURE_NO_WARNINGS)
 endif()
+
+add_executable(multifile_test multi1.cpp multi2.cpp ../filesystem.h catch.hpp)

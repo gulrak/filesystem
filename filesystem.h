@@ -1087,12 +1087,12 @@ inline void appendUTF8(std::string& str, uint32_t unicode)
 // and Taylor R Campbell for the ideas to this DFA approach of UTF-8 decoding;
 // Generating debugging and shrinking my own DFA from scratch was a day of fun!
 enum utf8_states_t { S_STRT = 0, S_RJCT = 8 };
-static const uint32_t utf8_state_info[] = {
-    0x11111111u, 0x11111111u, 0x77777777u, 0x77777777u, 0x88888888u, 0x88888888u, 0x88888888u, 0x88888888u, 0x22222299u, 0x22222222u, 0x22222222u, 0x22222222u, 0x3333333au, 0x33433333u,
-    0x9995666bu, 0x99999999u, 0x88888880u, 0x22818108u, 0x88888881u, 0x88888882u, 0x88888884u, 0x88888887u, 0x88888886u, 0x82218108u, 0x82281108u, 0x88888888u, 0x88888883u, 0x88888885u,
-};
-static inline unsigned consumeUtf8Fragment(const unsigned state, const uint8_t fragment, uint32_t& codepoint)
+inline unsigned consumeUtf8Fragment(const unsigned state, const uint8_t fragment, uint32_t& codepoint)
 {
+    static const uint32_t utf8_state_info[] = {
+        0x11111111u, 0x11111111u, 0x77777777u, 0x77777777u, 0x88888888u, 0x88888888u, 0x88888888u, 0x88888888u, 0x22222299u, 0x22222222u, 0x22222222u, 0x22222222u, 0x3333333au, 0x33433333u,
+        0x9995666bu, 0x99999999u, 0x88888880u, 0x22818108u, 0x88888881u, 0x88888882u, 0x88888884u, 0x88888887u, 0x88888886u, 0x82218108u, 0x82281108u, 0x88888888u, 0x88888883u, 0x88888885u,
+    };
     uint8_t category = fragment < 128 ? 0 : (utf8_state_info[(fragment >> 3) & 0xf] >> ((fragment & 7) << 2)) & 0xf;
     codepoint = (state ? (codepoint << 6) | (fragment & 0x3f) : (0xff >> category) & fragment);
     return state == S_RJCT ? static_cast<unsigned>(S_RJCT) : static_cast<unsigned>((utf8_state_info[category + 16] >> (state << 2)) & 0xf);
@@ -1971,7 +1971,7 @@ inline const path::string_type& path::native() const
 #endif
 }
 
-const path::value_type* path::c_str() const
+inline const path::value_type* path::c_str() const
 {
     return native().c_str();
 }
@@ -3925,13 +3925,13 @@ inline file_status::file_status(file_type ft, perms prms) noexcept
 {
 }
 
-file_status::file_status(const file_status& other) noexcept
+inline file_status::file_status(const file_status& other) noexcept
     : _type(other._type)
     , _perms(other._perms)
 {
 }
 
-file_status::file_status(file_status&& other) noexcept
+inline file_status::file_status(file_status&& other) noexcept
     : _type(other._type)
     , _perms(other._perms)
 {
@@ -3940,14 +3940,14 @@ file_status::file_status(file_status&& other) noexcept
 inline file_status::~file_status() {}
 
 // assignments:
-file_status& file_status::operator=(const file_status& rhs) noexcept
+inline file_status& file_status::operator=(const file_status& rhs) noexcept
 {
     _type = rhs._type;
     _perms = rhs._perms;
     return *this;
 }
 
-file_status& file_status::operator=(file_status&& rhs) noexcept
+inline file_status& file_status::operator=(file_status&& rhs) noexcept
 {
     _type = rhs._type;
     _perms = rhs._perms;
@@ -4724,12 +4724,12 @@ inline void recursive_directory_iterator::swap(recursive_directory_iterator& rhs
 }
 
 // 30.10.14.2 directory_iterator non-member functions
-recursive_directory_iterator begin(recursive_directory_iterator iter) noexcept
+inline recursive_directory_iterator begin(recursive_directory_iterator iter) noexcept
 {
     return iter;
 }
 
-recursive_directory_iterator end(const recursive_directory_iterator&) noexcept
+inline recursive_directory_iterator end(const recursive_directory_iterator&) noexcept
 {
     return recursive_directory_iterator();
 }
