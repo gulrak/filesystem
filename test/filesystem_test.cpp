@@ -252,7 +252,7 @@ TEST_CASE("30.10.8.4.1 path constructors and destructor", "[filesystem][path][fs
             testUTF8Locale = true;
         }
     }
-    catch (std::runtime_error) {
+    catch (std::runtime_error&) {
         WARN("Couldn't create an UTF-8 locale!");
     }
     if (testUTF8Locale) {
@@ -1711,7 +1711,7 @@ TEST_CASE("30.10.15.19 is_empty", "[filesystem][options][fs.op.is_empty]")
     CHECK(!fs::is_empty("bar", ec));
     CHECK(!ec);
     CHECK_THROWS_AS(fs::is_empty("foobar"), fs::filesystem_error);
-    bool result;
+    bool result = false;
     CHECK_NOTHROW(result = fs::is_empty("foobar", ec));
     CHECK(!result);
     CHECK(ec);
