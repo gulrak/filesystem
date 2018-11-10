@@ -345,13 +345,13 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.0.3 (wip)
+### [v1.0.4](https://github.com/gulrak/filesystem/releases/tag/v1.0.4)
 
 * Bugfix for ([#3](https://github.com/gulrak/filesystem/issues/3)), fixed missing inlines
   and added test to ensure including into multiple implementation files works as expected.
 * Building tests with `-Wall -Wextra -Werror` and fixed resulting issues.
 
-### [v1.0.2](https://github.com/gulrak/filesystem/tree/v1.0.2)
+### [v1.0.2](https://github.com/gulrak/filesystem/releases/tag/v1.0.2)
 
 * Updated catch2 to v2.4.0.
 * Refactored `fs.op.permissions` test to work with all tested `std::filesystem`
@@ -371,7 +371,7 @@ to the expected behavior.
 * Fixed some integer type mismatches that could lead to warnings.
 * Fixed `chrono` conversion issues in test and example on clang 7.0.0.
 
-### [v1.0.1](https://github.com/gulrak/filesystem/tree/v1.0.1)
+### [v1.0.1](https://github.com/gulrak/filesystem/releases/tag/v1.0.1)
 
 * Bugfix: `ghc::filesystem::canonical` now sees empty path as non-existant and reports
   an error. Due to this `ghc::filesystem::weakly_canonical` now returns relative
@@ -384,7 +384,7 @@ to the expected behavior.
 * `std_filesystem_test` is now also generated if LLVM/clang 7.0.0 is found.
 
 
-### [v1.0.0](https://github.com/gulrak/filesystem/tree/v1.0.0)
+### [v1.0.0](https://github.com/gulrak/filesystem/releases/tag/v1.0.0)
 
 This was the first public release version. It implements the full range of
 C++17 std::filesystem, as far as possible without other C++17 dependencies.
