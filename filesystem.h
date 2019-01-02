@@ -104,7 +104,7 @@
 #define LWG_2937_BEHAVIOUR
 
 // ghc::filesystem version in decimal (major * 10000 + minor * 100 + patch)
-#define GHC_FILESYSTEM_VERSION 10004L
+#define GHC_FILESYSTEM_VERSION 10005L
 
 namespace ghc {
 namespace filesystem {
@@ -2812,8 +2812,11 @@ inline void copy(const path& from, const path& to, copy_options options, std::er
                 return;
             }
         }
-        for (const directory_entry& x : directory_iterator(from)) {
-            copy(x.path(), to / x.path().filename(), options | static_cast<copy_options>(0x8000));
+        for (const directory_entry& x : directory_iterator(from, ec)) {
+            copy(x.path(), to / x.path().filename(), options | static_cast<copy_options>(0x8000), ec);
+            if(ec) {
+                return;
+            }
         }
     }
     return;
@@ -3685,7 +3688,7 @@ inline uintmax_t remove_all(const path& p, std::error_code& ec) noexcept
         ec = detail::make_error_code(detail::portable_error::not_supported);
         return static_cast<uintmax_t>(-1);
     }
-    for (const directory_entry& de : directory_iterator(p)) {
+    for (const directory_entry& de : directory_iterator(p, ec)) {
         if (!de.is_symlink() && de.is_directory()) {
             count += remove_all(de.path(), ec);
             if (ec) {
@@ -3700,7 +3703,9 @@ inline uintmax_t remove_all(const path& p, std::error_code& ec) noexcept
             ++count;
         }
     }
-    remove(p, ec);
+    if(!ec) {
+        remove(p, ec);
+    }
     if (ec) {
         return static_cast<uintmax_t>(-1);
     }

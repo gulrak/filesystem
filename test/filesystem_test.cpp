@@ -1019,6 +1019,7 @@ TEST_CASE("30.10.13 class directory_iterator", "[filesystem][directory_iterator]
         CHECK(!iter->is_directory());
         CHECK(iter->file_size() == 1234);
         CHECK(++iter == fs::directory_iterator());
+        CHECK_THROWS_AS(fs::directory_iterator(t.path() / "non-existing"), fs::filesystem_error);
     }
     if (is_symlink_creation_supported()) {
         TemporaryDirectory t;
@@ -2008,6 +2009,8 @@ TEST_CASE("30.10.15.31 remove_all", "[filesystem][operations][fs.op.remove_all]"
     fs::create_directories("dir1/dir1b");
     generateFile("dir1/dir1a/f1");
     generateFile("dir1/dir1b/f2");
+    CHECK_NOTHROW(fs::remove_all("dir1/non-existing", ec));
+    CHECK(ec);
     CHECK(fs::remove_all("dir1") == 5);
     CHECK(fs::directory_iterator(t.path()) == fs::directory_iterator());
 }
