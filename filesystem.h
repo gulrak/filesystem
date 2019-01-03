@@ -2812,8 +2812,10 @@ inline void copy(const path& from, const path& to, copy_options options, std::er
                 return;
             }
         }
-        for (const directory_entry& x : directory_iterator(from, ec)) {
-            copy(x.path(), to / x.path().filename(), options | static_cast<copy_options>(0x8000), ec);
+        for (auto iter = directory_iterator(from, ec); iter != directory_iterator(); iter.increment(ec)) {
+            if(!ec) {
+                copy(iter->path(), to / iter->path().filename(), options | static_cast<copy_options>(0x8000), ec);
+            }
             if(ec) {
                 return;
             }
@@ -3688,15 +3690,18 @@ inline uintmax_t remove_all(const path& p, std::error_code& ec) noexcept
         ec = detail::make_error_code(detail::portable_error::not_supported);
         return static_cast<uintmax_t>(-1);
     }
-    for (const directory_entry& de : directory_iterator(p, ec)) {
-        if (!de.is_symlink() && de.is_directory()) {
-            count += remove_all(de.path(), ec);
+    for (auto iter = directory_iterator(p, ec); iter != directory_iterator(); iter.increment(ec)) {
+        if(ec) {
+            break;
+        }
+        if (!iter->is_symlink() && iter->is_directory()) {
+            count += remove_all(iter->path(), ec);
             if (ec) {
                 return static_cast<uintmax_t>(-1);
             }
         }
         else {
-            remove(de.path(), ec);
+            remove(iter->path(), ec);
             if (ec) {
                 return static_cast<uintmax_t>(-1);
             }
