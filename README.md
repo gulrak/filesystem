@@ -349,6 +349,8 @@ to the expected behavior.
 
 * Bugfix for ([#4](https://github.com/gulrak/filesystem/issues/4)), missing error_code
   propagation in `ghc::filesystem::copy()` and `ghc::filesystem::remove_all` fixed.
+* Bugfix for ([#5](https://github.com/gulrak/filesystem/issues/5)), added missing std
+  namespace in `ghc::filesystem::recursive_directory_iterator::difference_type`.
 
 ### [v1.0.4](https://github.com/gulrak/filesystem/releases/tag/v1.0.4)
 
