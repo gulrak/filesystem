@@ -628,7 +628,7 @@ class recursive_directory_iterator
 public:
     using iterator_category = std::input_iterator_tag;
     using value_type = directory_entry;
-    using difference_type = ptrdiff_t;
+    using difference_type = std::ptrdiff_t;
     using pointer = const directory_entry*;
     using reference = const directory_entry&;
 
