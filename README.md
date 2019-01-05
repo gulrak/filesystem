@@ -345,7 +345,7 @@ to the expected behavior.
 
 ## Release Notes
 
-### [v1.0.6]((https://github.com/gulrak/filesystem/releases/tag/v1.0.6)
+### [v1.0.6](https://github.com/gulrak/filesystem/releases/tag/v1.0.6)
 
 * Bugfix for ([#4](https://github.com/gulrak/filesystem/issues/4)), missing error_code
   propagation in `ghc::filesystem::copy()` and `ghc::filesystem::remove_all` fixed.
