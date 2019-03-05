@@ -3642,7 +3642,7 @@ inline bool remove(const path& p, std::error_code& ec) noexcept
     DWORD attr = GetFileAttributesW(np.c_str());
     if (attr == INVALID_FILE_ATTRIBUTES) {
         auto error = ::GetLastError();
-        if (error = ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND) {
+        if (error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND) {
             return false;
         }
         ec = std::error_code(error, std::system_category());
