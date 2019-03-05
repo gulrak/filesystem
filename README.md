@@ -345,6 +345,16 @@ to the expected behavior.
 
 ## Release Notes
 
+### v1.0.8 (wip)
+
+* Bugfix for ([#6](https://github.com/gulrak/filesystem/issues/6)), where
+  `ghc::filesystem::remove()` and `ghc::filesystem::remove_all()` both are
+  now able to remove a single file and both will not raise an error if the
+  path doesn't exist.
+* Merged pull request ([#7](https://github.com/gulrak/filesystem/pull/7)),
+  a typo leading to setting error code instead of comparing it in
+  `ghc::filesystem::remove()` under Windows.
+
 ### [v1.0.6](https://github.com/gulrak/filesystem/releases/tag/v1.0.6)
 
 * Bugfix for ([#4](https://github.com/gulrak/filesystem/issues/4)), missing error_code

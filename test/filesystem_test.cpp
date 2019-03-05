@@ -1984,6 +1984,7 @@ TEST_CASE("30.10.15.30 remove", "[filesystem][operations][fs.op.remove]")
     generateFile("foo");
     CHECK(fs::remove("foo"));
     CHECK(!fs::exists("foo"));
+    CHECK(!fs::remove("foo"));
     generateFile("foo");
     CHECK(fs::remove("foo", ec));
     CHECK(!fs::exists("foo"));
@@ -2004,13 +2005,17 @@ TEST_CASE("30.10.15.31 remove_all", "[filesystem][operations][fs.op.remove_all]"
 {
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
+    generateFile("foo");
+    CHECK(fs::remove_all("foo", ec) == 1);
+    CHECK(!ec);
+    ec.clear();
     CHECK(fs::directory_iterator(t.path()) == fs::directory_iterator());
     fs::create_directories("dir1/dir1a");
     fs::create_directories("dir1/dir1b");
     generateFile("dir1/dir1a/f1");
     generateFile("dir1/dir1b/f2");
     CHECK_NOTHROW(fs::remove_all("dir1/non-existing", ec));
-    CHECK(ec);
+    CHECK(!ec);
     CHECK(fs::remove_all("dir1") == 5);
     CHECK(fs::directory_iterator(t.path()) == fs::directory_iterator());
 }

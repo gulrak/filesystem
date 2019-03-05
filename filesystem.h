@@ -3660,7 +3660,6 @@ inline bool remove(const path& p, std::error_code& ec) noexcept
         }
     }
 #else
-
     if (::remove(p.c_str()) == -1) {
         auto error = errno;
         if (error == ENOENT) {
@@ -3690,22 +3689,26 @@ inline uintmax_t remove_all(const path& p, std::error_code& ec) noexcept
         ec = detail::make_error_code(detail::portable_error::not_supported);
         return static_cast<uintmax_t>(-1);
     }
-    for (auto iter = directory_iterator(p, ec); iter != directory_iterator(); iter.increment(ec)) {
-        if(ec) {
-            break;
-        }
-        if (!iter->is_symlink() && iter->is_directory()) {
-            count += remove_all(iter->path(), ec);
-            if (ec) {
-                return static_cast<uintmax_t>(-1);
+    std::error_code tec;
+    auto fs = status(p, tec);
+    if(exists(fs) && is_directory(fs)) {
+        for (auto iter = directory_iterator(p, ec); iter != directory_iterator(); iter.increment(ec)) {
+            if(ec) {
+                break;
             }
-        }
-        else {
-            remove(iter->path(), ec);
-            if (ec) {
-                return static_cast<uintmax_t>(-1);
+            if (!iter->is_symlink() && iter->is_directory()) {
+                count += remove_all(iter->path(), ec);
+                if (ec) {
+                    return static_cast<uintmax_t>(-1);
+                }
             }
-            ++count;
+            else {
+                remove(iter->path(), ec);
+                if (ec) {
+                    return static_cast<uintmax_t>(-1);
+                }
+                ++count;
+            }
         }
     }
     if(!ec) {
