@@ -360,6 +360,9 @@ to the expected behavior.
 * Merged pull request ([#7](https://github.com/gulrak/filesystem/pull/7)),
   a typo leading to setting error code instead of comparing it in
   `ghc::filesystem::remove()` under Windows.
+* Bugfix for (([#8](https://github.com/gulrak/filesystem/issues/8)), the
+  Windows version of `ghc::filesystem::directory_iterator` now releases
+  resources when reaching `end()` like the POSIX one does.
 
 ### [v1.0.6](https://github.com/gulrak/filesystem/releases/tag/v1.0.6)
 
