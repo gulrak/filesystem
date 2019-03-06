@@ -4327,6 +4327,8 @@ public:
                     copyToDirEntry(ec);
                 }
                 else {
+                    FindClose(_dirHandle);
+                    _dirHandle = INVALID_HANDLE_VALUE;
                     _current = filesystem::path();
                     break;
                 }

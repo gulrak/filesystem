@@ -1039,6 +1039,18 @@ TEST_CASE("30.10.13 class directory_iterator", "[filesystem][directory_iterator]
         CHECK(iter->file_size() == 1234);
         CHECK(++iter == fs::directory_iterator());
     }
+    {
+        // Issue #8: check if resources are freed when iterator reaches end()
+        TemporaryDirectory t(TempOpt::change_path);
+        auto p = fs::path("test/");
+        fs::create_directory(p);
+        auto iter = fs::directory_iterator(p);
+        while (iter != fs::directory_iterator()) {
+            ++iter;
+        }
+        CHECK(fs::remove_all(p) == 1);
+        CHECK_NOTHROW(fs::create_directory(p));
+    }
 }
 
 TEST_CASE("30.10.14 class recursive_directory_iterator", "[filesystem][recursive_directory_iterator]")
