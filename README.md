@@ -215,6 +215,12 @@ as I feel it is a bug to report no error on a `create_directory()` or `create_di
 where a regular file of the same name prohibits the creation of a directory and forces
 the user of those functions to double-check via `fs::is_directory` if it really worked.
 
+Update: The more intuitive approach to directory creation of treating a file with that name as an
+error is also advocated by the newer paper
+[WG21 P1164R0](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1164r0.pdf)
+and GCC by now switched to following its proposal
+([GCC #86910](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86910)). 
+
 ### Not Implemented
 
 Besides this still being work-in-progress, there are a few cases where
