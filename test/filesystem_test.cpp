@@ -2028,6 +2028,7 @@ TEST_CASE("30.10.15.31 remove_all", "[filesystem][operations][fs.op.remove_all]"
     generateFile("dir1/dir1b/f2");
     CHECK_NOTHROW(fs::remove_all("dir1/non-existing", ec));
     CHECK(!ec);
+    CHECK(fs::remove_all("dir1/non-existing", ec) == 0);
     CHECK(fs::remove_all("dir1") == 5);
     CHECK(fs::directory_iterator(t.path()) == fs::directory_iterator());
 }
