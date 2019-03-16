@@ -351,7 +351,7 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.0.8 (wip)
+### [v1.0.8](https://github.com/gulrak/filesystem/releases/tag/v1.0.8)
 
 * Bugfix for ([#6](https://github.com/gulrak/filesystem/issues/6)), where
   `ghc::filesystem::remove()` and `ghc::filesystem::remove_all()` both are
