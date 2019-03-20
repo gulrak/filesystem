@@ -351,6 +351,11 @@ to the expected behavior.
 
 ## Release Notes
 
+### v1.0.10 (wip)
+
+* Bugfix for ([#9](https://github.com/gulrak/filesystem/issues/9)), added
+  missing return statement to `ghc::filesystem::path::generic_string()`
+
 ### [v1.0.8](https://github.com/gulrak/filesystem/releases/tag/v1.0.8)
 
 * Bugfix for ([#6](https://github.com/gulrak/filesystem/issues/6)), where

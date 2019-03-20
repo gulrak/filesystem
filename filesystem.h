@@ -104,7 +104,7 @@
 #define LWG_2937_BEHAVIOUR
 
 // ghc::filesystem version in decimal (major * 10000 + minor * 100 + patch)
-#define GHC_FILESYSTEM_VERSION 10008L
+#define GHC_FILESYSTEM_VERSION 10009L
 
 namespace ghc {
 namespace filesystem {
@@ -2018,7 +2018,7 @@ inline std::u32string path::u32string() const
 template <class EcharT, class traits, class Allocator>
 std::basic_string<EcharT, traits, Allocator> path::generic_string(const Allocator& a) const
 {
-    detail::fromUtf8<std::basic_string<EcharT, traits, Allocator>>(_path, a);
+    return detail::fromUtf8<std::basic_string<EcharT, traits, Allocator>>(_path, a);
 }
 
 inline const std::string& path::generic_string() const
