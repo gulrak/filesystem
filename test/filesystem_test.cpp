@@ -31,10 +31,13 @@
 //---------------------------------------------------------------------------------------
 #include <algorithm>
 #include <cstdio>
+#include <cstring>
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <iomanip>
 #include <random>
+#include <sstream>
 #include <thread>
 #ifndef WIN32
 #include <sys/socket.h>
@@ -196,6 +199,41 @@ static bool has_host_root_name_support()
 {
     return fs::path("//host").has_root_name();
 }
+
+
+template <class T>
+class TestAllocator
+{
+public:
+    using value_type    = T;
+
+    TestAllocator() noexcept {}
+    template <class U> TestAllocator(TestAllocator<U> const&) noexcept {}
+
+    value_type* allocate(std::size_t n)
+    {
+        return static_cast<value_type*>(::operator new (n*sizeof(value_type)));
+    }
+
+    void deallocate(value_type* p, std::size_t) noexcept
+    {
+        ::operator delete(p);
+    }
+};
+
+template <class T, class U>
+bool operator==(TestAllocator<T> const&, TestAllocator<U> const&) noexcept
+{
+    return true;
+}
+
+template <class T, class U>
+bool operator!=(TestAllocator<T> const& x, TestAllocator<U> const& y) noexcept
+{
+    return !(x == y);
+}
+
+
 
 TEST_CASE("Temporary Directory", "[temp dir]")
 {
@@ -424,12 +462,16 @@ TEST_CASE("30.10.8.4.7 path generic format observers", "[filesystem][path][fs.pa
 {
 #ifdef GHC_OS_WINDOWS
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_string() == std::string("\xc3\xa4/\xe2\x82\xac"));
+    auto t = fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_string<char, std::char_traits<char>, TestAllocator<char>>()
+    CHECK(t.c_str() == std::string("\xc3\xa4/\xe2\x82\xac"));
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_wstring() == std::wstring(L"\U000000E4/\U000020AC"));
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_u8string() == std::string("\xc3\xa4/\xe2\x82\xac"));
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_u16string() == std::u16string(u"\u00E4/\u20AC"));
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_u32string() == std::u32string(U"\U000000E4/\U000020AC"));
 #else
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").generic_string() == std::string(u8"\xc3\xa4/\xe2\x82\xac"));
+    auto t = fs::u8path("\xc3\xa4/\xe2\x82\xac").generic_string<char, std::char_traits<char>, TestAllocator<char>>();
+    CHECK(t.c_str() == std::string(u8"\xc3\xa4/\xe2\x82\xac"));
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").generic_wstring() == std::wstring(L"ä/€"));
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").generic_u8string() == std::string(u8"\xc3\xa4/\xe2\x82\xac"));
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").generic_u16string() == std::u16string(u"\u00E4/\u20AC"));
