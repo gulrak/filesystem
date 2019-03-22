@@ -463,7 +463,7 @@ TEST_CASE("30.10.8.4.7 path generic format observers", "[filesystem][path][fs.pa
 #ifdef GHC_OS_WINDOWS
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_string() == std::string("\xc3\xa4/\xe2\x82\xac"));
 #ifndef USE_STD_FS
-    auto t = fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_string<char, std::char_traits<char>, TestAllocator<char>>()
+    auto t = fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_string<char, std::char_traits<char>, TestAllocator<char>>();
     CHECK(t.c_str() == std::string("\xc3\xa4/\xe2\x82\xac"));
 #endif
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_wstring() == std::wstring(L"\U000000E4/\U000020AC"));
