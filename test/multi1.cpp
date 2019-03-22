@@ -32,7 +32,7 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
-#include "../filesystem.h"
+#include "../filesystem.hpp"
 namespace fs = ghc::filesystem;
 
 // This test and the one in multi2.cpp doesn't actualy test relevant functionality,

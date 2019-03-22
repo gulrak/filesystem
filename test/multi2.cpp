@@ -30,7 +30,7 @@
 //
 //---------------------------------------------------------------------------------------
 #include "catch.hpp"
-#include "../filesystem.h"
+#include "../filesystem.hpp"
 namespace fs = ghc::filesystem;
 
 // This test and the one in multi1.cpp doesn't actualy test relevant functionality,

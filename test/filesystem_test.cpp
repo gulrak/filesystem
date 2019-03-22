@@ -65,7 +65,7 @@ using fstream = std::fstream;
 #endif
 #else
 #define NOMINMAX
-#include "../filesystem.h"
+#include "../filesystem.hpp"
 namespace fs {
 using namespace ghc::filesystem;
 using ifstream = ghc::filesystem::ifstream;

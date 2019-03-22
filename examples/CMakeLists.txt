@@ -1,5 +1,5 @@
 
-add_executable(fs_dir dir.cpp ../filesystem.h)
+add_executable(fs_dir dir.cpp ../filesystem.hpp)
 if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
     target_compile_definitions(fs_dir PRIVATE _CRT_SECURE_NO_WARNINGS)
 endif()

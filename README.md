@@ -87,7 +87,7 @@ in the standard, and there might be issues in these implementations too.
 
 As it is a header-only library, it should be enough to copy the header
 into your project folder oder point your include path to this directory and
-simply include the `filesystem.h` header.
+simply include the `filesystem.hpp` header.
 
 Everything is in the namespace `ghc::filesystem`, so one way to use it only as
 a fallback could be:
@@ -97,7 +97,7 @@ a fallback could be:
 #include <filesystem>
 namespace fs = std::filesystem;
 #else
-#include "filesystem.h"
+#include "filesystem.hpp"
 namespace fs = ghc::filesystem;
 #endif
 ```
@@ -115,7 +115,7 @@ using ofstream = std::ofstream;
 using fstream = std::fstream;
 }
 #else
-#include "filesystem.h"
+#include "filesystem.hpp"
 namespace fs {
 using namespace ghc::filesystem;
 using ifstream = ghc::filesystem::ifstream;
@@ -361,6 +361,8 @@ to the expected behavior.
   missing return statement to `ghc::filesystem::path::generic_string()`
 * Added checks to hopefully better compile against Android NDK. There where
   no tests run yet, so feedback is needed to actually call this supported.
+* `filesystem.h` was renamed `filesystem.hpp` to better reflect that it is
+  a c++ language header.
 
 ### [v1.0.8](https://github.com/gulrak/filesystem/releases/tag/v1.0.8)
 
@@ -374,6 +376,7 @@ to the expected behavior.
 * Bugfix for (([#8](https://github.com/gulrak/filesystem/issues/8)), the
   Windows version of `ghc::filesystem::directory_iterator` now releases
   resources when reaching `end()` like the POSIX one does.
+
 
 ### [v1.0.6](https://github.com/gulrak/filesystem/releases/tag/v1.0.6)
 
