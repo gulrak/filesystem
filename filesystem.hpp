@@ -1283,7 +1283,7 @@ inline std::string systemErrorText(ErrorNumber code = 0)
 #elif defined(GHC_OS_MACOS) || ((_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && !defined(_GNU_SOURCE)) || (defined(GHC_OS_ANDROID) && __ANDROID_API__<23)
     char buffer[512];
     int rc = strerror_r(code ? code : errno, buffer, sizeof(buffer));
-    return rc == 0 ? (const char*)buffer : "Error in strerror_r!"
+    return rc == 0 ? (const char*)buffer : "Error in strerror_r!";
 #else
     char buffer[512];
     char* msg = strerror_r(code ? code : errno, buffer, sizeof(buffer));
