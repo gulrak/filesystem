@@ -79,6 +79,10 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+#if defined(__ANDROID__)
+#define GHC_OS_ANDROID
+#include <android/api-level.h>
+#endif
 #endif
 #ifdef GHC_OS_MACOS
 #include <Availability.h>
@@ -1276,14 +1280,14 @@ inline std::string systemErrorText(ErrorNumber code = 0)
     std::string msg = toUtf8(std::wstring((LPWSTR)msgBuf));
     LocalFree(msgBuf);
     return msg;
-#elif defined(GHC_OS_LINUX)
+#elif defined(GHC_OS_MACOS) || ((_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && !defined(_GNU_SOURCE)) || (defined(GHC_OS_ANDROID) && __ANDROID_API__<23)
+    char buffer[512];
+    int rc = strerror_r(code ? code : errno, buffer, sizeof(buffer));
+    return rc == 0 ? (const char*)buffer : "Error in strerror_r!"
+#else
     char buffer[512];
     char* msg = strerror_r(code ? code : errno, buffer, sizeof(buffer));
     return msg ? msg : buffer;
-#elif defined(GHC_OS_MACOS)
-    char buffer[512];
-    int rc = strerror_r(code ? code : errno, buffer, sizeof(buffer));
-    return rc == 0 ? (const char*)buffer : "Error in strerror_r!";
 #endif
 }
 
@@ -1679,9 +1683,13 @@ inline u8arguments::u8arguments(int& argc, char**& argv)
     _isvalid = true;
 #else
     std::setlocale(LC_ALL, "");
+#if defined(__ANDROID__) && __ANDROID_API__ < 26
+    _isvalid = true;
+#else
     if (!detail::compare_no_case(::nl_langinfo(CODESET), "UTF-8")) {
         _isvalid = true;
     }
+#endif
 #endif
 }
 
@@ -3800,13 +3808,16 @@ inline space_info space(const path& p, std::error_code& ec) noexcept
         return {static_cast<uintmax_t>(-1), static_cast<uintmax_t>(-1), static_cast<uintmax_t>(-1)};
     }
     return {static_cast<uintmax_t>(totalNumberOfBytes.QuadPart), static_cast<uintmax_t>(totalNumberOfFreeBytes.QuadPart), static_cast<uintmax_t>(freeBytesAvailableToCaller.QuadPart)};
-#else
+#elif !defined(__ANDROID__) || __ANDROID_API__ >= 19
     struct ::statvfs sfs;
     if (::statvfs(p.c_str(), &sfs) != 0) {
         ec = std::error_code(errno, std::system_category());
         return {static_cast<uintmax_t>(-1), static_cast<uintmax_t>(-1), static_cast<uintmax_t>(-1)};
     }
     return {static_cast<uintmax_t>(sfs.f_blocks * sfs.f_frsize), static_cast<uintmax_t>(sfs.f_bfree * sfs.f_frsize), static_cast<uintmax_t>(sfs.f_bavail * sfs.f_frsize)};
+#else
+    ec = detail::make_error_code(detail::portable_error::not_supported);
+    return {static_cast<uintmax_t>(-1), static_cast<uintmax_t>(-1), static_cast<uintmax_t>(-1)};
 #endif
 }
 

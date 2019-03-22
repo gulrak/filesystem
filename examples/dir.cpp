@@ -21,7 +21,7 @@ std::time_t to_time_t(TP tp)
 static std::string perm_to_str(fs::perms prms)
 {
     std::string result;
-    result.reserve(6);
+    result.reserve(9);
     for(int i = 0; i < 9; ++i) {
         result = ((static_cast<int>(prms) & (1<<i)) ? "xwrxwrxwr"[i] : '-') + result;
     }

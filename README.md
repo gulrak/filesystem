@@ -40,15 +40,18 @@ evolved with C++11 and the following standards. Keep on the good work!
 It should work on any of these with a C++11-capable compiler. I currently
 don't have a BSD derivate besides macOS, so the preprocessor checks will
 cry out if you try to use it there, but if there is demand, I can try to
-help. Still, it shouldn't replace `std::filesystem` where full C++17 is
-available, it doesn't try to be a "better" `std::filesystem`, just a drop-in
-if you can't use it.
+help. Also there are some checks to hopefully better work on Android, but
+as I currently don't test with the Android NDK, I wouldn't call it a
+supported platform yet. All in all, I don't see it replacing `std::filesystem`
+where full C++17 is available, it doesn't try to be a "better"
+`std::filesystem`, just a drop-in if you can't use it (with the exception
+of the UTF-8 preference on Windows).
 
 Tests are currently run with:
 
 * macOS 10.12: XCode 9.2 (clang-900.0.39.2), GCC 8.1.0, Clang 7.0.0
 * Windows 10: Visual Studio 2017 15.8.5, MingW GCC 5.3
-* Linux: Ubuntu 18.04LTS GCC 7.3 & GCC 8.0.1
+* Linux: Ubuntu 18.04LTS GCC 7.3 & GCC 8.2.0
 
 
 ## Tests
@@ -72,11 +75,12 @@ make
 This generates `filesystem_test`, the binary that runs all tests.
 
 If the default compiler is a GCC 8 or newer, or Clang 7 or newer, it
-additionally builds a version of the test binary compiled against GCCs/Clangs
+additionally tries to build a version of the test binary compiled against GCCs/Clangs
 `std::filesystem` implementation, named `std_filesystem_test`
 as an additional test of conformance. Ideally all tests should compile and
 succeed with all filesystem implementations, but in reality, there are
-some differences in behavior and might be issues in these implementations.
+some differences in behavior, sometimes due to room for interpretation in
+in the standard, and there might be issues in these implementations too.
 
 
 ## Usage
@@ -355,6 +359,8 @@ to the expected behavior.
 
 * Bugfix for ([#9](https://github.com/gulrak/filesystem/issues/9)), added
   missing return statement to `ghc::filesystem::path::generic_string()`
+* Added checks to hopefully better compile against Android NDK. There where
+  no tests run yet, so feedback is needed to actually call this supported.
 
 ### [v1.0.8](https://github.com/gulrak/filesystem/releases/tag/v1.0.8)
 
