@@ -64,8 +64,12 @@ using fstream = std::fstream;
 #define GHC_OS_WINDOWS
 #endif
 #else
+#ifdef GHC_FILESYSTEM_FWD_TEST
+#include <ghc/fs_fwd.hpp>
+#else
 #define NOMINMAX
 #include <ghc/filesystem.hpp>
+#endif
 namespace fs {
 using namespace ghc::filesystem;
 using ifstream = ghc::filesystem::ifstream;
@@ -74,7 +78,9 @@ using fstream = ghc::filesystem::fstream;
 }
 #endif
 
+#ifndef GHC_FILESYSTEM_FWD_TEST
 #define CATCH_CONFIG_MAIN
+#endif
 #include "catch.hpp"
 
 //#define TEST_LWG_2935_BEHAVIOUR

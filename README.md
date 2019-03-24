@@ -85,7 +85,7 @@ in the standard, and there might be issues in these implementations too.
 
 ## Usage
 
-As it is a header-only library, it should be enough to copy the header
+As it is at first a header-only library, it should be enough to copy the header
 into your project folder oder point your include path to this directory and
 simply include the `filesystem.hpp` header.
 
@@ -134,6 +134,13 @@ without that switch ([see](https://blogs.msdn.microsoft.com/vcblog/2018/04/09/ms
 
 Be aware too, as a header-only library, it is not hiding the fact, that it
 uses system includes, so they "pollute" your global namespace.
+
+Alternatively, starting from v1.1.0 `ghc::filesystem` can also be used by
+including one of two additional wrapper headers. These allow to include
+a forwarded version in most places (`ghc/fs_fwd.hpp`) while hiding the
+implementation details in a single cpp that includes `ghc/fs_impl.hpp` to
+implement the needed code. That way system includes are only visible from
+inside the cpp, all other places are clean. 
 
 Additionally, starting from v1.1.0, it is possible to add `ghc::filesystem`
 as a git submodule, add the directory to your `CMakeLists.txt` with
@@ -375,6 +382,12 @@ to the expected behavior.
   will be a valid directive.
   Still you can simply only add the header file to you project and include it
   from there.
+* Enhancement ([#10](https://github.com/gulrak/filesystem/issues/10)),
+  support for separation of implementation and forwarded api: Two
+  additional simple includes are added, that can be used to forward
+  `ghc::filesystem` declarations (`fs_fwd.hpp`) and to wrap the
+  implementation into a single cpp (`fs_impl.hpp`)
+
   
 ### [v1.0.10](https://github.com/gulrak/filesystem/releases/tag/v1.0.10)
 

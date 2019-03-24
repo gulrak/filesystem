@@ -11,7 +11,7 @@ if(CMAKE_CXX_STANDARD LESS 11)
 endif()
 
 add_library(ghc_filesystem INTERFACE)
-target_sources(ghc_filesystem INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include/ghc/filesystem.hpp)
+target_sources(ghc_filesystem INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include/ghc/filesystem.hpp ${CMAKE_CURRENT_SOURCE_DIR}/include/ghc/fs_fwd.hpp ${CMAKE_CURRENT_SOURCE_DIR}/include/ghc/fs_impl.hpp)
 target_include_directories(ghc_filesystem INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_options(ghc_filesystem INTERFACE "$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 target_compile_options(ghc_filesystem INTERFACE "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")

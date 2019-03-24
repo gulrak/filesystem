@@ -40,3 +40,6 @@ endif()
 
 add_executable(multifile_test multi1.cpp multi2.cpp catch.hpp)
 target_link_libraries(multifile_test ghc_filesystem)
+
+add_executable(fwd_impl_test fwd_test.cpp impl_test.cpp)
+target_link_libraries(fwd_impl_test ghc_filesystem)
