@@ -143,6 +143,12 @@ without that switch ([see](https://blogs.msdn.microsoft.com/vcblog/2018/04/09/ms
 Be aware too, as a header-only library, it is not hiding the fact, that it
 uses system includes, so they "pollute" your global namespace.
 
+There is an additional header named `ghc/fs_std.hpp` that implements this
+dynamic selection of a filesystem implementation, that you can include
+instead of `ghc/filesystem.hpp` when you want std::filesystem where
+available and ghc::filesystem where not.
+
+
 ### Using it as Forwarding-/Implementation-Header
 
 Alternatively, starting from v1.1.0 `ghc::filesystem` can also be used by
@@ -156,6 +162,43 @@ Be aware, that it is currently not supported to hide the implementation
 into a Windows-DLL, as a DLL interface with C++ standard templates in interfaces
 is a different beast. If someone is willing to give it a try, I might integrate
 a PR but currently working on that myself is not a priority.
+
+If you use the forwarding/implementation approach, you can still use the dynamic
+switching like this:
+
+```cpp
+#if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include) && __has_include(<filesystem>)
+#include <filesystem>
+namespace fs {
+using namespace std::filesystem;
+using ifstream = std::ifstream;
+using ofstream = std::ofstream;
+using fstream = std::fstream;
+}
+#else
+#include <ghc/fs-fwd.hpp>
+namespace fs {
+using namespace ghc::filesystem;
+using ifstream = ghc::filesystem::ifstream;
+using ofstream = ghc::filesystem::ofstream;
+using fstream = ghc::filesystem::fstream;
+} 
+#endif
+```
+
+and in the implementation hiding cpp, you might use (before any include that includes `ghc/fs_fwd.hpp`
+to take precedence:
+
+```cpp
+#if !(defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include) && __has_include(<filesystem>))
+#include <ghc/fs_impl.hpp>
+#endif
+```
+
+There are additional helper headers, named `ghc/fs_std_fwd.hpp` and `ghc/fs_std_impl.hpp`
+that use this technique, so you can simply include them if you want to dynamically select
+the filesystem implementation.
+
 
 ### Git Submodule
 
