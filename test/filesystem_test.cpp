@@ -34,12 +34,15 @@
 #include <cstring>
 #include <fstream>
 #include <functional>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <random>
 #include <sstream>
 #include <thread>
-#ifndef WIN32
+#ifdef WIN32
+#define NOMINMAX
+#include <windows.h>
+#else
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -53,7 +56,7 @@ using namespace std::filesystem;
 using ifstream = std::ifstream;
 using ofstream = std::ofstream;
 using fstream = std::fstream;
-}
+}  // namespace fs
 #ifdef __GNUC__
 #define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #endif
@@ -75,7 +78,7 @@ using namespace ghc::filesystem;
 using ifstream = ghc::filesystem::ifstream;
 using ofstream = ghc::filesystem::ofstream;
 using fstream = ghc::filesystem::fstream;
-}
+}  // namespace fs
 #endif
 
 #ifndef GHC_FILESYSTEM_FWD_TEST
@@ -86,7 +89,7 @@ using fstream = ghc::filesystem::fstream;
 //#define TEST_LWG_2935_BEHAVIOUR
 #define TEST_LWG_2937_BEHAVIOUR
 
-template<typename TP>
+template <typename TP>
 std::time_t to_time_t(TP tp)
 {
     // Based on trick from: Nico Josuttis, C++17 - The Complete Guide
@@ -110,7 +113,8 @@ struct StringMaker<fs::perms>
 template <>
 struct StringMaker<fs::file_time_type>
 {
-    static std::string convert(fs::file_time_type const& value) {
+    static std::string convert(fs::file_time_type const& value)
+    {
         std::time_t t = to_time_t(value);
         std::tm ttm = *std::localtime(&t);
         std::ostringstream os;
@@ -135,8 +139,7 @@ public:
                 filename += "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[rng()];
             }
             _path = fs::canonical(fs::temp_directory_path()) / filename;
-        }
-        while(fs::exists(_path));
+        } while (fs::exists(_path));
         fs::create_directories(_path);
         if (opt == TempOpt::change_path) {
             _orig_dir = fs::current_path();
@@ -210,25 +213,21 @@ static bool has_host_root_name_support()
     return fs::path("//host").has_root_name();
 }
 
-
 template <class T>
 class TestAllocator
 {
 public:
-    using value_type    = T;
+    using value_type = T;
 
     TestAllocator() noexcept {}
-    template <class U> TestAllocator(TestAllocator<U> const&) noexcept {}
-
-    value_type* allocate(std::size_t n)
+    template <class U>
+    TestAllocator(TestAllocator<U> const&) noexcept
     {
-        return static_cast<value_type*>(::operator new (n*sizeof(value_type)));
     }
 
-    void deallocate(value_type* p, std::size_t) noexcept
-    {
-        ::operator delete(p);
-    }
+    value_type* allocate(std::size_t n) { return static_cast<value_type*>(::operator new(n * sizeof(value_type))); }
+
+    void deallocate(value_type* p, std::size_t) noexcept { ::operator delete(p); }
 };
 
 template <class T, class U>
@@ -242,8 +241,6 @@ bool operator!=(TestAllocator<T> const& x, TestAllocator<U> const& y) noexcept
 {
     return !(x == y);
 }
-
-
 
 TEST_CASE("Temporary Directory", "[temp dir]")
 {

@@ -42,3 +42,6 @@ target_link_libraries(multifile_test ghc_filesystem)
 
 add_executable(fwd_impl_test fwd_test.cpp impl_test.cpp)
 target_link_libraries(fwd_impl_test ghc_filesystem)
+if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
+    target_compile_definitions(fwd_impl_test PRIVATE _CRT_SECURE_NO_WARNINGS)
+endif()
