@@ -9,8 +9,10 @@ to not interfere with a regular `std::filesystem` should you use it in a mixed C
 environment.
 
 *It could still use some polishing, test coverage is above 90%, I didn't benchmark
-much yet, but I'll try to optimize some parts and refactor others. Feedback
-is welcome.*
+much yet, but I'll try to optimize some parts and refactor others, so I'm striving
+to improve it as long as it doesn't introduce additional C++17 compatibility
+issues. Feedback is always welcome. Simply open an issue if you see something missing
+or wrong or not behaving as expected and I'll comment.*
 
 
 ## Motivation
@@ -33,6 +35,10 @@ interface changes compared to the
 I want to thank the people working on improving C++, I really liked how the language
 evolved with C++11 and the following standards. Keep on the good work!
 
+Oh, and if you ask yourself, what `ghc` is standing for, it is simply
+`gulraks helper classes`, yeah, I know, not very imaginative, but I wanted a
+short namespace and I use it in some of my private classes (so it has nothing
+to do with Haskell).
 
 ## Platforms
 
@@ -85,9 +91,11 @@ in the standard, and there might be issues in these implementations too.
 
 ## Usage
 
-As it is at first a header-only library, it should be enough to copy the header
-into your project folder oder point your include path to this directory and
-simply include the `filesystem.hpp` header.
+### Using it as Single-File-Header
+
+As `ghc::filesystem` is at first a header-only library, it should be enough to copy the header
+or the `include/ghc` directory into your project folder oder point your include path to this place and
+simply include the `filesystem.hpp` header (or `ghc/filesystem.hpp` if you use the subdirectory).
 
 Everything is in the namespace `ghc::filesystem`, so one way to use it only as
 a fallback could be:
@@ -135,6 +143,8 @@ without that switch ([see](https://blogs.msdn.microsoft.com/vcblog/2018/04/09/ms
 Be aware too, as a header-only library, it is not hiding the fact, that it
 uses system includes, so they "pollute" your global namespace.
 
+### Using it as Forwarding-/Implementation-Header
+
 Alternatively, starting from v1.1.0 `ghc::filesystem` can also be used by
 including one of two additional wrapper headers. These allow to include
 a forwarded version in most places (`ghc/fs_fwd.hpp`) while hiding the
@@ -142,11 +152,20 @@ implementation details in a single cpp that includes `ghc/fs_impl.hpp` to
 implement the needed code. That way system includes are only visible from
 inside the cpp, all other places are clean. 
 
-Additionally, starting from v1.1.0, it is possible to add `ghc::filesystem`
+Be aware, that it is currently not supported to hide the implementation
+into a Windows-DLL, as a DLL interface with C++ standard templates in interfaces
+is a different beast. If someone is willing to give it a try, I might integrate
+a PR but currently working on that myself is not a priority.
+
+### Git Submodule
+
+Starting from v1.1.0, it is possible to add `ghc::filesystem`
 as a git submodule, add the directory to your `CMakeLists.txt` with
 `add_subdirectory()` and then simply use `target_link_libraries(your-target ghc_filesystem)`
 to ensure correct include path that allow `#include <ghc/filesystem.hpp>`
 to work.
+
+### Versioning
 
 There is a version macro `GHC_FILESYSTEM_VERSION` defined in case future changes
 might make it needed to react on the version, but I don't plan to break anything.
