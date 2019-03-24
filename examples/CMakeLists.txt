@@ -1,5 +1,6 @@
 
-add_executable(fs_dir dir.cpp ../filesystem.hpp)
+add_executable(fs_dir dir.cpp)
+target_link_libraries(fs_dir ghc_filesystem)
 if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
     target_compile_definitions(fs_dir PRIVATE _CRT_SECURE_NO_WARNINGS)
 endif()

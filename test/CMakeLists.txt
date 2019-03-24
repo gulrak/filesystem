@@ -1,5 +1,6 @@
 
-add_executable(filesystem_test filesystem_test.cpp ../filesystem.hpp catch.hpp)
+add_executable(filesystem_test filesystem_test.cpp catch.hpp)
+target_link_libraries(filesystem_test ghc_filesystem)
 target_compile_options(filesystem_test PRIVATE
           $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Werror>
           $<$<CXX_COMPILER_ID:GNU>:-Wall -Werror>
@@ -8,9 +9,10 @@ if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
     target_compile_definitions(filesystem_test PRIVATE _CRT_SECURE_NO_WARNINGS)
 endif()
 if(CMAKE_GENERATOR STREQUAL Xcode)
-    add_executable(filesystem_test_cov filesystem_test.cpp ../filesystem.hpp catch.hpp)
+    add_executable(filesystem_test_cov filesystem_test.cpp catch.hpp)
     target_compile_options(filesystem_test_cov PRIVATE "$<$<CONFIG:DEBUG>:--coverage>")
     target_link_libraries(filesystem_test_cov PRIVATE --coverage)
+    target_link_libraries(filesystem_test_cov ghc_filesystem)
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 7.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.0))
@@ -36,4 +38,5 @@ if(CMAKE_CXX_COMPILER_ID MATCHES MSVC AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQ
     target_compile_definitions(std_filesystem_test PRIVATE USE_STD_FS _CRT_SECURE_NO_WARNINGS)
 endif()
 
-add_executable(multifile_test multi1.cpp multi2.cpp ../filesystem.hpp catch.hpp)
+add_executable(multifile_test multi1.cpp multi2.cpp catch.hpp)
+target_link_libraries(multifile_test ghc_filesystem)

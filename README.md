@@ -97,7 +97,7 @@ a fallback could be:
 #include <filesystem>
 namespace fs = std::filesystem;
 #else
-#include "filesystem.hpp"
+#include <ghc/filesystem.hpp>
 namespace fs = ghc::filesystem;
 #endif
 ```
@@ -115,7 +115,7 @@ using ofstream = std::ofstream;
 using fstream = std::fstream;
 }
 #else
-#include "filesystem.hpp"
+#include <ghc/filesystem.hpp>
 namespace fs {
 using namespace ghc::filesystem;
 using ifstream = ghc::filesystem::ifstream;
@@ -128,12 +128,18 @@ using fstream = ghc::filesystem::fstream;
 Now you have e.g. `fs::ofstream out(somePath);` and it is either the wrapper or
 the C++17 `std::ofstream`.
 
-Note, that on MSVC this detection only works starting from version 15.7 on and when setting
+**Note, that on MSVC this detection only works starting from version 15.7 on and when setting
 the `/Zc:__cplusplus` compile switch, as the compiler allways reports `199711L`
-without that switch ([see](https://blogs.msdn.microsoft.com/vcblog/2018/04/09/msvc-now-correctly-reports-__cplusplus/)).
+without that switch ([see](https://blogs.msdn.microsoft.com/vcblog/2018/04/09/msvc-now-correctly-reports-__cplusplus/)).**
 
 Be aware too, as a header-only library, it is not hiding the fact, that it
 uses system includes, so they "pollute" your global namespace.
+
+Additionally, starting from v1.1.0, it is possible to add `ghc::filesystem`
+as a git submodule, add the directory to your `CMakeLists.txt` with
+`add_subdirectory()` and then simply use `target_link_libraries(your-target ghc_filesystem)`
+to ensure correct include path that allow `#include <ghc/filesystem.hpp>`
+to work.
 
 There is a version macro `GHC_FILESYSTEM_VERSION` defined in case future changes
 might make it needed to react on the version, but I don't plan to break anything.
@@ -355,6 +361,21 @@ to the expected behavior.
 
 ## Release Notes
 
+### v1.1.0 (wip)
+
+* Restructuring of the project directory. The header files are now using
+  `hpp` as extension to be marked as c++ and they where moved to
+  `include/ghc/` to be able to include by `<ghc/filesystem.hpp>` as the
+  former include name might have been to generic and conflict with other
+  files.
+* Better CMake support: `ghc::filesystem` now can be used as a submodul
+  and added with `add_subdirectory` and will export itself as `ghc_filesystem`
+  target. To use it, only `target_link_libraries(your-target ghc_filesystem)`
+  is needed and the include directories will be set so `#include <ghc/filesystem.hpp>`
+  will be a valid directive.
+  Still you can simply only add the header file to you project and include it
+  from there.
+  
 ### [v1.0.10](https://github.com/gulrak/filesystem/releases/tag/v1.0.10)
 
 * Bugfix for ([#9](https://github.com/gulrak/filesystem/issues/9)), added

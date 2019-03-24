@@ -6,7 +6,7 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 #else
-#include "../filesystem.hpp"
+#include <ghc/filesystem.hpp>
 namespace fs = ghc::filesystem;
 #endif
 
