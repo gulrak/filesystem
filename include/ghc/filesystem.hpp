@@ -1256,6 +1256,12 @@ inline std::string toUtf8(const SourceType* unicodeString)
 
 namespace detail {
 
+GHC_INLINE bool startsWith(const std::string& what, const std::string& with)
+{
+    return with.length() <= what.length() 
+        && equal(with.begin(), with.end(), what.begin());
+}
+
 GHC_INLINE void postprocess_path_with_format(path::string_type& p, path::format fmt)
 {
     switch (fmt) {
@@ -1270,6 +1276,14 @@ GHC_INLINE void postprocess_path_with_format(path::string_type& p, path::format 
         case path::auto_format:
         case path::native_format:
 #endif
+            if(startsWith(p, std::string("\\\\?\\"))) {
+                // remove Windows long filename marker
+                p.erase(0, 4);
+                if(startsWith(p, std::string("UNC\\"))) {
+                    p.erase(0,2);
+                    p[0] = '\\';
+                }
+            }
             for (auto& c : p) {
                 if (c == '\\') {
                     c = '/';
@@ -2065,7 +2079,18 @@ GHC_INLINE void path::swap(path& rhs) noexcept
 GHC_INLINE const path::string_type& path::native() const
 {
 #ifdef GHC_OS_WINDOWS
-    _native_cache = _path;
+    if(_path.is_absolute() && _path.length() >= MAX_PATH) {
+        // expand long Windows filenames with marker
+        if(has_root_name() && _path[0] == '/') {
+            _native_cache = "\\\\?\\UNC" + _path.substr(1);
+        }
+        else {
+            _native_cache = "\\\\?\\" + _path;
+        }
+    }
+    else {
+        _native_cache = _path;
+    }
     /*if (has_root_name() && root_name()._path[0] == '/') {
         return _path;
     }*/
