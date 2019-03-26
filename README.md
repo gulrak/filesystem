@@ -311,9 +311,11 @@ path& operator+=(basic_string_view<value_type> x);
 int compare(basic_string_view<value_type> s) const;
 ```
 
-These are not implemented, as there is no `std::basic_string_view` available in
-C++11 and I did want to keep this implementation self-contained and not
-write a full C++17-upgrade for C++11.
+These are not implemented under C++11 and C++14, as there is no
+`std::basic_string_view` available and I did want to keep this
+implementation self-contained and not write a full C++17-upgrade for
+C++11/14. Starting with v1.1.0 these are supported when compiling
+ghc::filesystem under C++17.
 
 
 ### Differences in API
@@ -449,6 +451,8 @@ to the expected behavior.
   additional simple includes are added, that can be used to forward
   `ghc::filesystem` declarations (`fs_fwd.hpp`) and to wrap the
   implementation into a single cpp (`fs_impl.hpp`)
+* The `std::basic_string_view` variants of the `fs::path` api are
+  now supported when compiling with C++17. 
 
   
 ### [v1.0.10](https://github.com/gulrak/filesystem/releases/tag/v1.0.10)
