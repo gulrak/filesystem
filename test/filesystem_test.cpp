@@ -460,6 +460,7 @@ TEST_CASE("30.10.8.4.6 path native format observers", "[filesystem][path][fs.pat
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").wstring() == std::wstring(L"ä/€"));
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").u8string() == std::string(u8"\xc3\xa4/\xe2\x82\xac"));
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").u16string() == std::u16string(u"\u00E4/\u20AC"));
+    INFO("This check might fail on GCC8 (with \"Illegal byte sequence\") due to not detecting the valid unicode codepoint U+1D11E.");
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac\xf0\x9d\x84\x9e").u16string() == std::u16string(u"\u00E4/\u20AC\U0001D11E"));
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").u32string() == std::u32string(U"\U000000E4/\U000020AC"));
 #endif
