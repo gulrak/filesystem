@@ -1,0 +1,46 @@
+language: cpp
+
+dist: trusty # default distribution
+os: linux # default os
+sudo: false
+
+
+matrix:
+  fast_finish: true
+  include:
+    - env: CC=gcc-5 CXX=g++-5 GENERATOR="Unix Makefiles"
+      addons: { apt: { packages: ["g++-5"], sources: ["ubuntu-toolchain-r-test"] } }
+
+    - env: CC=gcc-6 CXX=g++-6 GENERATOR="Unix Makefiles"
+      addons: { apt: { packages: ["g++-6"], sources: ["ubuntu-toolchain-r-test"] } }
+
+    - env: CC=gcc-7 CXX=g++-7 GENERATOR="Unix Makefiles"
+      addons: { apt: { packages: ["g++-7"], sources: ["ubuntu-toolchain-r-test"] } }
+
+    - env: CC=gcc-8 CXX=g++-8 GENERATOR="Unix Makefiles"
+      addons: { apt: { packages: ["g++-8"], sources: ["ubuntu-toolchain-r-test"] } }
+
+    - env: CC=clang-5.0 CXX=clang++-5.0 GENERATOR="Unix Makefiles"
+      addons: { apt: { packages: ["g++-8", "clang-5.0"], sources: ["llvm-toolchain-trusty-5.0", "ubuntu-toolchain-r-test"] } }
+
+    - env: CC=clang-6.0 CXX=clang++-6.0 GENERATOR="Unix Makefiles"
+      addons: { apt: { packages: ["g++-8", "clang-6.0"], sources: ["llvm-toolchain-trusty-6.0", "ubuntu-toolchain-r-test"] } }
+
+    - os: osx
+      env: CC=clang CXX=clang++ GENERATOR="Xcode"
+      osx_image: xcode9.2
+  
+install:
+  - $CC --version
+  - $CXX --version
+  - cmake --version
+
+before_script:
+  - mkdir build
+  - cd build
+  - cmake -G${GENERATOR} -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_C_COMPILER=${CC} ..
+
+script:
+  - cmake --build . --config Release
+  - ctest
+

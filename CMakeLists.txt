@@ -25,6 +25,7 @@ target_compile_options(ghc_filesystem INTERFACE "$<$<CXX_COMPILER_ID:MSVC>:/utf-
 
 get_directory_property(hasParent PARENT_DIRECTORY)
 if(NOT hasParent)
+  enable_testing()
   add_subdirectory(test)
   add_subdirectory(examples)
 endif()

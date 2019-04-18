@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/gulrak/filesystem.svg?branch=master)](https://travis-ci.org/gulrak/filesystem)
+
 # Filesystem
 
 This is a header-only single-file std::filesystem compatible helper library,
@@ -200,7 +202,7 @@ that use this technique, so you can simply include them if you want to dynamical
 the filesystem implementation.
 
 
-### Git Submodule
+### Git Submodule and CMake
 
 Starting from v1.1.0, it is possible to add `ghc::filesystem`
 as a git submodule, add the directory to your `CMakeLists.txt` with
