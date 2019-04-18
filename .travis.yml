@@ -8,26 +8,26 @@ sudo: false
 matrix:
   fast_finish: true
   include:
-    - env: CC=gcc-5 CXX=g++-5 GENERATOR="Unix Makefiles"
+    - env: E_CC=gcc-5 E_CXX=g++-5 GENERATOR="Unix Makefiles"
       addons: { apt: { packages: ["g++-5"], sources: ["ubuntu-toolchain-r-test"] } }
 
-    - env: CC=gcc-6 CXX=g++-6 GENERATOR="Unix Makefiles"
+    - env: E_CC=gcc-6 E_CXX=g++-6 GENERATOR="Unix Makefiles"
       addons: { apt: { packages: ["g++-6"], sources: ["ubuntu-toolchain-r-test"] } }
 
-    - env: CC=gcc-7 CXX=g++-7 GENERATOR="Unix Makefiles"
+    - env: E_CC=gcc-7 E_CXX=g++-7 GENERATOR="Unix Makefiles"
       addons: { apt: { packages: ["g++-7"], sources: ["ubuntu-toolchain-r-test"] } }
 
-    - env: CC=gcc-8 CXX=g++-8 GENERATOR="Unix Makefiles"
+    - env: E_CC=gcc-8 E_CXX=g++-8 GENERATOR="Unix Makefiles"
       addons: { apt: { packages: ["g++-8"], sources: ["ubuntu-toolchain-r-test"] } }
 
-    - env: CC=clang-5.0 CXX=clang++-5.0 GENERATOR="Unix Makefiles"
+    - env: E_CC=clang-5.0 E_CXX=clang++-5.0 GENERATOR="Unix Makefiles"
       addons: { apt: { packages: ["g++-8", "clang-5.0"], sources: ["llvm-toolchain-trusty-5.0", "ubuntu-toolchain-r-test"] } }
 
-    - env: CC=clang-6.0 CXX=clang++-6.0 GENERATOR="Unix Makefiles"
+    - env: E_CC=clang-6.0 E_CXX=clang++-6.0 GENERATOR="Unix Makefiles"
       addons: { apt: { packages: ["g++-8", "clang-6.0"], sources: ["llvm-toolchain-trusty-6.0", "ubuntu-toolchain-r-test"] } }
 
     - os: osx
-      env: CC=clang CXX=clang++ GENERATOR="Xcode"
+      env: E_CC=clang E_CXX=clang++ GENERATOR="Xcode"
       osx_image: xcode9.2
   
 install:
@@ -38,7 +38,7 @@ install:
 before_script:
   - mkdir build
   - cd build
-  - cmake -G"${GENERATOR}" -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_C_COMPILER=${CC} ..
+  - cmake -G"${GENERATOR}" -DCMAKE_CXX_COMPILER=${E_CXX} -DCMAKE_C_COMPILER=${E_CC} ..
 
 script:
   - cmake --build . --config Release
