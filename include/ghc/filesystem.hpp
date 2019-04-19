@@ -2079,7 +2079,7 @@ GHC_INLINE void path::swap(path& rhs) noexcept
 GHC_INLINE const path::string_type& path::native() const
 {
 #ifdef GHC_OS_WINDOWS
-    if(_path.is_absolute() && _path.length() >= MAX_PATH) {
+    if(is_absolute() && _path.length() >= MAX_PATH) {
         // expand long Windows filenames with marker
         if(has_root_name() && _path[0] == '/') {
             _native_cache = "\\\\?\\UNC" + _path.substr(1);
