@@ -1,4 +1,4 @@
-![Supported Platforms](https://img.shields.io/badge/platform-windows%20%7C%20macos%20%7C%20linux-blue.svg)]
+![Supported Platforms](https://img.shields.io/badge/platform-windows%20%7C%20macos%20%7C%20linux-blue.svg)
 [![Build Status](https://travis-ci.org/gulrak/filesystem.svg?branch=master)](https://travis-ci.org/gulrak/filesystem)
 [![Build status](https://ci.appveyor.com/api/projects/status/t07wp3k2cddo0hpo?svg=true)](https://ci.appveyor.com/project/gulrak/filesystem)
 ![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)
