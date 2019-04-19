@@ -1686,8 +1686,10 @@ TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.16 is_block_file", "[filesystem][
     std::error_code ec;
     CHECK(!fs::is_block_file("directory"));
     CHECK(!fs::is_block_file("regular"));
-    CHECK(!fs::is_block_file("dir_symlink"));
-    CHECK(!fs::is_block_file("file_symlink"));
+    if (is_symlink_creation_supported()) {
+        CHECK(!fs::is_block_file("dir_symlink"));
+        CHECK(!fs::is_block_file("file_symlink"));
+    }
     CHECK((has_fifo() ? !fs::is_block_file("fifo") : true));
     CHECK((has_socket() ? !fs::is_block_file("socket") : true));
     CHECK((block_path().empty() ? true : fs::is_block_file(block_path())));
@@ -1713,8 +1715,10 @@ TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.17 is_character_file", "[filesyst
     std::error_code ec;
     CHECK(!fs::is_character_file("directory"));
     CHECK(!fs::is_character_file("regular"));
-    CHECK(!fs::is_character_file("dir_symlink"));
-    CHECK(!fs::is_character_file("file_symlink"));
+    if (is_symlink_creation_supported()) {
+        CHECK(!fs::is_character_file("dir_symlink"));
+        CHECK(!fs::is_character_file("file_symlink"));
+    }
     CHECK((has_fifo() ? !fs::is_character_file("fifo") : true));
     CHECK((has_socket() ? !fs::is_character_file("socket") : true));
     CHECK((block_path().empty() ? true : !fs::is_character_file(block_path())));
@@ -1740,8 +1744,10 @@ TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.18 is_directory", "[filesystem][o
     std::error_code ec;
     CHECK(fs::is_directory("directory"));
     CHECK(!fs::is_directory("regular"));
-    CHECK(fs::is_directory("dir_symlink"));
-    CHECK(!fs::is_directory("file_symlink"));
+    if (is_symlink_creation_supported()) {
+        CHECK(fs::is_directory("dir_symlink"));
+        CHECK(!fs::is_directory("file_symlink"));
+    }
     CHECK((has_fifo() ? !fs::is_directory("fifo") : true));
     CHECK((has_socket() ? !fs::is_directory("socket") : true));
     CHECK((block_path().empty() ? true : !fs::is_directory(block_path())));
@@ -1789,8 +1795,10 @@ TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.20 is_fifo", "[filesystem][operat
     std::error_code ec;
     CHECK(!fs::is_fifo("directory"));
     CHECK(!fs::is_fifo("regular"));
-    CHECK(!fs::is_fifo("dir_symlink"));
-    CHECK(!fs::is_fifo("file_symlink"));
+    if (is_symlink_creation_supported()) {
+        CHECK(!fs::is_fifo("dir_symlink"));
+        CHECK(!fs::is_fifo("file_symlink"));
+    }
     CHECK((has_fifo() ? fs::is_fifo("fifo") : true));
     CHECK((has_socket() ? !fs::is_fifo("socket") : true));
     CHECK((block_path().empty() ? true : !fs::is_fifo(block_path())));
@@ -1816,8 +1824,10 @@ TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.21 is_other", "[filesystem][opera
     std::error_code ec;
     CHECK(!fs::is_other("directory"));
     CHECK(!fs::is_other("regular"));
-    CHECK(!fs::is_other("dir_symlink"));
-    CHECK(!fs::is_other("file_symlink"));
+    if (is_symlink_creation_supported()) {
+        CHECK(!fs::is_other("dir_symlink"));
+        CHECK(!fs::is_other("file_symlink"));
+    }
     CHECK((has_fifo() ? fs::is_other("fifo") : true));
     CHECK((has_socket() ? fs::is_other("socket") : true));
     CHECK((block_path().empty() ? true : fs::is_other(block_path())));
@@ -1843,8 +1853,10 @@ TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.22 is_regular_file", "[filesystem
     std::error_code ec;
     CHECK(!fs::is_regular_file("directory"));
     CHECK(fs::is_regular_file("regular"));
-    CHECK(!fs::is_regular_file("dir_symlink"));
-    CHECK(fs::is_regular_file("file_symlink"));
+    if (is_symlink_creation_supported()) {
+        CHECK(!fs::is_regular_file("dir_symlink"));
+        CHECK(fs::is_regular_file("file_symlink"));
+    }
     CHECK((has_fifo() ? !fs::is_regular_file("fifo") : true));
     CHECK((has_socket() ? !fs::is_regular_file("socket") : true));
     CHECK((block_path().empty() ? true : !fs::is_regular_file(block_path())));
@@ -1870,8 +1882,10 @@ TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.23 is_socket", "[filesystem][oper
     std::error_code ec;
     CHECK(!fs::is_socket("directory"));
     CHECK(!fs::is_socket("regular"));
-    CHECK(!fs::is_socket("dir_symlink"));
-    CHECK(!fs::is_socket("file_symlink"));
+    if (is_symlink_creation_supported()) {
+        CHECK(!fs::is_socket("dir_symlink"));
+        CHECK(!fs::is_socket("file_symlink"));
+    }
     CHECK((has_fifo() ? !fs::is_socket("fifo") : true));
     CHECK((has_socket() ? fs::is_socket("socket") : true));
     CHECK((block_path().empty() ? true : !fs::is_socket(block_path())));
@@ -1897,8 +1911,10 @@ TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.24 is_symlink", "[filesystem][ope
     std::error_code ec;
     CHECK(!fs::is_symlink("directory"));
     CHECK(!fs::is_symlink("regular"));
-    CHECK(fs::is_symlink("dir_symlink"));
-    CHECK(fs::is_symlink("file_symlink"));
+    if (is_symlink_creation_supported()) {
+        CHECK(fs::is_symlink("dir_symlink"));
+        CHECK(fs::is_symlink("file_symlink"));
+    }
     CHECK((has_fifo() ? !fs::is_symlink("fifo") : true));
     CHECK((has_socket() ? !fs::is_symlink("socket") : true));
     CHECK((block_path().empty() ? true : !fs::is_symlink(block_path())));
@@ -2020,17 +2036,18 @@ TEST_CASE("30.10.15.27 proximate", "[filesystem][operations][fs.op.proximate]")
 
 TEST_CASE("30.10.15.28 read_symlink", "[filesystem][operations][fs.op.read_symlink]")
 {
-    REQUIRE(is_symlink_creation_supported());
-    TemporaryDirectory t(TempOpt::change_path);
-    std::error_code ec;
-    generateFile("foo");
-    fs::create_symlink(t.path() / "foo", "bar");
-    CHECK(fs::read_symlink("bar") == t.path() / "foo");
-    CHECK(fs::read_symlink("bar", ec) == t.path() / "foo");
-    CHECK(!ec);
-    CHECK_THROWS_AS(fs::read_symlink("foobar"), fs::filesystem_error);
-    CHECK(fs::read_symlink("foobar", ec) == fs::path());
-    CHECK(ec);
+    if(is_symlink_creation_supported()) {
+        TemporaryDirectory t(TempOpt::change_path);
+        std::error_code ec;
+        generateFile("foo");
+        fs::create_symlink(t.path() / "foo", "bar");
+        CHECK(fs::read_symlink("bar") == t.path() / "foo");
+        CHECK(fs::read_symlink("bar", ec) == t.path() / "foo");
+        CHECK(!ec);
+        CHECK_THROWS_AS(fs::read_symlink("foobar"), fs::filesystem_error);
+        CHECK(fs::read_symlink("foobar", ec) == fs::path());
+        CHECK(ec);
+    }
 }
 
 TEST_CASE("30.10.15.29 relative", "[filesystem][operations][fs.op.relative]")

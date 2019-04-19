@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/gulrak/filesystem.svg?branch=master)](https://travis-ci.org/gulrak/filesystem)
+[![Build status](https://ci.appveyor.com/api/projects/status/t07wp3k2cddo0hpo?svg=true)](https://ci.appveyor.com/project/gulrak/filesystem)
 
 # Filesystem
 
