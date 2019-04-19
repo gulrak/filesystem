@@ -1246,7 +1246,7 @@ TEST_CASE("30.10.15.3 copy", "[filesystem][operations][fs.op.copy]")
         CHECK(fs::exists("dir4/file2"));
         CHECK(fs::exists("dir4/dir2/file3"));
     }
-    {
+    if(is_symlink_creation_supported()) {
         TemporaryDirectory t(TempOpt::change_path);
         std::error_code ec;
         fs::create_directory("dir1");
@@ -1427,20 +1427,21 @@ TEST_CASE("30.10.15.7 create_directory", "[filesystem][operations][fs.op.create_
 
 TEST_CASE("30.10.15.8 create_directory_symlink", "[filesystem][operations][fs.op.create_directory_symlink]")
 {
-    REQUIRE(is_symlink_creation_supported());
-    TemporaryDirectory t;
-    fs::create_directory(t.path() / "dir1");
-    generateFile(t.path() / "dir1/test1");
-    fs::create_directory(t.path() / "dir2");
-    fs::create_directory_symlink(t.path() / "dir1", t.path() / "dir2/dirSym");
-    CHECK(fs::exists(t.path() / "dir2/dirSym"));
-    CHECK(fs::is_symlink(t.path() / "dir2/dirSym"));
-    CHECK(fs::exists(t.path() / "dir2/dirSym/test1"));
-    CHECK(fs::is_regular_file(t.path() / "dir2/dirSym/test1"));
-    CHECK_THROWS_AS(fs::create_directory_symlink(t.path() / "dir1", t.path() / "dir2/dirSym"), fs::filesystem_error);
-    std::error_code ec;
-    CHECK_NOTHROW(fs::create_directory_symlink(t.path() / "dir1", t.path() / "dir2/dirSym", ec));
-    CHECK(ec);
+    if(is_symlink_creation_supported()) {
+        TemporaryDirectory t;
+        fs::create_directory(t.path() / "dir1");
+        generateFile(t.path() / "dir1/test1");
+        fs::create_directory(t.path() / "dir2");
+        fs::create_directory_symlink(t.path() / "dir1", t.path() / "dir2/dirSym");
+        CHECK(fs::exists(t.path() / "dir2/dirSym"));
+        CHECK(fs::is_symlink(t.path() / "dir2/dirSym"));
+        CHECK(fs::exists(t.path() / "dir2/dirSym/test1"));
+        CHECK(fs::is_regular_file(t.path() / "dir2/dirSym/test1"));
+        CHECK_THROWS_AS(fs::create_directory_symlink(t.path() / "dir1", t.path() / "dir2/dirSym"), fs::filesystem_error);
+        std::error_code ec;
+        CHECK_NOTHROW(fs::create_directory_symlink(t.path() / "dir1", t.path() / "dir2/dirSym", ec));
+        CHECK(ec);
+    }
 }
 
 TEST_CASE("30.10.15.9 create_hard_link", "[filesystem][operations][fs.op.create_hard_link]")
@@ -1462,20 +1463,21 @@ TEST_CASE("30.10.15.9 create_hard_link", "[filesystem][operations][fs.op.create_
 
 TEST_CASE("30.10.15.10 create_symlink", "[filesystem][operations][fs.op.create_symlink]")
 {
-    REQUIRE(is_symlink_creation_supported());
-    TemporaryDirectory t;
-    fs::create_directory(t.path() / "dir1");
-    generateFile(t.path() / "dir1/test1");
-    fs::create_directory(t.path() / "dir2");
-    fs::create_symlink(t.path() / "dir1/test1", t.path() / "dir2/fileSym");
-    CHECK(fs::exists(t.path() / "dir2/fileSym"));
-    CHECK(fs::is_symlink(t.path() / "dir2/fileSym"));
-    CHECK(fs::exists(t.path() / "dir2/fileSym"));
-    CHECK(fs::is_regular_file(t.path() / "dir2/fileSym"));
-    CHECK_THROWS_AS(fs::create_symlink(t.path() / "dir1", t.path() / "dir2/fileSym"), fs::filesystem_error);
-    std::error_code ec;
-    CHECK_NOTHROW(fs::create_symlink(t.path() / "dir1", t.path() / "dir2/fileSym", ec));
-    CHECK(ec);
+    if(is_symlink_creation_supported()) {
+        TemporaryDirectory t;
+        fs::create_directory(t.path() / "dir1");
+        generateFile(t.path() / "dir1/test1");
+        fs::create_directory(t.path() / "dir2");
+        fs::create_symlink(t.path() / "dir1/test1", t.path() / "dir2/fileSym");
+        CHECK(fs::exists(t.path() / "dir2/fileSym"));
+        CHECK(fs::is_symlink(t.path() / "dir2/fileSym"));
+        CHECK(fs::exists(t.path() / "dir2/fileSym"));
+        CHECK(fs::is_regular_file(t.path() / "dir2/fileSym"));
+        CHECK_THROWS_AS(fs::create_symlink(t.path() / "dir1", t.path() / "dir2/fileSym"), fs::filesystem_error);
+        std::error_code ec;
+        CHECK_NOTHROW(fs::create_symlink(t.path() / "dir1", t.path() / "dir2/fileSym", ec));
+        CHECK(ec);
+    }
 }
 
 TEST_CASE("30.10.15.11 current_path", "[filesystem][operations][fs.op.current_path]")
