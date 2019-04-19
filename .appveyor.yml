@@ -1,0 +1,34 @@
+image: Visual Studio 2017
+
+platform:
+  - Win32
+  - x64
+
+configuration:
+  - Debug
+  - Release
+  
+matrix:
+  fast_finish: false
+
+init:
+  - cmd: cmake --version
+  - cmd: msbuild /version
+
+install:
+  - git submodule update 
+
+before_build:
+  - cmake . -Bbuild -A%PLATFORM% -DCMAKE_BUILD_TYPE=%configuration%
+
+build:
+  project: build/ghcfilesystem.sln
+  parallel: true
+  verbosity: minimal
+  
+test_script:
+  - cd build
+  - set CTEST_OUTPUT_ON_FAILURE=1
+  - ctest -C %configuration% 
+  - cd ..
+
