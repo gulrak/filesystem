@@ -1,4 +1,4 @@
-![Supported Platforms](https://img.shields.io/badge/platform-windows%20%7C%20macos%20%7C%20linux-blue.svg)
+![Supported Platforms](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)
 [![Build Status](https://travis-ci.org/gulrak/filesystem.svg?branch=master)](https://travis-ci.org/gulrak/filesystem)
 [![Build status](https://ci.appveyor.com/api/projects/status/t07wp3k2cddo0hpo?svg=true)](https://ci.appveyor.com/project/gulrak/filesystem)
 ![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)
@@ -58,11 +58,12 @@ where full C++17 is available, it doesn't try to be a "better"
 `std::filesystem`, just a drop-in if you can't use it (with the exception
 of the UTF-8 preference on Windows).
 
-Tests are currently run with:
+
+Unit tests are currently run with:
 
 * macOS 10.12: XCode 9.2 (clang-900.0.39.2), GCC 8.1.0, Clang 7.0.0
 * Windows 10: Visual Studio 2017 15.8.5, MingW GCC 5.3
-* Linux: Ubuntu 18.04LTS GCC 7.3 & GCC 8.2.0
+* Linux (Ubuntu): GCC (5.5, 6.5, 7.4, 8.1, 8.2), Clang (5.0, 6.0)
 
 
 ## Tests
@@ -93,6 +94,9 @@ succeed with all filesystem implementations, but in reality, there are
 some differences in behavior, sometimes due to room for interpretation in
 in the standard, and there might be issues in these implementations too.
 
+### Tests on Windows
+
+As
 
 ## Usage
 
@@ -311,7 +315,7 @@ Besides this still being work-in-progress, there are a few cases where
 there will be no implementation in the close future:
 
 ```cpp
-// methods in path:
+// methods in ghc::filesystem::path:
 path& operator+=(basic_string_view<value_type> x);
 int compare(basic_string_view<value_type> s) const;
 ```
