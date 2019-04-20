@@ -26,8 +26,11 @@ matrix:
     - env: MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0 && GENERATOR='Unix Makefiles'"
       addons: { apt: { packages: ["clang-6.0"] } }
 
-    - env: MATRIX_EVAL="CC=clang-7.0 && CXX=clang++-7.0 && GENERATOR='Unix Makefiles'"
-      addons: { apt: { packages: ["clang-7.0"], sources: ["llvm-toolchain-xenial-7"] } }
+    - env: MATRIX_EVAL="CC=clang-7 && CXX=clang++-7 && GENERATOR='Unix Makefiles'"
+      addons: { apt: { packages: ["clang-7"], sources: ["llvm-toolchain-xenial-7"] } }
+
+    - env: MATRIX_EVAL="CC=clang-8 && CXX=clang++-8 && GENERATOR='Unix Makefiles'"
+      addons: { apt: { packages: ["clang-8"], sources: ["llvm-toolchain-xenial-8"] } }
 
     - os: osx
       env: MATRIX_EVAL="CC=clang && CXX=clang++ && GENERATOR=Xcode"
