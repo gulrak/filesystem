@@ -63,7 +63,7 @@ Unit tests are currently run with:
 
 * macOS 10.12: XCode 9.2 (clang-900.0.39.2), GCC 8.1.0, Clang 7.0.0
 * Windows 10: Visual Studio 2017 15.8.5, MingW GCC 5.3
-* Linux (Ubuntu): GCC (5.5, 6.5, 7.4, 8.1, 8.2), Clang (5.0, 6.0)
+* Linux (Ubuntu): GCC (5.5, 6.5, 7.4, 8.1, 8.2), Clang (5.0, 6.0, 7.1, 8.0)
 
 
 ## Tests
@@ -94,9 +94,6 @@ succeed with all filesystem implementations, but in reality, there are
 some differences in behavior, sometimes due to room for interpretation in
 in the standard, and there might be issues in these implementations too.
 
-### Tests on Windows
-
-As
 
 ## Usage
 
@@ -421,7 +418,7 @@ conformance and remove the `noexcept`.
 
 ### Windows
 
-#### Symbolic Links
+#### Symbolic Links on Windows
 
 As symbolic links on Windows, while being supported more or less since
 Windows Vista (with some strict security constraints) and fully since some earlier
@@ -462,7 +459,7 @@ to the expected behavior.
   implementation into a single cpp (`fs_impl.hpp`)
 * The `std::basic_string_view` variants of the `fs::path` api are
   now supported when compiling with C++17. 
-
+* Added CI integration for Travis-CI and Appveyor.
   
 ### [v1.0.10](https://github.com/gulrak/filesystem/releases/tag/v1.0.10)
 
