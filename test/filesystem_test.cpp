@@ -177,13 +177,11 @@ static void generateFile(const fs::path& pathname, int withSize = -1)
 #ifdef GHC_OS_WINDOWS
 inline bool isWow64Proc()
 {
-    typedef BOOL (WINAPI *IsWow64Process_t) (HANDLE, PBOOL);
+    typedef BOOL(WINAPI * IsWow64Process_t)(HANDLE, PBOOL);
     BOOL bIsWow64 = FALSE;
     auto fnIsWow64Process = (IsWow64Process_t)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
-    if( NULL != fnIsWow64Process )
-    {
-        if (!fnIsWow64Process(GetCurrentProcess(), &bIsWow64))
-        {
+    if (NULL != fnIsWow64Process) {
+        if (!fnIsWow64Process(GetCurrentProcess(), &bIsWow64)) {
             bIsWow64 = FALSE;
         }
     }
@@ -192,7 +190,7 @@ inline bool isWow64Proc()
 
 static bool is_symlink_creation_supported()
 {
-    bool result = false;
+    bool result = true;
     HKEY key;
     REGSAM flags = KEY_READ;
 #ifdef _WIN64
@@ -207,7 +205,7 @@ static bool is_symlink_creation_supported()
 #else
     result = false;
 #endif
-    if(result) {
+    if (result) {
         auto err = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock", 0, flags, &key);
         if (err == ERROR_SUCCESS) {
             DWORD val = 0, size = sizeof(DWORD);
@@ -224,7 +222,7 @@ static bool is_symlink_creation_supported()
             result = false;
         }
     }
-    if(!result) {
+    if (!result) {
         std::clog << "Warning: Symlink creation not supported." << std::endl;
     }
     return result;
@@ -1274,7 +1272,7 @@ TEST_CASE("30.10.15.3 copy", "[filesystem][operations][fs.op.copy]")
         CHECK(fs::exists("dir4/file2"));
         CHECK(fs::exists("dir4/dir2/file3"));
     }
-    if(is_symlink_creation_supported()) {
+    if (is_symlink_creation_supported()) {
         TemporaryDirectory t(TempOpt::change_path);
         std::error_code ec;
         fs::create_directory("dir1");
@@ -1455,7 +1453,7 @@ TEST_CASE("30.10.15.7 create_directory", "[filesystem][operations][fs.op.create_
 
 TEST_CASE("30.10.15.8 create_directory_symlink", "[filesystem][operations][fs.op.create_directory_symlink]")
 {
-    if(is_symlink_creation_supported()) {
+    if (is_symlink_creation_supported()) {
         TemporaryDirectory t;
         fs::create_directory(t.path() / "dir1");
         generateFile(t.path() / "dir1/test1");
@@ -1491,7 +1489,7 @@ TEST_CASE("30.10.15.9 create_hard_link", "[filesystem][operations][fs.op.create_
 
 TEST_CASE("30.10.15.10 create_symlink", "[filesystem][operations][fs.op.create_symlink]")
 {
-    if(is_symlink_creation_supported()) {
+    if (is_symlink_creation_supported()) {
         TemporaryDirectory t;
         fs::create_directory(t.path() / "dir1");
         generateFile(t.path() / "dir1/test1");
@@ -2066,7 +2064,7 @@ TEST_CASE("30.10.15.27 proximate", "[filesystem][operations][fs.op.proximate]")
 
 TEST_CASE("30.10.15.28 read_symlink", "[filesystem][operations][fs.op.read_symlink]")
 {
-    if(is_symlink_creation_supported()) {
+    if (is_symlink_creation_supported()) {
         TemporaryDirectory t(TempOpt::change_path);
         std::error_code ec;
         generateFile("foo");
@@ -2307,15 +2305,15 @@ TEST_CASE("Windows: Long filename support", "[filesystem][path][fs.path.win.long
     TemporaryDirectory t(TempOpt::change_path);
     char c = 'A';
     fs::path dir = fs::current_path();
-    for( ; c <= 'Z'; ++c) {
+    for (; c <= 'Z'; ++c) {
         std::string part = std::string(16, c);
         dir /= part;
         CHECK_NOTHROW(fs::create_directory(dir));
         CHECK(fs::exists(dir));
         generateFile(dir / "f0");
         CHECK(fs::exists(dir / "f0"));
-        std::string native = dir.native();
-        if(native.substr(0,4) == "\\\\?\\") {
+        std::string native = dir.u8string();
+        if (native.substr(0, 4) == "\\\\?\\") {
             break;
         }
     }
@@ -2324,11 +2322,11 @@ TEST_CASE("Windows: Long filename support", "[filesystem][path][fs.path.win.long
 
 TEST_CASE("Windows: UNC path support", "[filesystem][path][fs.path.win.unc]")
 {
-	std::error_code ec;
+    std::error_code ec;
     fs::path p(R"(\\localhost\c$\Windows)");
     auto symstat = fs::symlink_status(p, ec);
     CHECK(!ec);
-	auto p2 = fs::canonical(p,ec);
+    auto p2 = fs::canonical(p, ec);
     CHECK(!ec);
     CHECK(p2 == p);
 }

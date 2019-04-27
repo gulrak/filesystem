@@ -75,7 +75,7 @@
 #elif defined(GHC_FILESYSTEM_FWD)
 #define GHC_INLINE
 #ifdef GHC_OS_WINDOWS
-#define GHC_FS_API extern 
+#define GHC_FS_API extern
 #define GHC_FS_API_CLASS
 #else
 #define GHC_FS_API extern
@@ -1258,8 +1258,7 @@ namespace detail {
 
 GHC_INLINE bool startsWith(const std::string& what, const std::string& with)
 {
-    return with.length() <= what.length() 
-        && equal(with.begin(), with.end(), what.begin());
+    return with.length() <= what.length() && equal(with.begin(), with.end(), what.begin());
 }
 
 GHC_INLINE void postprocess_path_with_format(path::string_type& p, path::format fmt)
@@ -1276,11 +1275,11 @@ GHC_INLINE void postprocess_path_with_format(path::string_type& p, path::format 
         case path::auto_format:
         case path::native_format:
 #endif
-            if(startsWith(p, std::string("\\\\?\\"))) {
+            if (startsWith(p, std::string("\\\\?\\"))) {
                 // remove Windows long filename marker
                 p.erase(0, 4);
-                if(startsWith(p, std::string("UNC\\"))) {
-                    p.erase(0,2);
+                if (startsWith(p, std::string("UNC\\"))) {
+                    p.erase(0, 2);
                     p[0] = '\\';
                 }
             }
@@ -2085,9 +2084,9 @@ GHC_INLINE void path::swap(path& rhs) noexcept
 GHC_INLINE const path::string_type& path::native() const
 {
 #ifdef GHC_OS_WINDOWS
-    if(is_absolute() && _path.length() > MAX_PATH-10) {
+    if (is_absolute() && _path.length() > MAX_PATH - 10) {
         // expand long Windows filenames with marker
-        if(has_root_name() && _path[0] == '/') {
+        if (has_root_name() && _path[0] == '/') {
             _native_cache = "\\\\?\\UNC" + _path.substr(1);
         }
         else {
@@ -2856,7 +2855,10 @@ GHC_INLINE path canonical(const path& p, std::error_code& ec)
                 result = result.parent_path();
                 continue;
             }
-
+            else if ((result/pe).string().length() <= root.string().length()) {
+                result /= pe;
+                continue;
+            }
             auto sls = symlink_status(result / pe, ec);
             if (ec) {
                 return path();
@@ -3708,8 +3710,7 @@ GHC_INLINE void permissions(const path& p, perms prms, perm_options opts, std::e
 #ifdef GHC_OS_WINDOWS
 #  ifdef __GNUC__
     auto oldAttr = GetFileAttributesW(p.wstring().c_str());
-    if (oldAttr != INVALID_FILE_ATTRIBUTES)
-    {
+    if (oldAttr != INVALID_FILE_ATTRIBUTES) {
         DWORD newAttr = ((prms & perms::owner_write) == perms::owner_write) ? oldAttr & ~FILE_ATTRIBUTE_READONLY : oldAttr | FILE_ATTRIBUTE_READONLY;
         if (oldAttr == newAttr || SetFileAttributesW(p.wstring().c_str(), newAttr)) {
             return;
