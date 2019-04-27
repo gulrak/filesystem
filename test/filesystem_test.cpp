@@ -1364,7 +1364,7 @@ TEST_CASE("30.10.15.6 create_directories", "[filesystem][operations][fs.op.creat
     CHECK(!fs::is_directory(p));
     CHECK(!fs::create_directories(p, ec));
 #else
-    INFO("This test expects conformance predating LWG #2935 result. (What I think is more helpful.)");
+    INFO("This test expects conformance predating LWG #2935 result. (As suggested by WG21 P1164R0, implemented by GCC with issue #86910.)");
     p = t.path() / "testfile";
     generateFile(p);
     CHECK(fs::is_regular_file(p));
@@ -1408,7 +1408,7 @@ TEST_CASE("30.10.15.7 create_directory", "[filesystem][operations][fs.op.create_
     CHECK(!fs::is_directory(p));
     CHECK(!fs::create_directories(p, ec));
 #else
-    INFO("This test expects conformance predating LWG #2935 result. (What I think is more helpful.)");
+    INFO("This test expects conformance predating LWG #2935 result. (As suggested by WG21 P1164R0, implemented by GCC with issue #86910.)");
     p = t.path() / "testfile";
     generateFile(p);
     CHECK(fs::is_regular_file(p));

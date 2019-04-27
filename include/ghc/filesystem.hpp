@@ -142,7 +142,8 @@
 #include <system_error>
 #endif  // GHC_EXPAND_IMPL
 
-//#define LWG_2935_BEHAVIOUR
+// configure LWG conformance (see README.md)
+// #define LWG_2935_BEHAVIOUR
 #define LWG_2937_BEHAVIOUR
 
 // ghc::filesystem version in decimal (major * 10000 + minor * 100 + patch)
