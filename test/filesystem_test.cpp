@@ -39,8 +39,10 @@
 #include <random>
 #include <sstream>
 #include <thread>
-#ifdef WIN32
-#define NOMINMAX
+#if defined(WIN32) || defined(_WIN32)
+#ifndef __GNUC__
+#define NOMINMAX 1
+#endif
 #include <windows.h>
 #else
 #include <sys/socket.h>
@@ -70,7 +72,6 @@ using fstream = std::fstream;
 #ifdef GHC_FILESYSTEM_FWD_TEST
 #include <ghc/fs_fwd.hpp>
 #else
-#define NOMINMAX
 #include <ghc/filesystem.hpp>
 #endif
 namespace fs {
@@ -174,32 +175,59 @@ static void generateFile(const fs::path& pathname, int withSize = -1)
 }
 
 #ifdef GHC_OS_WINDOWS
+inline bool isWow64Proc()
+{
+    typedef BOOL (WINAPI *IsWow64Process_t) (HANDLE, PBOOL);
+    BOOL bIsWow64 = FALSE;
+    auto fnIsWow64Process = (IsWow64Process_t)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
+    if( NULL != fnIsWow64Process )
+    {
+        if (!fnIsWow64Process(GetCurrentProcess(), &bIsWow64))
+        {
+            bIsWow64 = FALSE;
+        }
+    }
+    return bIsWow64;
+}
+
 static bool is_symlink_creation_supported()
 {
+    bool result = false;
     HKEY key;
     REGSAM flags = KEY_READ;
 #ifdef _WIN64
     flags |= KEY_WOW64_64KEY;
-#else
-    BOOL f64 = FALSE;
-    if (IsWow64Process(GetCurrentProcess(), &f64) && f64) {
+#elif defined(KEY_WOW64_64KEY)
+    if (isWow64Proc()) {
         flags |= KEY_WOW64_64KEY;
     }
     else {
         flags |= KEY_WOW64_32KEY;
     }
+#else
+    result = false;
 #endif
-    auto err = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock", 0, flags, &key);
-    if (err != ERROR_SUCCESS) {
-        return false;
+    if(result) {
+        auto err = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock", 0, flags, &key);
+        if (err == ERROR_SUCCESS) {
+            DWORD val = 0, size = sizeof(DWORD);
+            err = RegQueryValueExW(key, L"AllowDevelopmentWithoutDevLicense", 0, NULL, reinterpret_cast<LPBYTE>(&val), &size);
+            RegCloseKey(key);
+            if (err != ERROR_SUCCESS) {
+                result = false;
+            }
+            else {
+                result = (val != 0);
+            }
+        }
+        else {
+            result = false;
+        }
     }
-    DWORD val = 0, size = sizeof(DWORD);
-    err = RegQueryValueExW(key, L"AllowDevelopmentWithoutDevLicense", 0, NULL, reinterpret_cast<LPBYTE>(&val), &size);
-    RegCloseKey(key);
-    if (err != ERROR_SUCCESS) {
-        return false;
+    if(!result) {
+        std::clog << "Warning: Symlink creation not supported." << std::endl;
     }
-    return val != 0;
+    return result;
 }
 #else
 static bool is_symlink_creation_supported()
@@ -1058,7 +1086,7 @@ TEST_CASE("30.10.12 class directory_entry", "[filesystem][directory_entry][fs.di
     CHECK(de.hard_link_count() == 1);
 }
 
-TEST_CASE("30.10.13 class directory_iterator", "[filesystem][directory_iterator]")
+TEST_CASE("30.10.13 class directory_iterator", "[filesystem][directory_iterator][fs.class.directory_iterator]")
 {
     {
         TemporaryDirectory t;
@@ -1107,7 +1135,7 @@ TEST_CASE("30.10.13 class directory_iterator", "[filesystem][directory_iterator]
     }
 }
 
-TEST_CASE("30.10.14 class recursive_directory_iterator", "[filesystem][recursive_directory_iterator]")
+TEST_CASE("30.10.14 class recursive_directory_iterator", "[filesystem][recursive_directory_iterator][fs.class.rec.dir.itr]")
 {
     {
         TemporaryDirectory t;
@@ -1770,7 +1798,7 @@ TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.18 is_directory", "[filesystem][o
     CHECK(!fs::is_directory(fs::file_status(fs::file_type::unknown)));
 }
 
-TEST_CASE("30.10.15.19 is_empty", "[filesystem][options][fs.op.is_empty]")
+TEST_CASE("30.10.15.19 is_empty", "[filesystem][operations][fs.op.is_empty]")
 {
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
@@ -2272,3 +2300,36 @@ TEST_CASE("30.10.15.39 weakly_canonical", "[filesystem][operations][fs.op.weakly
         CHECK(fs::weakly_canonical(rel / "d1/../f1/../f2") == dir / "f2");
     }
 }
+
+#ifdef GHC_OS_WINDOWS
+TEST_CASE("Windows: Long filename support", "[filesystem][path][fs.path.win.long]")
+{
+    TemporaryDirectory t(TempOpt::change_path);
+    char c = 'A';
+    fs::path dir = fs::current_path();
+    for( ; c <= 'Z'; ++c) {
+        std::string part = std::string(16, c);
+        dir /= part;
+        CHECK_NOTHROW(fs::create_directory(dir));
+        CHECK(fs::exists(dir));
+        generateFile(dir / "f0");
+        CHECK(fs::exists(dir / "f0"));
+        std::string native = dir.native();
+        if(native.substr(0,4) == "\\\\?\\") {
+            break;
+        }
+    }
+    CHECK(c <= 'Z');
+}
+
+TEST_CASE("Windows: UNC path support", "[filesystem][path][fs.path.win.unc]")
+{
+	std::error_code ec;
+    fs::path p(R"(\\localhost\c$\Windows)");
+    auto symstat = fs::symlink_status(p, ec);
+    CHECK(!ec);
+	auto p2 = fs::canonical(p,ec);
+    CHECK(!ec);
+    CHECK(p2 == p);
+}
+#endif

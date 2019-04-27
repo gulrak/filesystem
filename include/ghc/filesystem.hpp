@@ -1355,7 +1355,15 @@ namespace detail {
 GHC_INLINE bool compare_no_case(const char* str1, const char* str2)
 {
 #ifdef GHC_OS_WINDOWS
+#  ifdef __GNUC__
+    while (::tolower((unsigned char)*str1) == ::tolower((unsigned char)*str2++)) {
+        if (*str1++ == 0)
+            return false;
+    }
+    return true;
+#  else
     return ::_stricmp(str1, str2);
+#  endif
 #else
     return ::strcasecmp(str1, str2);
 #endif
@@ -1529,10 +1537,8 @@ GHC_INLINE path resolveSymlink(const path& p, std::error_code& ec)
     char buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE] = {0};
     REPARSE_DATA_BUFFER& reparseData = *(REPARSE_DATA_BUFFER*)buffer;
     ULONG bufferUsed;
-    ULONG dwError;
     path result;
     if (DeviceIoControl(file.get(), FSCTL_GET_REPARSE_POINT, 0, 0, &reparseData, sizeof(buffer), &bufferUsed, 0)) {
-        dwError = NOERROR;
         if (IsReparseTagMicrosoft(reparseData.ReparseTag)) {
             switch (reparseData.ReparseTag) {
                 case IO_REPARSE_TAG_SYMLINK:
@@ -2079,7 +2085,7 @@ GHC_INLINE void path::swap(path& rhs) noexcept
 GHC_INLINE const path::string_type& path::native() const
 {
 #ifdef GHC_OS_WINDOWS
-    if(is_absolute() && _path.length() >= MAX_PATH) {
+    if(is_absolute() && _path.length() > MAX_PATH-10) {
         // expand long Windows filenames with marker
         if(has_root_name() && _path[0] == '/') {
             _native_cache = "\\\\?\\UNC" + _path.substr(1);
@@ -3700,6 +3706,17 @@ GHC_INLINE void permissions(const path& p, perms prms, perm_options opts, std::e
         }
     }
 #ifdef GHC_OS_WINDOWS
+#  ifdef __GNUC__
+    auto oldAttr = GetFileAttributesW(p.wstring().c_str());
+    if (oldAttr != INVALID_FILE_ATTRIBUTES)
+    {
+        DWORD newAttr = ((prms & perms::owner_write) == perms::owner_write) ? oldAttr & ~FILE_ATTRIBUTE_READONLY : oldAttr | FILE_ATTRIBUTE_READONLY;
+        if (oldAttr == newAttr || SetFileAttributesW(p.wstring().c_str(), newAttr)) {
+            return;
+        }
+    }
+    ec = std::error_code(::GetLastError(), std::system_category());
+#  else
     int mode = 0;
     if ((prms & perms::owner_read) == perms::owner_read) {
         mode |= _S_IREAD;
@@ -3710,6 +3727,7 @@ GHC_INLINE void permissions(const path& p, perms prms, perm_options opts, std::e
     if (::_wchmod(p.wstring().c_str(), mode) != 0) {
         ec = std::error_code(::GetLastError(), std::system_category());
     }
+#  endif
 #else
     if ((opts & perm_options::nofollow) != perm_options::nofollow) {
         if (::chmod(p.c_str(), static_cast<mode_t>(prms)) != 0) {
