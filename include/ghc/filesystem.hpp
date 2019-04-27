@@ -2784,25 +2784,24 @@ GHC_INLINE path absolute(const path& p, std::error_code& ec)
     return path();
 #else
     path base = current_path(ec);
-    path absoluteBase = base.is_absolute() ? base : absolute(base, ec);
     if (!ec) {
         if (p.empty()) {
-            return absoluteBase / p;
+            return base / p;
         }
         if (p.has_root_name()) {
             if (p.has_root_directory()) {
                 return p;
             }
             else {
-                return p.root_name() / absoluteBase.root_directory() / absoluteBase.relative_path() / p.relative_path();
+                return p.root_name() / base.root_directory() / base.relative_path() / p.relative_path();
             }
         }
         else {
             if (p.has_root_directory()) {
-                return absoluteBase.root_name() / p;
+                return base.root_name() / p;
             }
             else {
-                return absoluteBase / p;
+                return base / p;
             }
         }
     }
