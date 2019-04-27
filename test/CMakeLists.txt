@@ -1,4 +1,8 @@
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
+set(PARSE_CATCH_TESTS_ADD_TO_CONFIGURE_DEPENDS ON)
+include(ParseAndAddCatchTests)
+
 add_executable(filesystem_test filesystem_test.cpp catch.hpp)
 target_link_libraries(filesystem_test ghc_filesystem)
 target_compile_options(filesystem_test PRIVATE
@@ -13,7 +17,7 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
     target_compile_options(filesystem_test_cov PRIVATE "$<$<CONFIG:DEBUG>:--coverage>")
     target_link_libraries(filesystem_test_cov PUBLIC ghc_filesystem PRIVATE --coverage)
 endif()
-add_test(filesystem_test filesystem_test)
+ParseAndAddCatchTests(filesystem_test filesystem_test)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 7.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.0))
     if(APPLE)
