@@ -438,7 +438,7 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.1.0 (wip)
+### [v1.1.0](https://github.com/gulrak/filesystem/releases/tag/v1.1.0)
 
 * Restructuring of the project directory. The header files are now using
   `hpp` as extension to be marked as c++ and they where moved to
@@ -460,7 +460,9 @@ to the expected behavior.
 * The `std::basic_string_view` variants of the `fs::path` api are
   now supported when compiling with C++17. 
 * Added CI integration for Travis-CI and Appveyor.
-  
+* Fixed MingW compilation issues.
+* Added long filename support for Windows.
+
 ### [v1.0.10](https://github.com/gulrak/filesystem/releases/tag/v1.0.10)
 
 * Bugfix for ([#9](https://github.com/gulrak/filesystem/issues/9)), added
