@@ -92,6 +92,7 @@
 
 #ifdef GHC_OS_WINDOWS
 #include <windows.h>
+// additional includes
 #include <shellapi.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -2728,6 +2729,9 @@ GHC_INLINE filesystem_error::filesystem_error(const std::string& what_arg, const
     , _ec(ec)
     , _p1(p1)
 {
+    if (!_p1.empty()) {
+        _what_arg += ": '" + _p1.u8string() + "'";
+    }
 }
 
 GHC_INLINE filesystem_error::filesystem_error(const std::string& what_arg, const path& p1, const path& p2, std::error_code ec)
@@ -2737,6 +2741,12 @@ GHC_INLINE filesystem_error::filesystem_error(const std::string& what_arg, const
     , _p1(p1)
     , _p2(p2)
 {
+    if (!_p1.empty()) {
+        _what_arg += ": '" + _p1.u8string() + "'";
+    }
+    if (!_p2.empty()) {
+        _what_arg += ", '" + _p2.u8string() + "'";
+    }
 }
 
 GHC_INLINE const path& filesystem_error::path1() const noexcept
@@ -2855,7 +2865,7 @@ GHC_INLINE path canonical(const path& p, std::error_code& ec)
                 result = result.parent_path();
                 continue;
             }
-            else if ((result/pe).string().length() <= root.string().length()) {
+            else if ((result / pe).string().length() <= root.string().length()) {
                 result /= pe;
                 continue;
             }
