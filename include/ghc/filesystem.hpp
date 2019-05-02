@@ -144,6 +144,7 @@
 #endif  // GHC_EXPAND_IMPL
 
 // configure LWG conformance (see README.md)
+#define LWG_2682_BEHAVIOUR
 // #define LWG_2935_BEHAVIOUR
 #define LWG_2937_BEHAVIOUR
 
@@ -1007,6 +1008,7 @@ enum class portable_error {
     not_supported,
     not_implemented,
     invalid_argument,
+    is_a_directory,
 };
 GHC_FS_API std::error_code make_error_code(portable_error err);
 }  // namespace detail
@@ -1031,6 +1033,8 @@ GHC_INLINE std::error_code make_error_code(portable_error err)
             return std::error_code(ERROR_CALL_NOT_IMPLEMENTED, std::system_category());
         case portable_error::invalid_argument:
             return std::error_code(ERROR_INVALID_PARAMETER, std::system_category());
+        case portable_error::is_a_directory:
+            return std::error_code(ERROR_DIRECTORY_NOT_SUPPORTED, std::system_category());
     }
 #else
     switch (err) {
@@ -1046,6 +1050,8 @@ GHC_INLINE std::error_code make_error_code(portable_error err)
             return std::error_code(ENOSYS, std::system_category());
         case portable_error::invalid_argument:
             return std::error_code(EINVAL, std::system_category());
+        case portable_error::is_a_directory:
+            return std::error_code(EISDIR, std::system_category());
     }
 #endif
     return std::error_code();
@@ -1641,9 +1647,9 @@ GHC_INLINE file_status status_from_INFO(const path& p, const INFO* info, std::er
 GHC_INLINE bool is_not_found_error(std::error_code& ec)
 {
 #ifdef GHC_OS_WINDOWS
-    return ec.value() == ERROR_FILE_NOT_FOUND || ec.value() == ERROR_PATH_NOT_FOUND;
+    return ec.value() == ERROR_FILE_NOT_FOUND || ec.value() == ERROR_PATH_NOT_FOUND || ec.value() == ERROR_INVALID_NAME;
 #else
-    return ec.value() == ENOENT;
+    return ec.value() == ENOENT || ec.value() == ENOTDIR;
 #endif
 }
 
@@ -1665,7 +1671,7 @@ GHC_INLINE file_status symlink_status_ex(const path& p, std::error_code& ec, uin
             fs.type(file_type::symlink);
         }
     }
-    if (ec.value() == ERROR_FILE_NOT_FOUND) {
+    if (detail::is_not_found_error(ec)) {
         return file_status(file_type::not_found);
     }
     return ec ? file_status(file_type::none) : fs;
@@ -1680,9 +1686,8 @@ GHC_INLINE file_status symlink_status_ex(const path& p, std::error_code& ec, uin
         file_status f_s = detail::file_status_from_st_mode(fs.st_mode);
         return f_s;
     }
-    auto error = errno;
-    ec = std::error_code(error, std::system_category());
-    if (error == ENOENT) {
+    ec = std::error_code(errno, std::system_category());
+    if (detail::is_not_found_error(ec)) {
         return file_status(file_type::not_found, perms::unknown);
     }
     return file_status(file_type::none);
@@ -1750,9 +1755,8 @@ GHC_INLINE file_status status_ex(const path& p, std::error_code& ec, file_status
         return fs;
     }
     else {
-        auto error = errno;
         ec = std::error_code(errno, std::system_category());
-        if (error == ENOENT) {
+        if (detail::is_not_found_error(ec)) {
             return file_status(file_type::not_found, perms::unknown);
         }
         return file_status(file_type::none);
@@ -1792,6 +1796,7 @@ GHC_INLINE u8arguments::u8arguments(int& argc, char**& argv)
 #endif
 #endif
 }
+
 
 //-----------------------------------------------------------------------------
 // 30.10.8.4.1 constructors and destructor
@@ -2955,10 +2960,10 @@ GHC_INLINE void copy(const path& from, const path& to, copy_options options, std
     }
     else if (is_regular_file(fs_from)) {
         if ((options & copy_options::directories_only) == copy_options::none) {
-            if ((options & copy_options::create_symlinks) == copy_options::create_symlinks) {
+            if ((options & copy_options::create_symlinks) != copy_options::none) {
                 create_symlink(from.is_absolute() ? from : canonical(from, ec), to, ec);
             }
-            else if ((options & copy_options::create_hard_links) == copy_options::create_hard_links) {
+            else if ((options & copy_options::create_hard_links) != copy_options::none) {
                 create_hard_link(from, to, ec);
             }
             else if (is_directory(fs_to)) {
@@ -2969,7 +2974,12 @@ GHC_INLINE void copy(const path& from, const path& to, copy_options options, std
             }
         }
     }
-    else if (is_directory(fs_from) && (options == copy_options::none || (options & copy_options::recursive) == copy_options::recursive)) {
+#ifdef LWG_2682_BEHAVIOUR
+    else if(is_directory(fs_from) && (options & copy_options::create_symlinks) != copy_options::none) {
+        ec = detail::make_error_code(detail::portable_error::is_a_directory);
+    }
+#endif
+    else if (is_directory(fs_from) && (options == copy_options::none || (options & copy_options::recursive) != copy_options::none)) {
         if (!exists(fs_to)) {
             create_directory(to, from, ec);
             if (ec) {
@@ -4074,7 +4084,8 @@ GHC_INLINE path weakly_canonical(const path& p, std::error_code& ec) noexcept
     bool scan = true;
     for (auto pe : p) {
         if (scan) {
-            if (exists(result / pe, ec)) {
+            std::error_code tec;
+            if (exists(result / pe, tec)) {
                 result /= pe;
             }
             else {

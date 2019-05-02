@@ -87,6 +87,7 @@ using fstream = ghc::filesystem::fstream;
 #endif
 #include "catch.hpp"
 
+#define TEST_LWG_2682_BEHAVIOUR
 //#define TEST_LWG_2935_BEHAVIOUR
 #define TEST_LWG_2937_BEHAVIOUR
 
@@ -1280,6 +1281,9 @@ TEST_CASE("30.10.15.3 copy", "[filesystem][operations][fs.op.copy]")
         generateFile("dir1/file2");
         fs::create_directory("dir1/dir2");
         generateFile("dir1/dir2/file3");
+#ifdef TEST_LWG_2682_BEHAVIOUR
+        REQUIRE_THROWS_AS(fs::copy("dir1", "dir3", fs::copy_options::create_symlinks | fs::copy_options::recursive), fs::filesystem_error);
+#else
         REQUIRE_NOTHROW(fs::copy("dir1", "dir3", fs::copy_options::create_symlinks | fs::copy_options::recursive));
         CHECK(!ec);
         CHECK(fs::exists("dir3/file1"));
@@ -1288,6 +1292,7 @@ TEST_CASE("30.10.15.3 copy", "[filesystem][operations][fs.op.copy]")
         CHECK(fs::is_symlink("dir3/file2"));
         CHECK(fs::exists("dir3/dir2/file3"));
         CHECK(fs::is_symlink("dir3/dir2/file3"));
+#endif
     }
     {
         TemporaryDirectory t(TempOpt::change_path);
@@ -1537,7 +1542,7 @@ TEST_CASE("30.10.15.12 equivalent", "[filesystem][operations][fs.op.equivalent]"
     INFO("This test expects LWG #2937 result conformance.");
     std::error_code ec;
     bool result = false;
-    CHECK_THROWS_AS(fs::equivalent("foo", "foo3"), fs::filesystem_error);
+    REQUIRE_THROWS_AS(fs::equivalent("foo", "foo3"), fs::filesystem_error);
     CHECK_NOTHROW(result = fs::equivalent("foo", "foo3", ec));
     CHECK(!result);
     CHECK(ec);
@@ -1555,7 +1560,7 @@ TEST_CASE("30.10.15.12 equivalent", "[filesystem][operations][fs.op.equivalent]"
     INFO("This test expects conformance predating LWG #2937 result.");
     std::error_code ec;
     bool result = false;
-    CHECK_NOTHROW(result = fs::equivalent("foo", "foo3"));
+    REQUIRE_NOTHROW(result = fs::equivalent("foo", "foo3"));
     CHECK(!result);
     CHECK_NOTHROW(result = fs::equivalent("foo", "foo3", ec));
     CHECK(!result);
@@ -2288,8 +2293,10 @@ TEST_CASE("30.10.15.39 weakly_canonical", "[filesystem][operations][fs.op.weakly
         CHECK(fs::weakly_canonical(dir) == dir);
         CHECK(fs::weakly_canonical(rel) == dir);
         CHECK(fs::weakly_canonical(dir / "f0") == dir / "f0");
+        CHECK(fs::weakly_canonical(dir / "f0/") == dir / "f0/");
         CHECK(fs::weakly_canonical(dir / "f1") == dir / "f1");
         CHECK(fs::weakly_canonical(rel / "f0") == dir / "f0");
+        CHECK(fs::weakly_canonical(rel / "f0/") == dir / "f0/");
         CHECK(fs::weakly_canonical(rel / "f1") == dir / "f1");
         CHECK(fs::weakly_canonical(rel / "./f0") == dir / "f0");
         CHECK(fs::weakly_canonical(rel / "./f1") == dir / "f1");
