@@ -4882,6 +4882,7 @@ GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::increment
         _impl->_dir_iter_stack.pop();
         _impl->_dir_iter_stack.top().increment(ec);
     }
+    _impl->_recursion_pending = true;
     return *this;
 }
 
