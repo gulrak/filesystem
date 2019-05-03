@@ -468,14 +468,15 @@ TEST_CASE("30.10.8.4.6 path native format observers", "[filesystem][path][fs.pat
 {
 #ifdef GHC_OS_WINDOWS
 #ifdef IS_WCHAR_PATH
-    CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").native() == fs::path::string_type(L"ä\\€"));
+    CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").native() == fs::path::string_type(L"\u00E4\\\u20AC"));
+    // CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").string() == std::string("ä\\€")); // MSVCs returns local DBCS encoding
 #else
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").native() == fs::path::string_type("\xc3\xa4\\\xe2\x82\xac"));
+    CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").string() == std::string("\xc3\xa4\\\xe2\x82\xac"));
     CHECK(!::strcmp(fs::u8path("\xc3\xa4\\\xe2\x82\xac").c_str(), "\xc3\xa4\\\xe2\x82\xac"));
     CHECK((std::string)fs::u8path("\xc3\xa4\\\xe2\x82\xac") == std::string("\xc3\xa4\\\xe2\x82\xac"));
 #endif
-    CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").string() == std::string("\xc3\xa4\\\xe2\x82\xac"));
-    CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").wstring() == std::wstring(L"ä\\€"));
+    CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").wstring() == std::wstring(L"\u00E4\\\u20AC"));
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").u8string() == std::string("\xc3\xa4\\\xe2\x82\xac"));
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").u16string() == std::u16string(u"\u00E4\\\u20AC"));
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").u32string() == std::u32string(U"\U000000E4\\\U000020AC"));
@@ -496,7 +497,9 @@ TEST_CASE("30.10.8.4.6 path native format observers", "[filesystem][path][fs.pat
 TEST_CASE("30.10.8.4.7 path generic format observers", "[filesystem][path][fs.path.generic.obs]")
 {
 #ifdef GHC_OS_WINDOWS
+#ifndef IS_WCHAR_PATH
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_string() == std::string("\xc3\xa4/\xe2\x82\xac"));
+#endif
 #ifndef USE_STD_FS
     auto t = fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_string<char, std::char_traits<char>, TestAllocator<char>>();
     CHECK(t.c_str() == std::string("\xc3\xa4/\xe2\x82\xac"));
@@ -780,6 +783,13 @@ TEST_CASE("30.10.8.4.11 path generation", "[filesystem][path][fs.path.gen]")
     CHECK(fs::path("foo/.///bar/../").lexically_normal() == "foo/");
     CHECK(fs::path("/foo/../..").lexically_normal() == "/");
     CHECK(fs::path("foo/..").lexically_normal() == ".");
+    CHECK(fs::path("ab/cd/ef/../../qw").lexically_normal() == "ab/qw");
+    CHECK(fs::path("a/b/../../../c").lexically_normal() == "../c");
+#ifdef GHC_OS_WINDOWS
+    CHECK(fs::path("\\/\\///\\/").lexically_normal() == "/");
+    CHECK(fs::path("a/b/..\\//..///\\/../c\\\\/").lexically_normal() == "../c/");
+    CHECK(fs::path("..a/b/..\\//..///\\/../c\\\\/").lexically_normal() == "../c/");
+#endif
 
     // lexically_relative()
     CHECK(fs::path("/a/d").lexically_relative("/a/b/c") == "../../d");
@@ -1199,6 +1209,29 @@ TEST_CASE("30.10.14 class recursive_directory_iterator", "[filesystem][recursive
         fs::recursive_directory_iterator rd5;
         rd5 = rd4;
     }
+/*
+    if(1) {
+        fs::path d = "..";
+        int maxDepth = 2;
+        fs::recursive_directory_iterator dit(d);
+        std::cout << d << std::endl;
+        for(auto & f : dit) {
+#if 1
+            if(dit.depth()<=maxDepth) {
+                std::cout << dit.depth() << ": " << f.path() << std::endl;
+            }
+            else {
+                dit.pop();
+            }
+#else
+            std::cout << dit.depth() << ": " << f.path() << std::endl;
+            if(dit.depth()>maxDepth) {
+                dit.disable_recursion_pending();
+            }
+#endif
+        }
+    }
+ */
 }
 
 TEST_CASE("30.10.15.1 absolute", "[filesystem][operations][fs.op.absolute]")
@@ -2345,5 +2378,23 @@ TEST_CASE("Windows: UNC path support", "[filesystem][path][fs.path.win.unc]")
     auto p2 = fs::canonical(p, ec);
     CHECK(!ec);
     CHECK(p2 == p);
+
+    std::vector<fs::path> variants = {
+        R"(C:\Windows\notepad.exe)",
+        R"(\\.\C:\Windows\notepad.exe)",
+        R"(\\?\C:\Windows\notepad.exe)",
+        R"(\??\C:\Windows\notepad.exe)",
+        R"(\\?\HarddiskVolume1\Windows\notepad.exe)",
+        R"(\\?\Harddisk0Partition1\Windows\notepad.exe)",
+        R"(\\.\GLOBALROOT\Device\HarddiskVolume1\Windows\notepad.exe)",
+        R"(\\?\GLOBALROOT\Device\Harddisk0\Partition1\Windows\notepad.exe)",
+        R"(\\?\Volume{e8a4a89d-0000-0000-0000-100000000000}\Windows\notepad.exe)",
+        R"(\\LOCALHOST\C$\Windows\notepad.exe)",
+        R"(\\?\UNC\C$\Windows\notepad.exe)",
+        R"(\\?\GLOBALROOT\Device\Mup\C$\Windows\notepad.exe)",
+    };
+    for (auto p : variants) {
+        std::cerr << p.string() << " - " << p.root_name() << ", " << p.root_path() << ": " << iterateResult(p) << std::endl;
+    }
 }
 #endif
