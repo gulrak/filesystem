@@ -474,7 +474,7 @@ TEST_CASE("30.10.8.4.6 path native format observers", "[filesystem][path][fs.pat
     CHECK((std::string)fs::u8path("\xc3\xa4\\\xe2\x82\xac") == std::string("\xc3\xa4\\\xe2\x82\xac"));
 #endif
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").string() == std::string("\xc3\xa4\\\xe2\x82\xac"));
-    CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").wstring() == std::wstring(L"ä\\€"));
+    CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").wstring() == std::wstring(L"\u00E4\\\u20AC"));
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").u8string() == std::string("\xc3\xa4\\\xe2\x82\xac"));
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").u16string() == std::u16string(u"\u00E4\\\u20AC"));
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").u32string() == std::u32string(U"\U000000E4\\\U000020AC"));
@@ -779,7 +779,8 @@ TEST_CASE("30.10.8.4.11 path generation", "[filesystem][path][fs.path.gen]")
     CHECK(fs::path("foo/.///bar/../").lexically_normal() == "foo/");
     CHECK(fs::path("/foo/../..").lexically_normal() == "/");
     CHECK(fs::path("foo/..").lexically_normal() == ".");
-
+    CHECK(fs::path("ab/cd/ef/../../qw").lexically_normal() == "ab/qw");
+    
     // lexically_relative()
     CHECK(fs::path("/a/d").lexically_relative("/a/b/c") == "../../d");
     CHECK(fs::path("/a/b/c").lexically_relative("/a/d") == "../b/c");
@@ -1198,6 +1199,29 @@ TEST_CASE("30.10.14 class recursive_directory_iterator", "[filesystem][recursive
         fs::recursive_directory_iterator rd5;
         rd5 = rd4;
     }
+/*
+    if(1) {
+        fs::path d = "..";
+        int maxDepth = 2;
+        fs::recursive_directory_iterator dit(d);
+        std::cout << d << std::endl;
+        for(auto & f : dit) {
+#if 1
+            if(dit.depth()<=maxDepth) {
+                std::cout << dit.depth() << ": " << f.path() << std::endl;
+            }
+            else {
+                dit.pop();
+            }
+#else
+            std::cout << dit.depth() << ": " << f.path() << std::endl;
+            if(dit.depth()>maxDepth) {
+                dit.disable_recursion_pending();
+            }
+#endif
+        }
+    }
+ */
 }
 
 TEST_CASE("30.10.15.1 absolute", "[filesystem][operations][fs.op.absolute]")
