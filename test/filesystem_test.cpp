@@ -2280,9 +2280,18 @@ TEST_CASE("30.10.15.38 temporary_directory_path", "[filesystem][operations][fs.o
 
 TEST_CASE("30.10.15.39 weakly_canonical", "[filesystem][operations][fs.op.weakly_canonical]")
 {
-    CHECK(fs::weakly_canonical("foo/bar") == "foo/bar");
-    CHECK(fs::weakly_canonical("foo/./bar") == "foo/bar");
-    CHECK(fs::weakly_canonical("foo/../bar") == "bar");
+    INFO("This might fail on std::implementations that return fs::current_path() for fs::canonical(\"\")");
+    CHECK(fs::weakly_canonical("") == ".");
+    if(fs::weakly_canonical("") == ".") {
+        CHECK(fs::weakly_canonical("foo/bar") == "foo/bar");
+        CHECK(fs::weakly_canonical("foo/./bar") == "foo/bar");
+        CHECK(fs::weakly_canonical("foo/../bar") == "bar");
+    }
+    else {
+        CHECK(fs::weakly_canonical("foo/bar") == fs::current_path() / "foo/bar");
+        CHECK(fs::weakly_canonical("foo/./bar") == fs::current_path() / "foo/bar");
+        CHECK(fs::weakly_canonical("foo/../bar") == fs::current_path() / "bar");
+    }
 
     {
         TemporaryDirectory t(TempOpt::change_path);
