@@ -2392,13 +2392,18 @@ GHC_INLINE path path::lexically_normal() const
     path dest;
     for (const string_type& s : *this) {
         if (s == ".") {
+            dest /= "";
             continue;
         }
         else if (s == ".." && !dest.empty()) {
-            if (dest == root_path()) {
+            auto root = root_path();
+            if (dest == root) {
                 continue;
             }
             else if (*(--dest.end()) != "..") {
+                if(dest._path.back() == generic_separator) {
+                    dest._path.pop_back();
+                }
                 dest.remove_filename();
                 continue;
             }
