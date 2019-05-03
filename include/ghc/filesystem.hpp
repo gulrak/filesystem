@@ -727,9 +727,17 @@ public:
     void swap(recursive_directory_iterator& rhs);
 
 private:
-    directory_options _options;
-    bool _recursion_pending;
-    std::stack<directory_iterator> _dir_iter_stack;
+    struct recursive_directory_iterator_impl {
+        directory_options _options;
+        bool _recursion_pending;
+        std::stack<directory_iterator> _dir_iter_stack;
+        recursive_directory_iterator_impl(directory_options options, bool recursion_pending)
+        : _options(options)
+        , _recursion_pending(recursion_pending)
+        {
+        }
+    };
+    std::shared_ptr<recursive_directory_iterator_impl> _impl;
 };
 
 // 30.10.14.2 directory_iterator non-member functions
@@ -4772,51 +4780,42 @@ GHC_INLINE directory_iterator end(const directory_iterator&) noexcept
 // 30.10.14 class recursive_directory_iterator
 
 GHC_INLINE recursive_directory_iterator::recursive_directory_iterator() noexcept
-    : _options(directory_options::none)
-    , _recursion_pending(true)
+    : _impl(new recursive_directory_iterator_impl(directory_options::none, true))
 {
-    _dir_iter_stack.push(directory_iterator());
+    _impl->_dir_iter_stack.push(directory_iterator());
 }
 
 GHC_INLINE recursive_directory_iterator::recursive_directory_iterator(const path& p)
-    : _options(directory_options::none)
-    , _recursion_pending(true)
+    : _impl(new recursive_directory_iterator_impl(directory_options::none, true))
 {
-    _dir_iter_stack.push(directory_iterator(p));
+    _impl->_dir_iter_stack.push(directory_iterator(p));
 }
 
 GHC_INLINE recursive_directory_iterator::recursive_directory_iterator(const path& p, directory_options options)
-    : _options(options)
-    , _recursion_pending(true)
+    : _impl(new recursive_directory_iterator_impl(options, true))
 {
-    _dir_iter_stack.push(directory_iterator(p, options));
+    _impl->_dir_iter_stack.push(directory_iterator(p, options));
 }
 
 GHC_INLINE recursive_directory_iterator::recursive_directory_iterator(const path& p, directory_options options, std::error_code& ec) noexcept
-    : _options(options)
-    , _recursion_pending(true)
+    : _impl(new recursive_directory_iterator_impl(options, true))
 {
-    _dir_iter_stack.push(directory_iterator(p, options, ec));
+    _impl->_dir_iter_stack.push(directory_iterator(p, options, ec));
 }
 
 GHC_INLINE recursive_directory_iterator::recursive_directory_iterator(const path& p, std::error_code& ec) noexcept
-    : _options(directory_options::none)
-    , _recursion_pending(true)
+    : _impl(new recursive_directory_iterator_impl(directory_options::none, true))
 {
-    _dir_iter_stack.push(directory_iterator(p, ec));
+    _impl->_dir_iter_stack.push(directory_iterator(p, ec));
 }
 
 GHC_INLINE recursive_directory_iterator::recursive_directory_iterator(const recursive_directory_iterator& rhs)
-    : _options(rhs._options)
-    , _recursion_pending(rhs._recursion_pending)
-    , _dir_iter_stack(rhs._dir_iter_stack)
+    : _impl(rhs._impl)
 {
 }
 
 GHC_INLINE recursive_directory_iterator::recursive_directory_iterator(recursive_directory_iterator&& rhs) noexcept
-    : _options(rhs._options)
-    , _recursion_pending(rhs._recursion_pending)
-    , _dir_iter_stack(std::move(rhs._dir_iter_stack))
+    : _impl(std::move(rhs._impl))
 {
 }
 
@@ -4825,43 +4824,39 @@ GHC_INLINE recursive_directory_iterator::~recursive_directory_iterator() {}
 // 30.10.14.1 observers
 GHC_INLINE directory_options recursive_directory_iterator::options() const
 {
-    return _options;
+    return _impl->_options;
 }
 
 GHC_INLINE int recursive_directory_iterator::depth() const
 {
-    return static_cast<int>(_dir_iter_stack.empty() ? 0 : _dir_iter_stack.size() - 1);
+    return static_cast<int>(_impl->_dir_iter_stack.size() - 1);
 }
 
 GHC_INLINE bool recursive_directory_iterator::recursion_pending() const
 {
-    return _recursion_pending;
+    return _impl->_recursion_pending;
 }
 
 GHC_INLINE const directory_entry& recursive_directory_iterator::operator*() const
 {
-    return *(_dir_iter_stack.top());
+    return *(_impl->_dir_iter_stack.top());
 }
 
 GHC_INLINE const directory_entry* recursive_directory_iterator::operator->() const
 {
-    return &(*(_dir_iter_stack.top()));
+    return &(*(_impl->_dir_iter_stack.top()));
 }
 
 // 30.10.14.1 modifiers recursive_directory_iterator&
 GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::operator=(const recursive_directory_iterator& rhs)
 {
-    _options = rhs._options;
-    _recursion_pending = rhs._recursion_pending;
-    _dir_iter_stack = rhs._dir_iter_stack;
+    _impl = rhs._impl;
     return *this;
 }
 
 GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::operator=(recursive_directory_iterator&& rhs) noexcept
 {
-    _options = rhs._options;
-    _recursion_pending = rhs._recursion_pending;
-    _dir_iter_stack = std::move(rhs._dir_iter_stack);
+    _impl = std::move(rhs._impl);
     return *this;
 }
 
@@ -4870,7 +4865,7 @@ GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::operator+
     std::error_code ec;
     increment(ec);
     if (ec) {
-        throw filesystem_error(detail::systemErrorText(ec.value()), _dir_iter_stack.empty() ? path() : _dir_iter_stack.top()->path(), ec);
+        throw filesystem_error(detail::systemErrorText(ec.value()), _impl->_dir_iter_stack.empty() ? path() : _impl->_dir_iter_stack.top()->path(), ec);
     }
     return *this;
 }
@@ -4878,56 +4873,59 @@ GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::operator+
 GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::increment(std::error_code& ec) noexcept
 {
     if (recursion_pending() && is_directory((*this)->status()) && (!is_symlink((*this)->symlink_status()) || (options() & directory_options::follow_directory_symlink) != directory_options::none)) {
-        _dir_iter_stack.push(directory_iterator((*this)->path(), _options, ec));
+        _impl->_dir_iter_stack.push(directory_iterator((*this)->path(), _impl->_options, ec));
     }
     else {
-        _dir_iter_stack.top().increment(ec);
+        _impl->_dir_iter_stack.top().increment(ec);
     }
-    while (depth() && _dir_iter_stack.top() == directory_iterator()) {
-        _dir_iter_stack.pop();
-        _dir_iter_stack.top().increment(ec);
+    while (depth() && _impl->_dir_iter_stack.top() == directory_iterator()) {
+        _impl->_dir_iter_stack.pop();
+        _impl->_dir_iter_stack.top().increment(ec);
     }
     return *this;
 }
 
 GHC_INLINE void recursive_directory_iterator::pop()
 {
+    std::error_code ec;
+    pop(ec);
+    if (ec) {
+        throw filesystem_error(detail::systemErrorText(ec.value()), _impl->_dir_iter_stack.empty() ? path() : _impl->_dir_iter_stack.top()->path(), ec);
+    }
+}
+
+GHC_INLINE void recursive_directory_iterator::pop(std::error_code& ec)
+{
     if (depth() == 0) {
         *this = recursive_directory_iterator();
     }
     else {
-        _dir_iter_stack.pop();
+        while (depth() && _impl->_dir_iter_stack.top() == directory_iterator()) {
+            _impl->_dir_iter_stack.pop();
+            _impl->_dir_iter_stack.top().increment(ec);
+        }
     }
-}
-
-GHC_INLINE void recursive_directory_iterator::pop(std::error_code&)
-{
-    pop();
 }
 
 GHC_INLINE void recursive_directory_iterator::disable_recursion_pending()
 {
-    _recursion_pending = false;
+    _impl->_recursion_pending = false;
 }
 
 // other members as required by 27.2.3, input iterators
 GHC_INLINE bool recursive_directory_iterator::operator==(const recursive_directory_iterator& rhs) const
 {
-    return _dir_iter_stack.top() == rhs._dir_iter_stack.top();
+    return _impl->_dir_iter_stack.top() == rhs._impl->_dir_iter_stack.top();
 }
 
 GHC_INLINE bool recursive_directory_iterator::operator!=(const recursive_directory_iterator& rhs) const
 {
-    return _dir_iter_stack.top() != rhs._dir_iter_stack.top();
+    return _impl->_dir_iter_stack.top() != rhs._impl->_dir_iter_stack.top();
 }
 
 GHC_INLINE void recursive_directory_iterator::swap(recursive_directory_iterator& rhs)
 {
-    std::swap(_options, rhs._options);
-    bool rp = _recursion_pending;
-    _recursion_pending = rhs._recursion_pending;
-    rhs._recursion_pending = rp;
-    _dir_iter_stack.swap(rhs._dir_iter_stack);
+    std::swap(_impl, rhs._impl);
 }
 
 // 30.10.14.2 directory_iterator non-member functions
