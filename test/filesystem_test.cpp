@@ -119,9 +119,9 @@ struct StringMaker<fs::file_time_type>
     {
         std::time_t t = to_time_t(value);
         std::tm* ptm = std::localtime(&t);
+        std::ostringstream os;
         if (ptm) {
             std::tm ttm = *ptm;
-            std::ostringstream os;
             os << std::put_time(&ttm, "%Y-%m-%d %H:%M:%S");
         }
         else {
