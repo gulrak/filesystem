@@ -117,9 +117,15 @@ struct StringMaker<fs::file_time_type>
     static std::string convert(fs::file_time_type const& value)
     {
         std::time_t t = to_time_t(value);
-        std::tm ttm = *std::localtime(&t);
-        std::ostringstream os;
-        os << std::put_time(&ttm, "%Y-%m-%d %H:%M:%S");
+        std::tm* ptm = std::localtime(&t);
+        if (ptm) {
+            std::tm ttm = *ptm;
+            std::ostringstream os;
+            os << std::put_time(&ttm, "%Y-%m-%d %H:%M:%S");
+        }
+        else {
+            os << "(invalid-time)";
+        }
         return os.str();
     }
 };
