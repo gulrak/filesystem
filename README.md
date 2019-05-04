@@ -438,6 +438,15 @@ to the expected behavior.
 
 ## Release Notes
 
+### v1.1.2 (wip)
+
+* Bugfix for ([#11](https://github.com/gulrak/filesystem/issues/11)),
+  `fs::path::lexically_normal()` had some issues with `".."`-sequences.
+* Bugfix for ([#12](https://github.com/gulrak/filesystem/issues/12)),
+  `fs::recursive_directory_iterator` could run into endless loops,
+  the methods depth() and pop() had issues and the copy behaviour and
+  `input_iterator_tag` conformance was broken, added tests
+
 ### [v1.1.0](https://github.com/gulrak/filesystem/releases/tag/v1.1.0)
 
 * Restructuring of the project directory. The header files are now using
