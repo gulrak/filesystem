@@ -36,6 +36,7 @@
 #include <functional>
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <random>
 #include <sstream>
 #include <thread>
@@ -1205,29 +1206,73 @@ TEST_CASE("30.10.14 class recursive_directory_iterator", "[filesystem][recursive
         fs::recursive_directory_iterator rd5;
         rd5 = rd4;
     }
-/*
-    if(1) {
-        fs::path d = "..";
-        int maxDepth = 2;
-        fs::recursive_directory_iterator dit(d);
-        std::cout << d << std::endl;
-        for(auto & f : dit) {
-#if 1
-            if(dit.depth()<=maxDepth) {
-                std::cout << dit.depth() << ": " << f.path() << std::endl;
+    {
+        TemporaryDirectory t(TempOpt::change_path);
+        generateFile("a");
+        fs::create_directory("d1");
+        fs::create_directory("d1/d2");
+        generateFile("d1/b");
+        generateFile("d1/c");
+        generateFile("d1/d2/d");
+        generateFile("e");
+        auto iter = fs::recursive_directory_iterator(".");
+        std::multimap<std::string, int> result;
+        while(iter != fs::recursive_directory_iterator()) {
+            result.insert(std::make_pair(iter->path().string(), iter.depth()));
+            ++iter;
+        }
+        std::stringstream os;
+        for(auto p : result) {
+            os << "[" << p.first << "," << p.second << "],";
+        }
+        CHECK(os.str() == "[./a,0],[./d1,0],[./d1/b,1],[./d1/c,1],[./d1/d2,1],[./d1/d2/d,2],[./e,0],");
+    }
+    {
+        TemporaryDirectory t(TempOpt::change_path);
+        generateFile("a");
+        fs::create_directory("d1");
+        fs::create_directory("d1/d2");
+        generateFile("d1/d2/b");
+        generateFile("e");
+        auto iter = fs::recursive_directory_iterator(".");
+        std::multimap<std::string, int> result;
+        while(iter != fs::recursive_directory_iterator()) {
+            result.insert(std::make_pair(iter->path().string(), iter.depth()));
+            if(iter->path() == "./d1/d2") {
+                iter.disable_recursion_pending();
+            }
+            ++iter;
+        }
+        std::stringstream os;
+        for(auto p : result) {
+            os << "[" << p.first << "," << p.second << "],";
+        }
+        CHECK(os.str() == "[./a,0],[./d1,0],[./d1/d2,1],[./e,0],");
+    }
+    {
+        TemporaryDirectory t(TempOpt::change_path);
+        generateFile("a");
+        fs::create_directory("d1");
+        fs::create_directory("d1/d2");
+        generateFile("d1/d2/b");
+        generateFile("e");
+        auto iter = fs::recursive_directory_iterator(".");
+        std::multimap<std::string, int> result;
+        while(iter != fs::recursive_directory_iterator()) {
+            result.insert(std::make_pair(iter->path().string(), iter.depth()));
+            if(iter->path() == "./d1/d2") {
+                iter.pop();
             }
             else {
-                dit.pop();
+                ++iter;
             }
-#else
-            std::cout << dit.depth() << ": " << f.path() << std::endl;
-            if(dit.depth()>maxDepth) {
-                dit.disable_recursion_pending();
-            }
-#endif
         }
+        std::stringstream os;
+        for(auto p : result) {
+            os << "[" << p.first << "," << p.second << "],";
+        }
+        CHECK(os.str() == "[./a,0],[./d1,0],[./d1/d2,1],[./e,0],");
     }
- */
 }
 
 TEST_CASE("30.10.15.1 absolute", "[filesystem][operations][fs.op.absolute]")

@@ -4885,10 +4885,11 @@ GHC_INLINE void recursive_directory_iterator::pop(std::error_code& ec)
         *this = recursive_directory_iterator();
     }
     else {
-        while (depth() && _impl->_dir_iter_stack.top() == directory_iterator()) {
+        do {
             _impl->_dir_iter_stack.pop();
             _impl->_dir_iter_stack.top().increment(ec);
         }
+        while (depth() && _impl->_dir_iter_stack.top() == directory_iterator());
     }
 }
 
