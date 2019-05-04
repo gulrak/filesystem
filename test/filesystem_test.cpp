@@ -1224,7 +1224,7 @@ TEST_CASE("30.10.14 class recursive_directory_iterator", "[filesystem][recursive
         auto iter = fs::recursive_directory_iterator(".");
         std::multimap<std::string, int> result;
         while(iter != fs::recursive_directory_iterator()) {
-            result.insert(std::make_pair(iter->path().string(), iter.depth()));
+            result.insert(std::make_pair(iter->path().generic_string(), iter.depth()));
             ++iter;
         }
         std::stringstream os;
@@ -1243,7 +1243,7 @@ TEST_CASE("30.10.14 class recursive_directory_iterator", "[filesystem][recursive
         auto iter = fs::recursive_directory_iterator(".");
         std::multimap<std::string, int> result;
         while(iter != fs::recursive_directory_iterator()) {
-            result.insert(std::make_pair(iter->path().string(), iter.depth()));
+            result.insert(std::make_pair(iter->path().generic_string(), iter.depth()));
             if(iter->path() == "./d1/d2") {
                 iter.disable_recursion_pending();
             }
@@ -1265,7 +1265,7 @@ TEST_CASE("30.10.14 class recursive_directory_iterator", "[filesystem][recursive
         auto iter = fs::recursive_directory_iterator(".");
         std::multimap<std::string, int> result;
         while(iter != fs::recursive_directory_iterator()) {
-            result.insert(std::make_pair(iter->path().string(), iter.depth()));
+            result.insert(std::make_pair(iter->path().generic_string(), iter.depth()));
             if(iter->path() == "./d1/d2") {
                 iter.pop();
             }
