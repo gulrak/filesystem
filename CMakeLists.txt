@@ -25,7 +25,10 @@ target_compile_options(ghc_filesystem INTERFACE "$<$<CXX_COMPILER_ID:MSVC>:/utf-
 
 get_directory_property(hasParent PARENT_DIRECTORY)
 if(NOT hasParent)
-  enable_testing()
-  add_subdirectory(test)
-  add_subdirectory(examples)
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
+    include(GhcHelper)
+    enable_testing()
+    add_subdirectory(test)
+    add_subdirectory(examples)
 endif()

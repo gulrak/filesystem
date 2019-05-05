@@ -88,8 +88,19 @@ using fstream = ghc::filesystem::fstream;
 #endif
 #include "catch.hpp"
 
-//#define TEST_LWG_2935_BEHAVIOUR
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Behaviour Switches (should match the config in ghc/filesystem.hpp):
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// LWG #2682 disables the since then invalid use of the copy option create_symlinks on directories
+#define TEST_LWG_2682_BEHAVIOUR
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// LWG #2395 makes crate_directory/create_directories not emit an error if there is a regular
+// file with that name, it is superceded by P1164R1, so only activate if really needed
+// #define TEST_LWG_2935_BEHAVIOUR
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// LWG #2937 enforces that fs::equivalent emits an error, if !fs::exists(p1)||!exists(p2)
 #define TEST_LWG_2937_BEHAVIOUR
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 template <typename TP>
 std::time_t to_time_t(TP tp)
@@ -474,13 +485,14 @@ TEST_CASE("30.10.8.4.6 path native format observers", "[filesystem][path][fs.pat
 {
 #ifdef GHC_OS_WINDOWS
 #ifdef IS_WCHAR_PATH
-    CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").native() == fs::path::string_type(L"ä\\€"));
+    CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").native() == fs::path::string_type(L"\u00E4\\\u20AC"));
+    // CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").string() == std::string("ä\\€")); // MSVCs returns local DBCS encoding
 #else
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").native() == fs::path::string_type("\xc3\xa4\\\xe2\x82\xac"));
+    CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").string() == std::string("\xc3\xa4\\\xe2\x82\xac"));
     CHECK(!::strcmp(fs::u8path("\xc3\xa4\\\xe2\x82\xac").c_str(), "\xc3\xa4\\\xe2\x82\xac"));
     CHECK((std::string)fs::u8path("\xc3\xa4\\\xe2\x82\xac") == std::string("\xc3\xa4\\\xe2\x82\xac"));
 #endif
-    CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").string() == std::string("\xc3\xa4\\\xe2\x82\xac"));
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").wstring() == std::wstring(L"\u00E4\\\u20AC"));
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").u8string() == std::string("\xc3\xa4\\\xe2\x82\xac"));
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").u16string() == std::u16string(u"\u00E4\\\u20AC"));
@@ -502,7 +514,9 @@ TEST_CASE("30.10.8.4.6 path native format observers", "[filesystem][path][fs.pat
 TEST_CASE("30.10.8.4.7 path generic format observers", "[filesystem][path][fs.path.generic.obs]")
 {
 #ifdef GHC_OS_WINDOWS
+#ifndef IS_WCHAR_PATH
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_string() == std::string("\xc3\xa4/\xe2\x82\xac"));
+#endif
 #ifndef USE_STD_FS
     auto t = fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_string<char, std::char_traits<char>, TestAllocator<char>>();
     CHECK(t.c_str() == std::string("\xc3\xa4/\xe2\x82\xac"));
@@ -1361,6 +1375,9 @@ TEST_CASE("30.10.15.3 copy", "[filesystem][operations][fs.op.copy]")
         generateFile("dir1/file2");
         fs::create_directory("dir1/dir2");
         generateFile("dir1/dir2/file3");
+#ifdef TEST_LWG_2682_BEHAVIOUR
+        REQUIRE_THROWS_AS(fs::copy("dir1", "dir3", fs::copy_options::create_symlinks | fs::copy_options::recursive), fs::filesystem_error);
+#else
         REQUIRE_NOTHROW(fs::copy("dir1", "dir3", fs::copy_options::create_symlinks | fs::copy_options::recursive));
         CHECK(!ec);
         CHECK(fs::exists("dir3/file1"));
@@ -1369,6 +1386,7 @@ TEST_CASE("30.10.15.3 copy", "[filesystem][operations][fs.op.copy]")
         CHECK(fs::is_symlink("dir3/file2"));
         CHECK(fs::exists("dir3/dir2/file3"));
         CHECK(fs::is_symlink("dir3/dir2/file3"));
+#endif
     }
     {
         TemporaryDirectory t(TempOpt::change_path);
@@ -1471,7 +1489,7 @@ TEST_CASE("30.10.15.6 create_directories", "[filesystem][operations][fs.op.creat
     CHECK(!fs::is_directory(p));
     CHECK(!fs::create_directories(p, ec));
 #else
-    INFO("This test expects conformance predating LWG #2935 result. (As suggested by WG21 P1164R0, implemented by GCC with issue #86910.)");
+    INFO("This test expects conformance with P1164R1. (implemented by GCC with issue #86910.)");
     p = t.path() / "testfile";
     generateFile(p);
     CHECK(fs::is_regular_file(p));
@@ -1515,7 +1533,7 @@ TEST_CASE("30.10.15.7 create_directory", "[filesystem][operations][fs.op.create_
     CHECK(!fs::is_directory(p));
     CHECK(!fs::create_directories(p, ec));
 #else
-    INFO("This test expects conformance predating LWG #2935 result. (As suggested by WG21 P1164R0, implemented by GCC with issue #86910.)");
+    INFO("This test expects conformance with P1164R1. (implemented by GCC with issue #86910.)");
     p = t.path() / "testfile";
     generateFile(p);
     CHECK(fs::is_regular_file(p));
@@ -1618,7 +1636,7 @@ TEST_CASE("30.10.15.12 equivalent", "[filesystem][operations][fs.op.equivalent]"
     INFO("This test expects LWG #2937 result conformance.");
     std::error_code ec;
     bool result = false;
-    CHECK_THROWS_AS(fs::equivalent("foo", "foo3"), fs::filesystem_error);
+    REQUIRE_THROWS_AS(fs::equivalent("foo", "foo3"), fs::filesystem_error);
     CHECK_NOTHROW(result = fs::equivalent("foo", "foo3", ec));
     CHECK(!result);
     CHECK(ec);
@@ -1636,7 +1654,7 @@ TEST_CASE("30.10.15.12 equivalent", "[filesystem][operations][fs.op.equivalent]"
     INFO("This test expects conformance predating LWG #2937 result.");
     std::error_code ec;
     bool result = false;
-    CHECK_NOTHROW(result = fs::equivalent("foo", "foo3"));
+    REQUIRE_NOTHROW(result = fs::equivalent("foo", "foo3"));
     CHECK(!result);
     CHECK_NOTHROW(result = fs::equivalent("foo", "foo3", ec));
     CHECK(!result);
@@ -2356,9 +2374,18 @@ TEST_CASE("30.10.15.38 temporary_directory_path", "[filesystem][operations][fs.o
 
 TEST_CASE("30.10.15.39 weakly_canonical", "[filesystem][operations][fs.op.weakly_canonical]")
 {
-    CHECK(fs::weakly_canonical("foo/bar") == "foo/bar");
-    CHECK(fs::weakly_canonical("foo/./bar") == "foo/bar");
-    CHECK(fs::weakly_canonical("foo/../bar") == "bar");
+    INFO("This might fail on std::implementations that return fs::current_path() for fs::canonical(\"\")");
+    CHECK(fs::weakly_canonical("") == ".");
+    if(fs::weakly_canonical("") == ".") {
+        CHECK(fs::weakly_canonical("foo/bar") == "foo/bar");
+        CHECK(fs::weakly_canonical("foo/./bar") == "foo/bar");
+        CHECK(fs::weakly_canonical("foo/../bar") == "bar");
+    }
+    else {
+        CHECK(fs::weakly_canonical("foo/bar") == fs::current_path() / "foo/bar");
+        CHECK(fs::weakly_canonical("foo/./bar") == fs::current_path() / "foo/bar");
+        CHECK(fs::weakly_canonical("foo/../bar") == fs::current_path() / "bar");
+    }
 
     {
         TemporaryDirectory t(TempOpt::change_path);
@@ -2369,8 +2396,10 @@ TEST_CASE("30.10.15.39 weakly_canonical", "[filesystem][operations][fs.op.weakly
         CHECK(fs::weakly_canonical(dir) == dir);
         CHECK(fs::weakly_canonical(rel) == dir);
         CHECK(fs::weakly_canonical(dir / "f0") == dir / "f0");
+        CHECK(fs::weakly_canonical(dir / "f0/") == dir / "f0/");
         CHECK(fs::weakly_canonical(dir / "f1") == dir / "f1");
         CHECK(fs::weakly_canonical(rel / "f0") == dir / "f0");
+        CHECK(fs::weakly_canonical(rel / "f0/") == dir / "f0/");
         CHECK(fs::weakly_canonical(rel / "f1") == dir / "f1");
         CHECK(fs::weakly_canonical(rel / "./f0") == dir / "f0");
         CHECK(fs::weakly_canonical(rel / "./f1") == dir / "f1");

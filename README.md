@@ -402,9 +402,8 @@ But this makes `fs::copy` with `fs::copy_options::create_symlinks` or `fs::copy_
 just a more complicated syntax for the `fs::create_symlink` or `fs::create_hardlink` operation
 and I don't want to believe, that this was the intention of the original writing.
 As there is another issue related to copy, with a different take on the description,
-I keep my version the way I read the description, as it is not contradicting the standard and useful. Let's see
-what final solution the LWG comes up with in the end.
-
+*Note:* With v1.1.2 I decided to integrate a behavior switch for this and make the LWG #2682
+the default.
 
 ## Open Issues
 
@@ -446,6 +445,16 @@ to the expected behavior.
   `fs::recursive_directory_iterator` could run into endless loops,
   the methods depth() and pop() had issues and the copy behaviour and
   `input_iterator_tag` conformance was broken, added tests
+* Restructured some CMake code into a macro to ease the support for
+  C++17 std::filesystem builds of tests and examples for interoperability
+  checks.
+* Some fixes on Windows tests to ease interoperability test runs.
+* Reduced noise on `fs::weakly_canonical()` tests against `std::fs`
+* Added simple `du` example showing the `recursive_directory_iterator`
+  used to add the sizes of files in a directory tree.
+* Added error checking in `fs::file_time_type` test helpers
+* `fs::copy()` now conforms LWG #2682, disallowing the use of
+  `copy_option::create_symlinks' to be used on directories
 
 ### [v1.1.0](https://github.com/gulrak/filesystem/releases/tag/v1.1.0)
 
