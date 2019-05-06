@@ -149,7 +149,7 @@
 #define LWG_2937_BEHAVIOUR
 
 // ghc::filesystem version in decimal (major * 10000 + minor * 100 + patch)
-#define GHC_FILESYSTEM_VERSION 10100L
+#define GHC_FILESYSTEM_VERSION 10101L
 
 namespace ghc {
 namespace filesystem {
@@ -2392,13 +2392,18 @@ GHC_INLINE path path::lexically_normal() const
     path dest;
     for (const string_type& s : *this) {
         if (s == ".") {
+            dest /= "";
             continue;
         }
         else if (s == ".." && !dest.empty()) {
-            if (dest == root_path()) {
+            auto root = root_path();
+            if (dest == root) {
                 continue;
             }
             else if (*(--dest.end()) != "..") {
+                if(dest._path.back() == generic_separator) {
+                    dest._path.pop_back();
+                }
                 dest.remove_filename();
                 continue;
             }
@@ -4882,6 +4887,7 @@ GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::increment
         _impl->_dir_iter_stack.pop();
         _impl->_dir_iter_stack.top().increment(ec);
     }
+    _impl->_recursion_pending = true;
     return *this;
 }
 

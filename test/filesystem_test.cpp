@@ -802,6 +802,13 @@ TEST_CASE("30.10.8.4.11 path generation", "[filesystem][path][fs.path.gen]")
     CHECK(fs::path("foo/.///bar/../").lexically_normal() == "foo/");
     CHECK(fs::path("/foo/../..").lexically_normal() == "/");
     CHECK(fs::path("foo/..").lexically_normal() == ".");
+    CHECK(fs::path("ab/cd/ef/../../qw").lexically_normal() == "ab/qw");
+    CHECK(fs::path("a/b/../../../c").lexically_normal() == "../c");
+#ifdef GHC_OS_WINDOWS
+    CHECK(fs::path("\\/\\///\\/").lexically_normal() == "/");
+    CHECK(fs::path("a/b/..\\//..///\\/../c\\\\/").lexically_normal() == "../c/");
+    CHECK(fs::path("..a/b/..\\//..///\\/../c\\\\/").lexically_normal() == "../c/");
+#endif
 
     // lexically_relative()
     CHECK(fs::path("/a/d").lexically_relative("/a/b/c") == "../../d");
@@ -1221,6 +1228,29 @@ TEST_CASE("30.10.14 class recursive_directory_iterator", "[filesystem][recursive
         fs::recursive_directory_iterator rd5;
         rd5 = rd4;
     }
+/*
+    if(1) {
+        fs::path d = "..";
+        int maxDepth = 2;
+        fs::recursive_directory_iterator dit(d);
+        std::cout << d << std::endl;
+        for(auto & f : dit) {
+#if 1
+            if(dit.depth()<=maxDepth) {
+                std::cout << dit.depth() << ": " << f.path() << std::endl;
+            }
+            else {
+                dit.pop();
+            }
+#else
+            std::cout << dit.depth() << ": " << f.path() << std::endl;
+            if(dit.depth()>maxDepth) {
+                dit.disable_recursion_pending();
+            }
+#endif
+        }
+    }
+ */
 }
 
 TEST_CASE("30.10.15.1 absolute", "[filesystem][operations][fs.op.absolute]")
@@ -2302,9 +2332,18 @@ TEST_CASE("30.10.15.38 temporary_directory_path", "[filesystem][operations][fs.o
 
 TEST_CASE("30.10.15.39 weakly_canonical", "[filesystem][operations][fs.op.weakly_canonical]")
 {
-    CHECK(fs::weakly_canonical("foo/bar") == "foo/bar");
-    CHECK(fs::weakly_canonical("foo/./bar") == "foo/bar");
-    CHECK(fs::weakly_canonical("foo/../bar") == "bar");
+    INFO("This might fail on std::implementations that return fs::current_path() for fs::canonical(\"\")");
+    CHECK(fs::weakly_canonical("") == ".");
+    if(fs::weakly_canonical("") == ".") {
+        CHECK(fs::weakly_canonical("foo/bar") == "foo/bar");
+        CHECK(fs::weakly_canonical("foo/./bar") == "foo/bar");
+        CHECK(fs::weakly_canonical("foo/../bar") == "bar");
+    }
+    else {
+        CHECK(fs::weakly_canonical("foo/bar") == fs::current_path() / "foo/bar");
+        CHECK(fs::weakly_canonical("foo/./bar") == fs::current_path() / "foo/bar");
+        CHECK(fs::weakly_canonical("foo/../bar") == fs::current_path() / "bar");
+    }
 
     {
         TemporaryDirectory t(TempOpt::change_path);
