@@ -440,7 +440,7 @@ to the expected behavior.
 
 ## Release Notes
 
-###[v1.1.4](https://github.com/gulrak/filesystem/releases/tag/v1.1.4)
+### [v1.1.4](https://github.com/gulrak/filesystem/releases/tag/v1.1.4)
 
 * Additional Bugfix for ([#12](https://github.com/gulrak/filesystem/issues/12)),
   error in old unified `readdir/readdir_r` code of `fs::directory_iterator`;
