@@ -403,7 +403,8 @@ and part of the justification for the proposed solution is "we did it so for alm
 But this makes `fs::copy` with `fs::copy_options::create_symlinks` or `fs::copy_options::create_hard_links`
 just a more complicated syntax for the `fs::create_symlink` or `fs::create_hardlink` operation
 and I don't want to believe, that this was the intention of the original writing.
-As there is another issue related to copy, with a different take on the description,
+As there is another issue related to copy, with a different take on the description.
+
 *Note:* With v1.1.2 I decided to integrate a behavior switch for this and make the LWG #2682
 the default.
 

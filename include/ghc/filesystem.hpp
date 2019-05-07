@@ -1379,20 +1379,20 @@ inline path::path(InputIterator first, InputIterator last, format fmt)
 
 namespace detail {
 
-GHC_INLINE bool compare_no_case(const char* str1, const char* str2)
+GHC_INLINE bool equals_simple_insensitive(const char* str1, const char* str2)
 {
 #ifdef GHC_OS_WINDOWS
 #  ifdef __GNUC__
     while (::tolower((unsigned char)*str1) == ::tolower((unsigned char)*str2++)) {
         if (*str1++ == 0)
-            return false;
+            return true;
     }
-    return true;
+    return false;
 #  else
-    return ::_stricmp(str1, str2);
+    return 0 == ::_stricmp(str1, str2);
 #  endif
 #else
-    return ::strcasecmp(str1, str2);
+    return 0 == ::strcasecmp(str1, str2);
 #endif
 }
 
@@ -1650,7 +1650,7 @@ GHC_INLINE file_status status_from_INFO(const path& p, const INFO* info, std::er
         prms = prms | perms::owner_write | perms::group_write | perms::others_write;
     }
     std::string ext = p.extension().generic_string();
-    if (!compare_no_case(ext.c_str(), ".exe") || !compare_no_case(ext.c_str(), ".cmd") || !compare_no_case(ext.c_str(), ".bat") || !compare_no_case(ext.c_str(), ".com")) {
+    if (equals_simple_insensitive(ext.c_str(), ".exe") || equals_simple_insensitive(ext.c_str(), ".cmd") || equals_simple_insensitive(ext.c_str(), ".bat") || equals_simple_insensitive(ext.c_str(), ".com")) {
         prms = prms | perms::owner_exec | perms::group_exec | perms::others_exec;
     }
     if (sz) {
@@ -1810,7 +1810,7 @@ GHC_INLINE u8arguments::u8arguments(int& argc, char**& argv)
 #if defined(__ANDROID__) && __ANDROID_API__ < 26
     _isvalid = true;
 #else
-    if (!detail::compare_no_case(::nl_langinfo(CODESET), "UTF-8")) {
+    if (detail::equals_simple_insensitive(::nl_langinfo(CODESET), "UTF-8")) {
         _isvalid = true;
     }
 #endif
