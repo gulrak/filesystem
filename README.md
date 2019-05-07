@@ -440,6 +440,16 @@ to the expected behavior.
 
 ## Release Notes
 
+###[v1.1.4](https://github.com/gulrak/filesystem/releases/tag/v1.1.4)
+
+* Additional Bugfix for ([#12](https://github.com/gulrak/filesystem/issues/12)),
+  error in old unified `readdir/readdir_r` code of `fs::directory_iterator`;
+  as `readdir_r` is now depricated, I decided to drop it and the resulting
+  code is much easier, shorter and due to more refactoring faster
+* Fix for crashing unit tests against MSVC C++17 std::filesystem
+* Travis-CI now additionally test with Xcode 10.2 on macOS
+* Some minor refactorings
+
 ### [v1.1.2](https://github.com/gulrak/filesystem/releases/tag/v1.1.2)
 
 * Bugfix for ([#11](https://github.com/gulrak/filesystem/issues/11)),
