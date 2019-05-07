@@ -52,6 +52,6 @@ int main(int argc, char* argv[])
         std::cerr << "Error: " << fe.what() << std::endl;
         exit(1);
     }
-    std::cout << totalSize << " bytes in " << totalFiles << " and " << totalDirs << " directories, maximum depth: " << maxDepth << std::endl;
+    std::cout << totalSize << " bytes in " << totalFiles << " files and " << totalDirs << " directories, maximum depth: " << maxDepth << std::endl;
     return 0;
 }

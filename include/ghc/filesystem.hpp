@@ -342,6 +342,8 @@ public:
     iterator end() const;
 
 private:
+    friend class directory_iterator;
+    void append_name(const char* name);
     static constexpr value_type generic_separator = '/';
     template <typename InputIterator>
     class input_iterator_range
@@ -1909,7 +1911,8 @@ inline path& path::assign(const Source& source)
 template <>
 inline path& path::assign<path>(const path& source)
 {
-    return assign(source._path);
+    _path = source._path;
+    return *this;
 }
 
 template <class InputIterator>
@@ -1957,6 +1960,19 @@ GHC_INLINE path& path::operator/=(const path& p)
         _path += (*iter++).generic_string();
     }
     return *this;
+}
+
+GHC_INLINE void path::append_name(const char* name)
+{
+    if(_path.empty()) {
+        this->operator/=(path(name));
+    }
+    else {
+        if(_path.back() != path::generic_separator) {
+            _path.push_back(path::generic_separator);
+        }
+        _path += name;
+    }
 }
 
 #endif  // GHC_EXPAND_IMPL
@@ -4537,7 +4553,8 @@ public:
         if (_dirHandle != INVALID_HANDLE_VALUE) {
             do {
                 if (FindNextFileW(_dirHandle, &_findData)) {
-                    _current = _base / std::wstring(_findData.cFileName);
+                    _current = _base;
+                    _current.append_name(detail::toUtf8(_findData.cFileName).c_str());
                     copyToDirEntry(ec);
                 }
                 else {
@@ -4584,32 +4601,17 @@ public:
 // POSIX implementation
 class directory_iterator::impl
 {
-    size_t directory_entry_buffer_size(DIR* d)
-    {
-        size_t result = std::max(sizeof(::dirent), sizeof(::dirent) - sizeof(::dirent::d_name) + NAME_MAX) + 1;
-        if (d) {
-            long rc = ::fpathconf(dirfd(d), _PC_NAME_MAX);
-            if (rc > long(result)) {
-                result = static_cast<size_t>(rc);
-            }
-        }
-        return result;
-    }
-
+    
 public:
     impl(const path& path, directory_options options)
         : _base(path)
         , _options(options)
-        , _dir((path.empty() ? nullptr : ::opendir(path.native().c_str())),
-               [](DIR* d) {
-                   if (d) {
-                       ::closedir(d);
-                   }
-               })
-        , _bufferSize(directory_entry_buffer_size(_dir.get()))
-        , _buffer(new char[_bufferSize])
-        , _entry(reinterpret_cast<::dirent*>(&_buffer[0]))
+        , _dir(nullptr)
+        , _entry(nullptr)
     {
+        if(!path.empty()) {
+            _dir = ::opendir(path.native().c_str());
+        }
         if (!path.empty()) {
             if (!_dir) {
                 auto error = errno;
@@ -4624,40 +4626,30 @@ public:
         }
     }
     impl(const impl& other) = delete;
-    int i_readdir_r(DIR* dir, struct dirent* entry, struct dirent** result)
+    ~impl()
     {
-#if defined(__GLIBC__) && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 24))
-        errno = 0;
-        auto de = readdir(dir);
-        if (de) {
-            *entry = *de;
-            *result = entry;
-            return 0;
+        if(_dir) {
+            ::closedir(_dir);
         }
-        return errno;
-#else
-        return ::readdir_r(dir, entry, result);
-#endif
     }
     void increment(std::error_code& ec)
     {
         if (_dir) {
             do {
-                dirent* result = 0;
-                if (0 == i_readdir_r(_dir.get(), _entry, &result)) {
-                    if (result) {
-                        _current = _base / path(_entry->d_name);
-                        _dir_entry = directory_entry(_current, ec);
-                    }
-                    else {
-                        _dir.reset();
-                        _current = path();
-                        break;
-                    }
+                errno = 0;
+                _entry = readdir(_dir);
+                if (_entry) {
+                    _current = _base;
+                    _current.append_name(_entry->d_name);
+                    _dir_entry = directory_entry(_current, ec);
                 }
                 else {
+                    ::closedir(_dir);
+                    _dir = nullptr;
                     _current = path();
-                    ec = std::error_code(errno, std::system_category());
+                    if(errno) {
+                        ec = std::error_code(errno, std::system_category());
+                    }
                     break;
                 }
             } while (std::strcmp(_entry->d_name, ".") == 0 || std::strcmp(_entry->d_name, "..") == 0);
@@ -4666,9 +4658,7 @@ public:
     path _base;
     directory_options _options;
     path _current;
-    std::shared_ptr<DIR> _dir;
-    size_t _bufferSize;
-    std::unique_ptr<char[]> _buffer;
+    DIR* _dir;
     struct ::dirent* _entry;
     directory_entry _dir_entry;
     std::error_code _ec;
@@ -4893,9 +4883,14 @@ GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::increment
     else {
         _impl->_dir_iter_stack.top().increment(ec);
     }
-    while (depth() && _impl->_dir_iter_stack.top() == directory_iterator()) {
+    if(!ec) {
+        while (depth() && _impl->_dir_iter_stack.top() == directory_iterator()) {
+            _impl->_dir_iter_stack.pop();
+            _impl->_dir_iter_stack.top().increment(ec);
+        }
+    }
+    else if(!_impl->_dir_iter_stack.empty()) {
         _impl->_dir_iter_stack.pop();
-        _impl->_dir_iter_stack.top().increment(ec);
     }
     _impl->_recursion_pending = true;
     return *this;
