@@ -105,9 +105,18 @@ using fstream = ghc::filesystem::fstream;
 template <typename TP>
 std::time_t to_time_t(TP tp)
 {
-    // Based on trick from: Nico Josuttis, C++17 - The Complete Guide
-    std::chrono::system_clock::duration dt = std::chrono::duration_cast<std::chrono::system_clock::duration>(tp - TP::clock::now());
-    return std::chrono::system_clock::to_time_t(std::chrono::system_clock::now() + dt);
+    using namespace std::chrono;
+    auto sctp = time_point_cast<system_clock::duration>(tp - TP::clock::now() + system_clock::now());
+    return system_clock::to_time_t(sctp);
+}
+
+template <typename TP>
+TP from_time_t(std::time_t t)
+{
+    using namespace std::chrono;
+    auto sctp = system_clock::from_time_t(t);
+    auto tp = time_point_cast<TP::duration>(sctp - system_clock::now() + TP::clock::now());
+    return tp;
 }
 
 namespace Catch {
@@ -2072,7 +2081,7 @@ static fs::file_time_type timeFromString(const std::string& str)
         throw std::exception();
     }
 #ifdef IS_WCHAR_PATH
-    return fs::file_time_type::min();
+    return from_time_t<fs::file_time_type>(std::mktime(&tm));
 #else
     return fs::file_time_type::clock::from_time_t(std::mktime(&tm));
 #endif
@@ -2414,7 +2423,7 @@ TEST_CASE("Windows: Long filename support", "[filesystem][path][fs.path.win.long
 {
     TemporaryDirectory t(TempOpt::change_path);
     char c = 'A';
-    fs::path dir = fs::current_path();
+    fs::path dir = "\\\\?\\" + fs::current_path().u8string();
     for (; c <= 'Z'; ++c) {
         std::string part = std::string(16, c);
         dir /= part;
