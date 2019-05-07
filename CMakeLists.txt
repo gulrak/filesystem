@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.7.2)
 project(ghcfilesystem)
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
