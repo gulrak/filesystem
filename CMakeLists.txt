@@ -32,3 +32,19 @@ if(NOT hasParent)
     add_subdirectory(test)
     add_subdirectory(examples)
 endif()
+
+include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
+
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
+set(PACKAGECONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+
+configure_package_config_file(cmake/config.cmake.in
+	${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+	INSTALL_DESTINATION ${PACKAGECONFIG_INSTALL_DIR}
+	PATH_VARS INCLUDE_INSTALL_DIR)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+	DESTINATION ${PACKAGECONFIG_INSTALL_DIR})
