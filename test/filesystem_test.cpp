@@ -295,7 +295,7 @@ bool operator!=(TestAllocator<T> const& x, TestAllocator<U> const& y) noexcept
     return !(x == y);
 }
 
-TEST_CASE("Temporary Directory", "[temp dir]")
+TEST_CASE("Temporary Directory", "[fs.test.tempdir]")
 {
     fs::path tempPath;
     {
@@ -306,6 +306,21 @@ TEST_CASE("Temporary Directory", "[temp dir]")
     }
     REQUIRE(!fs::exists(tempPath));
 }
+
+#ifdef GHC_FILESYSTEM_VERSION
+TEST_CASE("fs::detail::fromUf88", "[filesystem][fs.detail.utf8]")
+{
+    CHECK(fs::detail::fromUtf8<std::wstring>("foobar").length() == 6);
+    CHECK(fs::detail::fromUtf8<std::wstring>("foobar") == L"foobar");
+    CHECK(fs::detail::fromUtf8<std::wstring>(u8"föobar").length() == 6);
+    CHECK(fs::detail::fromUtf8<std::wstring>(u8"föobar") == L"föobar");
+
+    CHECK(fs::detail::toUtf8(std::wstring(L"foobar")).length() == 6);
+    CHECK(fs::detail::toUtf8(std::wstring(L"foobar")) == "foobar");
+    CHECK(fs::detail::toUtf8(std::wstring(L"föobar")).length() == 7);
+    CHECK(fs::detail::toUtf8(std::wstring(L"föobar")) == u8"föobar");
+}
+#endif
 
 #ifndef GHC_OS_WINDOWS
 TEST_CASE("30.10.8.1 path(\"//host\").has_root_name()", "[filesystem][path][fs.path.generic]")

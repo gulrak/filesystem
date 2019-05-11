@@ -1,7 +1,7 @@
 ![Supported Platforms](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)
 [![Build Status](https://travis-ci.org/gulrak/filesystem.svg?branch=master)](https://travis-ci.org/gulrak/filesystem)
 [![Build status](https://ci.appveyor.com/api/projects/status/t07wp3k2cddo0hpo/branch/master?svg=true)](https://ci.appveyor.com/project/gulrak/filesystem)
-![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)
+[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.1.4)
 
 # Filesystem
 
@@ -96,6 +96,11 @@ in the standard, and there might be issues in these implementations too.
 
 
 ## Usage
+
+### Downloads
+
+The latest release version is [v1.1.4](https://github.com/gulrak/filesystem/tree/v1.1.4) and
+source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.1.4).
 
 ### Using it as Single-File-Header
 
