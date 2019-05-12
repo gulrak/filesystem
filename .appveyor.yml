@@ -1,13 +1,43 @@
-image: Visual Studio 2017
+environment:
+  matrix:
+    - platform: x86
+      image: Visual Studio 2015
+      generator: "Visual Studio 2015"
+      compiler: msvc
+      configuration: Release
 
-platform:
-  - Win32
-  - x64
+    - platform: x86
+      image: Visual Studio 2015
+      generator: "MinGW Makefiles"
+      compiler: mingw
+      toolchain: C:\mingw-w64\i686-6.3.0-posix-dwarf-rt_v5-rev1
+      configuration: Release
 
-configuration:
-  - Debug
-  - Release
-  
+    - platform: x64
+      image: Visual Studio 2015
+      generator: "Visual Studio 2015"
+      compiler: msvc
+      configuration: Release
+
+    - platform: x64
+      image: Visual Studio 2015
+      generator: "MinGW Makefiles"
+      compiler: mingw
+      toolchain: C:\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1
+      configuration: Release
+
+    - platform: x86
+      image: Visual Studio 2017
+      generator: "Visual Studio 2017"
+      compiler: msvc
+      configuration: Release
+
+    - platform: x64
+      image: Visual Studio 2017
+      generator: "Visual Studio 2017"
+      compiler: msvc
+      configuration: Release
+
 matrix:
   fast_finish: false
 
@@ -18,13 +48,13 @@ init:
 install:
   - cmd: reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /t REG_DWORD /f /v "AllowDevelopmentWithoutDevLicense" /d "1"
 
-before_build:
-  - cmake . -Bbuild -A%PLATFORM% -DCMAKE_BUILD_TYPE=%configuration%
-
-build:
-  project: build/ghcfilesystem.sln
-  parallel: true
-  verbosity: minimal
+build_script:
+  - mkdir build
+  - cd build
+  - if [%compiler%]==[msvc] cmake -G%generator% -A%platform% -DCMAKE_BUILD_TYPE=%configuration% ..
+  - if [%compiler%]==[mingw] set PATH=%toolchain%/bin;%PATH%
+  - if [%compiler%]==[mingw] cmake -G%generator% -DCMAKE_PREFIX_PATH=C:\mingw-w64\%toolchain% -DCMAKE_BUILD_TYPE=%configuration% ..
+  - cmake --build . --config %configuration%
   
 test_script:
   - cd build
