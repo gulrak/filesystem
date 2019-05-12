@@ -2,7 +2,7 @@ environment:
   matrix:
     - platform: x86
       image: Visual Studio 2015
-      generator: "Visual Studio 2015"
+      generator: "Visual Studio 14 2015"
       compiler: msvc
       configuration: Release
 
@@ -15,7 +15,7 @@ environment:
 
     - platform: x64
       image: Visual Studio 2015
-      generator: "Visual Studio 2015"
+      generator: "Visual Studio 14 2015"
       compiler: msvc
       configuration: Release
 
@@ -28,13 +28,13 @@ environment:
 
     - platform: x86
       image: Visual Studio 2017
-      generator: "Visual Studio 2017"
+      generator: "Visual Studio 15 2017"
       compiler: msvc
       configuration: Release
 
     - platform: x64
       image: Visual Studio 2017
-      generator: "Visual Studio 2017"
+      generator: "Visual Studio 15 2017"
       compiler: msvc
       configuration: Release
 
