@@ -15,7 +15,7 @@ environment:
 
     - platform: x64
       image: Visual Studio 2015
-      generator: "Visual Studio 14 2015"
+      generator: "Visual Studio 14 2015 Win64"
       compiler: msvc
       configuration: Release
 
@@ -34,7 +34,7 @@ environment:
 
     - platform: x64
       image: Visual Studio 2017
-      generator: "Visual Studio 15 2017"
+      generator: "Visual Studio 15 2017 Win64"
       compiler: msvc
       configuration: Release
 
@@ -51,8 +51,8 @@ install:
 build_script:
   - mkdir build
   - cd build
-  - if [%compiler%]==[msvc] cmake -G"%generator%" -A%platform% -DCMAKE_BUILD_TYPE=%configuration% ..
-  - if [%compiler%]==[mingw] set PATH=%toolchain%/bin;%PATH%
+  - if [%compiler%]==[msvc] cmake -G"%generator%" ..
+  - if [%compiler%]==[mingw] set PATH=%toolchain%/bin;%PATH:C:\Program Files (x86)\Git\bin;=%
   - if [%compiler%]==[mingw] cmake -G"%generator%" -DCMAKE_PREFIX_PATH=C:\mingw-w64\%toolchain% -DCMAKE_BUILD_TYPE=%configuration% ..
   - cmake --build . --config %configuration%
   
