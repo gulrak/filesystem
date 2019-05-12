@@ -36,6 +36,7 @@
 #include <functional>
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <random>
 #include <sstream>
 #include <thread>
@@ -87,28 +88,34 @@ using fstream = ghc::filesystem::fstream;
 #endif
 #include "catch.hpp"
 
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Behaviour Switches (should match the config in ghc/filesystem.hpp):
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// LWG #2682 disables the since then invalid use of the copy option create_symlinks on directories
 #define TEST_LWG_2682_BEHAVIOUR
-//#define TEST_LWG_2935_BEHAVIOUR
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// LWG #2395 makes crate_directory/create_directories not emit an error if there is a regular
+// file with that name, it is superceded by P1164R1, so only activate if really needed
+// #define TEST_LWG_2935_BEHAVIOUR
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// LWG #2937 enforces that fs::equivalent emits an error, if !fs::exists(p1)||!exists(p2)
 #define TEST_LWG_2937_BEHAVIOUR
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 template <typename TP>
 std::time_t to_time_t(TP tp)
 {
-    // Based on trick from: Nico Josuttis, C++17 - The Complete Guide
     using namespace std::chrono;
     auto sctp = time_point_cast<system_clock::duration>(tp - TP::clock::now() + system_clock::now());
-    //system_clock::duration dt = duration_cast<system_clock::duration>(tp - TP::clock::now());
     return system_clock::to_time_t(sctp);
 }
 
 template <typename TP>
 TP from_time_t(std::time_t t)
 {
-    // Based on trick from: Nico Josuttis, C++17 - The Complete Guide
     using namespace std::chrono;
     auto sctp = system_clock::from_time_t(t);
     auto tp = time_point_cast<TP::duration>(sctp - system_clock::now() + TP::clock::now());
-    // system_clock::duration dt = duration_cast<system_clock::duration>(tp - TP::clock::now());
     return tp;
 }
 
@@ -288,7 +295,7 @@ bool operator!=(TestAllocator<T> const& x, TestAllocator<U> const& y) noexcept
     return !(x == y);
 }
 
-TEST_CASE("Temporary Directory", "[temp dir]")
+TEST_CASE("Temporary Directory", "[fs.test.tempdir]")
 {
     fs::path tempPath;
     {
@@ -299,6 +306,21 @@ TEST_CASE("Temporary Directory", "[temp dir]")
     }
     REQUIRE(!fs::exists(tempPath));
 }
+
+#ifdef GHC_FILESYSTEM_VERSION
+TEST_CASE("fs::detail::fromUf88", "[filesystem][fs.detail.utf8]")
+{
+    CHECK(fs::detail::fromUtf8<std::wstring>("foobar").length() == 6);
+    CHECK(fs::detail::fromUtf8<std::wstring>("foobar") == L"foobar");
+    CHECK(fs::detail::fromUtf8<std::wstring>(u8"föobar").length() == 6);
+    CHECK(fs::detail::fromUtf8<std::wstring>(u8"föobar") == L"föobar");
+
+    CHECK(fs::detail::toUtf8(std::wstring(L"foobar")).length() == 6);
+    CHECK(fs::detail::toUtf8(std::wstring(L"foobar")) == "foobar");
+    CHECK(fs::detail::toUtf8(std::wstring(L"föobar")).length() == 7);
+    CHECK(fs::detail::toUtf8(std::wstring(L"föobar")) == u8"föobar");
+}
+#endif
 
 #ifndef GHC_OS_WINDOWS
 TEST_CASE("30.10.8.1 path(\"//host\").has_root_name()", "[filesystem][path][fs.path.generic]")
@@ -1228,29 +1250,73 @@ TEST_CASE("30.10.14 class recursive_directory_iterator", "[filesystem][recursive
         fs::recursive_directory_iterator rd5;
         rd5 = rd4;
     }
-/*
-    if(1) {
-        fs::path d = "..";
-        int maxDepth = 2;
-        fs::recursive_directory_iterator dit(d);
-        std::cout << d << std::endl;
-        for(auto & f : dit) {
-#if 1
-            if(dit.depth()<=maxDepth) {
-                std::cout << dit.depth() << ": " << f.path() << std::endl;
+    {
+        TemporaryDirectory t(TempOpt::change_path);
+        generateFile("a");
+        fs::create_directory("d1");
+        fs::create_directory("d1/d2");
+        generateFile("d1/b");
+        generateFile("d1/c");
+        generateFile("d1/d2/d");
+        generateFile("e");
+        auto iter = fs::recursive_directory_iterator(".");
+        std::multimap<std::string, int> result;
+        while(iter != fs::recursive_directory_iterator()) {
+            result.insert(std::make_pair(iter->path().generic_string(), iter.depth()));
+            ++iter;
+        }
+        std::stringstream os;
+        for(auto p : result) {
+            os << "[" << p.first << "," << p.second << "],";
+        }
+        CHECK(os.str() == "[./a,0],[./d1,0],[./d1/b,1],[./d1/c,1],[./d1/d2,1],[./d1/d2/d,2],[./e,0],");
+    }
+    {
+        TemporaryDirectory t(TempOpt::change_path);
+        generateFile("a");
+        fs::create_directory("d1");
+        fs::create_directory("d1/d2");
+        generateFile("d1/d2/b");
+        generateFile("e");
+        auto iter = fs::recursive_directory_iterator(".");
+        std::multimap<std::string, int> result;
+        while(iter != fs::recursive_directory_iterator()) {
+            result.insert(std::make_pair(iter->path().generic_string(), iter.depth()));
+            if(iter->path() == "./d1/d2") {
+                iter.disable_recursion_pending();
+            }
+            ++iter;
+        }
+        std::stringstream os;
+        for(auto p : result) {
+            os << "[" << p.first << "," << p.second << "],";
+        }
+        CHECK(os.str() == "[./a,0],[./d1,0],[./d1/d2,1],[./e,0],");
+    }
+    {
+        TemporaryDirectory t(TempOpt::change_path);
+        generateFile("a");
+        fs::create_directory("d1");
+        fs::create_directory("d1/d2");
+        generateFile("d1/d2/b");
+        generateFile("e");
+        auto iter = fs::recursive_directory_iterator(".");
+        std::multimap<std::string, int> result;
+        while(iter != fs::recursive_directory_iterator()) {
+            result.insert(std::make_pair(iter->path().generic_string(), iter.depth()));
+            if(iter->path() == "./d1/d2") {
+                iter.pop();
             }
             else {
-                dit.pop();
+                ++iter;
             }
-#else
-            std::cout << dit.depth() << ": " << f.path() << std::endl;
-            if(dit.depth()>maxDepth) {
-                dit.disable_recursion_pending();
-            }
-#endif
         }
+        std::stringstream os;
+        for(auto p : result) {
+            os << "[" << p.first << "," << p.second << "],";
+        }
+        CHECK(os.str() == "[./a,0],[./d1,0],[./d1/d2,1],[./e,0],");
     }
- */
 }
 
 TEST_CASE("30.10.15.1 absolute", "[filesystem][operations][fs.op.absolute]")
@@ -1447,7 +1513,7 @@ TEST_CASE("30.10.15.6 create_directories", "[filesystem][operations][fs.op.creat
     CHECK(!fs::is_directory(p));
     CHECK(!fs::create_directories(p, ec));
 #else
-    INFO("This test expects conformance predating LWG #2935 result. (As suggested by WG21 P1164R0, implemented by GCC with issue #86910.)");
+    INFO("This test expects conformance with P1164R1. (implemented by GCC with issue #86910.)");
     p = t.path() / "testfile";
     generateFile(p);
     CHECK(fs::is_regular_file(p));
@@ -1491,7 +1557,7 @@ TEST_CASE("30.10.15.7 create_directory", "[filesystem][operations][fs.op.create_
     CHECK(!fs::is_directory(p));
     CHECK(!fs::create_directories(p, ec));
 #else
-    INFO("This test expects conformance predating LWG #2935 result. (As suggested by WG21 P1164R0, implemented by GCC with issue #86910.)");
+    INFO("This test expects conformance with P1164R1. (implemented by GCC with issue #86910.)");
     p = t.path() / "testfile";
     generateFile(p);
     CHECK(fs::is_regular_file(p));

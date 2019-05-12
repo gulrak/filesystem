@@ -29,11 +29,22 @@ int main(int argc, char* argv[])
     }
 
     uint64_t totalSize = 0;
+    int totalDirs = 0;
+    int totalFiles = 0;
+    int maxDepth = 0;
     
     try {
-        for(auto de : fs::recursive_directory_iterator(dir)) {
+        auto rdi = fs::recursive_directory_iterator(dir);
+        for(auto de : rdi) {
+            if(rdi.depth() > maxDepth) {
+                maxDepth = rdi.depth();
+            }
             if(de.is_regular_file()) {
                 totalSize += de.file_size();
+                ++totalFiles;
+            }
+            else if(de.is_directory()) {
+                ++totalDirs;
             }
         }
     }
@@ -41,6 +52,6 @@ int main(int argc, char* argv[])
         std::cerr << "Error: " << fe.what() << std::endl;
         exit(1);
     }
-    std::cout << totalSize << std::endl;
+    std::cout << totalSize << " bytes in " << totalFiles << " files and " << totalDirs << " directories, maximum depth: " << maxDepth << std::endl;
     return 0;
 }

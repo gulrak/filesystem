@@ -1,7 +1,7 @@
 ![Supported Platforms](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)
 [![Build Status](https://travis-ci.org/gulrak/filesystem.svg?branch=master)](https://travis-ci.org/gulrak/filesystem)
 [![Build status](https://ci.appveyor.com/api/projects/status/t07wp3k2cddo0hpo/branch/master?svg=true)](https://ci.appveyor.com/project/gulrak/filesystem)
-![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)
+[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.1.4)
 
 # Filesystem
 
@@ -96,6 +96,11 @@ in the standard, and there might be issues in these implementations too.
 
 
 ## Usage
+
+### Downloads
+
+The latest release version is [v1.1.4](https://github.com/gulrak/filesystem/tree/v1.1.4) and
+source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.1.4).
 
 ### Using it as Single-File-Header
 
@@ -291,18 +296,20 @@ between this and the standard C++17 API.
 ### LWG Defects
 
 This implementation has switchable behavior for the LWG defects
+[#2682](https://wg21.cmeerw.net/lwg/issue2682),
 [#2935](http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2935) and
 [#2937](http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2937).
 The currently selected behavior is following
+[#2682](https://wg21.cmeerw.net/lwg/issue2682),
 [#2937](http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2937) but
 not following [#2935](http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2935),
 as I feel it is a bug to report no error on a `create_directory()` or `create_directories()`
 where a regular file of the same name prohibits the creation of a directory and forces
 the user of those functions to double-check via `fs::is_directory` if it really worked.
-
-Update: The more intuitive approach to directory creation of treating a file with that name as an
+The more intuitive approach to directory creation of treating a file with that name as an
 error is also advocated by the newer paper
-[WG21 P1164R0](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1164r0.pdf)
+[WG21 P1164R0](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1164r0.pdf), the revison
+P1161R1 was agreed upon on Kona 2019 meeting [see merge](https://github.com/cplusplus/draft/issues/2703)
 and GCC by now switched to following its proposal
 ([GCC #86910](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86910)). 
 
@@ -437,6 +444,35 @@ to the expected behavior.
 
 
 ## Release Notes
+
+### [v1.1.4](https://github.com/gulrak/filesystem/releases/tag/v1.1.4)
+
+* Additional Bugfix for ([#12](https://github.com/gulrak/filesystem/issues/12)),
+  error in old unified `readdir/readdir_r` code of `fs::directory_iterator`;
+  as `readdir_r` is now depricated, I decided to drop it and the resulting
+  code is much easier, shorter and due to more refactoring faster
+* Fix for crashing unit tests against MSVC C++17 std::filesystem
+* Travis-CI now additionally test with Xcode 10.2 on macOS
+* Some minor refactorings
+
+### [v1.1.2](https://github.com/gulrak/filesystem/releases/tag/v1.1.2)
+
+* Bugfix for ([#11](https://github.com/gulrak/filesystem/issues/11)),
+  `fs::path::lexically_normal()` had some issues with `".."`-sequences.
+* Bugfix for ([#12](https://github.com/gulrak/filesystem/issues/12)),
+  `fs::recursive_directory_iterator` could run into endless loops,
+  the methods depth() and pop() had issues and the copy behaviour and
+  `input_iterator_tag` conformance was broken, added tests
+* Restructured some CMake code into a macro to ease the support for
+  C++17 std::filesystem builds of tests and examples for interoperability
+  checks.
+* Some fixes on Windows tests to ease interoperability test runs.
+* Reduced noise on `fs::weakly_canonical()` tests against `std::fs`
+* Added simple `du` example showing the `recursive_directory_iterator`
+  used to add the sizes of files in a directory tree.
+* Added error checking in `fs::file_time_type` test helpers
+* `fs::copy()` now conforms LWG #2682, disallowing the use of
+  `copy_option::create_symlinks' to be used on directories
 
 ### [v1.1.0](https://github.com/gulrak/filesystem/releases/tag/v1.1.0)
 

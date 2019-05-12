@@ -33,7 +33,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //---------------------------------------------------------------------------------------
-// fs_std.hpp - The dynamic switching header for that includes std::filesystem if detected
+// fs_std.hpp - The dynamic switching header that includes std::filesystem if detected
 //              or ghc::filesystem if not, and makes the resulting API available in the
 //              namespace fs.
 //---------------------------------------------------------------------------------------
