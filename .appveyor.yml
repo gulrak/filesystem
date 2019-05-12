@@ -51,9 +51,9 @@ install:
 build_script:
   - mkdir build
   - cd build
-  - if [%compiler%]==[msvc] cmake -G%generator% -A%platform% -DCMAKE_BUILD_TYPE=%configuration% ..
+  - if [%compiler%]==[msvc] cmake -G"%generator%" -A%platform% -DCMAKE_BUILD_TYPE=%configuration% ..
   - if [%compiler%]==[mingw] set PATH=%toolchain%/bin;%PATH%
-  - if [%compiler%]==[mingw] cmake -G%generator% -DCMAKE_PREFIX_PATH=C:\mingw-w64\%toolchain% -DCMAKE_BUILD_TYPE=%configuration% ..
+  - if [%compiler%]==[mingw] cmake -G"%generator%" -DCMAKE_PREFIX_PATH=C:\mingw-w64\%toolchain% -DCMAKE_BUILD_TYPE=%configuration% ..
   - cmake --build . --config %configuration%
   
 test_script:
