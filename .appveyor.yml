@@ -1,39 +1,39 @@
 environment:
   matrix:
     - platform: x86
-      image: Visual Studio 2015
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       generator: "Visual Studio 14 2015"
       compiler: msvc
       configuration: Release
 
     - platform: x86
-      image: Visual Studio 2015
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       generator: "MinGW Makefiles"
       compiler: mingw
       toolchain: C:\mingw-w64\i686-6.3.0-posix-dwarf-rt_v5-rev1
       configuration: Release
 
     - platform: x64
-      image: Visual Studio 2015
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       generator: "Visual Studio 14 2015 Win64"
       compiler: msvc
       configuration: Release
 
     - platform: x64
-      image: Visual Studio 2015
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       generator: "MinGW Makefiles"
       compiler: mingw
       toolchain: C:\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1
       configuration: Release
 
     - platform: x86
-      image: Visual Studio 2017
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       generator: "Visual Studio 15 2017"
       compiler: msvc
       configuration: Release
 
     - platform: x64
-      image: Visual Studio 2017
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       generator: "Visual Studio 15 2017 Win64"
       compiler: msvc
       configuration: Release
@@ -53,7 +53,7 @@ build_script:
   - cd build
   - if [%compiler%]==[msvc] cmake -G"%generator%" ..
   - if [%compiler%]==[mingw] set PATH=%toolchain%/bin;%PATH:C:\Program Files (x86)\Git\bin;=%
-  - if [%compiler%]==[mingw] cmake -G"%generator%" -DCMAKE_PREFIX_PATH=C:\mingw-w64\%toolchain% -DCMAKE_BUILD_TYPE=%configuration% ..
+  - if [%compiler%]==[mingw] cmake -G"%generator%" -DCMAKE_SH=CMAKE_SH-NOTFOUND -DCMAKE_PREFIX_PATH=C:\mingw-w64\%toolchain% -DCMAKE_BUILD_TYPE=%configuration% ..
   - cmake --build . --config %configuration%
   
 test_script:
