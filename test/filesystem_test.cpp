@@ -212,7 +212,7 @@ inline bool isWow64Proc()
             bIsWow64 = FALSE;
         }
     }
-    return bIsWow64;
+    return bIsWow64 == TRUE;
 }
 
 static bool is_symlink_creation_supported()

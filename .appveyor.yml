@@ -47,12 +47,13 @@ init:
 
 install:
   - cmd: reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /t REG_DWORD /f /v "AllowDevelopmentWithoutDevLicense" /d "1"
+  - cmd: ren "C:\Program Files\Git\usr\bin\sh.exe" _sh.exe
 
 build_script:
   - mkdir build
   - cd build
   - if [%compiler%]==[msvc] cmake -G"%generator%" ..
-  - if [%compiler%]==[mingw] set PATH=%toolchain%/bin;%PATH:C:\Program Files (x86)\Git\bin;=%
+  - if [%compiler%]==[mingw] set PATH=%toolchain%/bin;%PATH%
   - if [%compiler%]==[mingw] cmake -G"%generator%" -DCMAKE_SH=CMAKE_SH-NOTFOUND -DCMAKE_PREFIX_PATH=C:\mingw-w64\%toolchain% -DCMAKE_BUILD_TYPE=%configuration% ..
   - cmake --build . --config %configuration%
   
