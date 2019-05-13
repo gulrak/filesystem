@@ -58,7 +58,7 @@ build_script:
   - cmake --build . --config %configuration%
   
 test_script:
-  - cd build
+  - cd %APPVEYOR_BUILD_FOLDER%\build
   - set CTEST_OUTPUT_ON_FAILURE=1
   - ctest -C %configuration% 
   - cd ..
