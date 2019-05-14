@@ -4,14 +4,18 @@ environment:
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       generator: "MinGW Makefiles"
       compiler: mingw
-      toolchain: 'C:\mingw-w64\i686-6.3.0-posix-dwarf-rt_v5-rev1\mingw32\bin'
+      TOOLCHAIN_PATH: C:\mingw-w64\i686-6.3.0-posix-dwarf-rt_v5-rev1/mingw32\bin
+      CMAKE_C_COMPILER: C:/mingw-w64/i686-6.3.0-posix-dwarf-rt_v5-rev1/mingw32/bin/gcc.exe
+      CMAKE_CXX_COMPILER: C:/mingw-w64/i686-6.3.0-posix-dwarf-rt_v5-rev1/mingw32/bin/g++.exe
       configuration: Release
 
     - platform: x64
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       generator: "MinGW Makefiles"
       compiler: mingw
-      toolchain: 'C:\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1\mingw64\bin'
+      TOOLCHAIN_PATH: C:\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1\mingw64\bin
+      CMAKE_C_COMPILER: C:/mingw-w64/x86_64-7.2.0-posix-seh-rt_v5-rev1/mingw64/bin/gcc.exe
+      CMAKE_CXX_COMPILER: C:/mingw-w64/x86_64-7.2.0-posix-seh-rt_v5-rev1/mingw64/bin/g++.exe
       configuration: Release
 
 matrix:
@@ -29,7 +33,7 @@ build_script:
   - mkdir build
   - cd build
   - if [%compiler%]==[msvc] cmake -G"%generator%" ..
-  - if [%compiler%]==[mingw] set PATH=%toolchain%\bin;%PATH%
+  - if [%compiler%]==[mingw] set PATH=%TOOLCHAIN_PATH%\bin;%PATH%
   - if [%compiler%]==[mingw] cmake -G"%generator%" -DCMAKE_SH=CMAKE_SH-NOTFOUND -DCMAKE_BUILD_TYPE=%configuration% ..
   - cmake --build . --config %configuration%
   
