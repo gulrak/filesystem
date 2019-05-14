@@ -33,7 +33,7 @@ build_script:
   - mkdir build
   - cd build
   - if [%compiler%]==[msvc] cmake -G"%generator%" ..
-  - if [%compiler%]==[mingw] set PATH=%TOOLCHAIN_PATH%\bin;%PATH%
+  - if [%compiler%]==[mingw] set PATH=%TOOLCHAIN_PATH%;%PATH%
   - if [%compiler%]==[mingw] cmake -G"%generator%" -DCMAKE_C_COMPILER=%CC% -DCMAKE_CXX_COMPILER=%CXX% -DCMAKE_SH=CMAKE_SH-NOTFOUND -DCMAKE_BUILD_TYPE=%configuration% ..
   - cmake --build . --config %configuration%
   
