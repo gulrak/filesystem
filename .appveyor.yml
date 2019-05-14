@@ -10,7 +10,7 @@ environment:
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       generator: "MinGW Makefiles"
       compiler: mingw
-      toolchain: C:\mingw-w64\i686-6.3.0-posix-dwarf-rt_v5-rev1
+      toolchain: C:/mingw-w64/i686-6.3.0-posix-dwarf-rt_v5-rev1
       configuration: Release
 
     - platform: x64
@@ -23,7 +23,7 @@ environment:
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       generator: "MinGW Makefiles"
       compiler: mingw
-      toolchain: C:\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1
+      toolchain: C:/mingw-w64/x86_64-7.2.0-posix-seh-rt_v5-rev1
       configuration: Release
 
     - platform: x86
@@ -54,7 +54,7 @@ build_script:
   - cd build
   - if [%compiler%]==[msvc] cmake -G"%generator%" ..
   - if [%compiler%]==[mingw] set PATH=%toolchain%/bin;%PATH%
-  - if [%compiler%]==[mingw] cmake -G"%generator%" -DCMAKE_SH=CMAKE_SH-NOTFOUND -DCMAKE_CXX_COMPILER=%toolchain%\bin\g++ -DCMAKE_C_COMPILER=%toolchain%\bin\gcc -DCMAKE_PREFIX_PATH=%toolchain% -DCMAKE_BUILD_TYPE=%configuration% ..
+  - if [%compiler%]==[mingw] cmake -G"%generator%" -DCMAKE_SH=CMAKE_SH-NOTFOUND -DCMAKE_CXX_COMPILER=%toolchain%/bin/g++ -DCMAKE_C_COMPILER=%toolchain%/bin/gcc -DCMAKE_PREFIX_PATH=%toolchain% -DCMAKE_BUILD_TYPE=%configuration% ..
   - cmake --build . --config %configuration%
   
 test_script:
