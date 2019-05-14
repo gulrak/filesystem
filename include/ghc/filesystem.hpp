@@ -1057,7 +1057,7 @@ GHC_INLINE std::error_code make_error_code(portable_error err)
             return std::error_code(ERROR_INVALID_PARAMETER, std::system_category());
         case portable_error::is_a_directory:
 #ifdef ERROR_DIRECTORY_NOT_SUPPORTED
-            return std::error_code(ERROR_DIRECTORY_NOT_SUPPORTED, std::system_category()); 
+            return std::error_code(ERROR_DIRECTORY_NOT_SUPPORTED, std::system_category());
 #else
             return std::error_code(ERROR_NOT_SUPPORTED, std::system_category());
 #endif
@@ -1388,15 +1388,15 @@ namespace detail {
 GHC_INLINE bool equals_simple_insensitive(const char* str1, const char* str2)
 {
 #ifdef GHC_OS_WINDOWS
-#  ifdef __GNUC__
+#ifdef __GNUC__
     while (::tolower((unsigned char)*str1) == ::tolower((unsigned char)*str2++)) {
         if (*str1++ == 0)
             return true;
     }
     return false;
-#  else
+#else
     return 0 == ::_stricmp(str1, str2);
-#  endif
+#endif
 #else
     return 0 == ::strcasecmp(str1, str2);
 #endif
@@ -1555,7 +1555,7 @@ GHC_INLINE path resolveSymlink(const path& p, std::error_code& ec)
                 UCHAR DataBuffer[1];
             } GenericReparseBuffer;
         } DUMMYUNIONNAME;
-    } REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
+    } REPARSE_DATA_BUFFER;
 #ifndef MAXIMUM_REPARSE_DATA_BUFFER_SIZE
 #define MAXIMUM_REPARSE_DATA_BUFFER_SIZE (16 * 1024)
 #endif
@@ -1567,18 +1567,17 @@ GHC_INLINE path resolveSymlink(const path& p, std::error_code& ec)
         return path();
     }
 
-    char buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE] = {0};
-    REPARSE_DATA_BUFFER& reparseData = *(REPARSE_DATA_BUFFER*)buffer;
+    std::shared_ptr<REPARSE_DATA_BUFFER> reparseData((REPARSE_DATA_BUFFER*)std::calloc(1, MAXIMUM_REPARSE_DATA_BUFFER_SIZE), std::free);
     ULONG bufferUsed;
     path result;
-    if (DeviceIoControl(file.get(), FSCTL_GET_REPARSE_POINT, 0, 0, &reparseData, sizeof(buffer), &bufferUsed, 0)) {
-        if (IsReparseTagMicrosoft(reparseData.ReparseTag)) {
-            switch (reparseData.ReparseTag) {
+    if (DeviceIoControl(file.get(), FSCTL_GET_REPARSE_POINT, 0, 0, reparseData.get(), MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &bufferUsed, 0)) {
+        if (IsReparseTagMicrosoft(reparseData->ReparseTag)) {
+            switch (reparseData->ReparseTag) {
                 case IO_REPARSE_TAG_SYMLINK:
-                    result = std::wstring(&reparseData.SymbolicLinkReparseBuffer.PathBuffer[reparseData.SymbolicLinkReparseBuffer.PrintNameOffset / sizeof(WCHAR)], reparseData.SymbolicLinkReparseBuffer.PrintNameLength / sizeof(WCHAR));
+                    result = std::wstring(&reparseData->SymbolicLinkReparseBuffer.PathBuffer[reparseData->SymbolicLinkReparseBuffer.PrintNameOffset / sizeof(WCHAR)], reparseData->SymbolicLinkReparseBuffer.PrintNameLength / sizeof(WCHAR));
                     break;
                 case IO_REPARSE_TAG_MOUNT_POINT:
-                    result = std::wstring(&reparseData.MountPointReparseBuffer.PathBuffer[reparseData.MountPointReparseBuffer.PrintNameOffset / sizeof(WCHAR)], reparseData.MountPointReparseBuffer.PrintNameLength / sizeof(WCHAR));
+                    result = std::wstring(&reparseData->MountPointReparseBuffer.PathBuffer[reparseData->MountPointReparseBuffer.PrintNameOffset / sizeof(WCHAR)], reparseData->MountPointReparseBuffer.PrintNameLength / sizeof(WCHAR));
                     break;
                 default:
                     break;
@@ -3772,7 +3771,7 @@ GHC_INLINE void permissions(const path& p, perms prms, perm_options opts, std::e
         }
     }
 #ifdef GHC_OS_WINDOWS
-#  ifdef __GNUC__
+#ifdef __GNUC__
     auto oldAttr = GetFileAttributesW(p.wstring().c_str());
     if (oldAttr != INVALID_FILE_ATTRIBUTES) {
         DWORD newAttr = ((prms & perms::owner_write) == perms::owner_write) ? oldAttr & ~FILE_ATTRIBUTE_READONLY : oldAttr | FILE_ATTRIBUTE_READONLY;
@@ -3781,7 +3780,7 @@ GHC_INLINE void permissions(const path& p, perms prms, perm_options opts, std::e
         }
     }
     ec = std::error_code(::GetLastError(), std::system_category());
-#  else
+#else
     int mode = 0;
     if ((prms & perms::owner_read) == perms::owner_read) {
         mode |= _S_IREAD;
@@ -3792,7 +3791,7 @@ GHC_INLINE void permissions(const path& p, perms prms, perm_options opts, std::e
     if (::_wchmod(p.wstring().c_str(), mode) != 0) {
         ec = std::error_code(::GetLastError(), std::system_category());
     }
-#  endif
+#endif
 #else
     if ((opts & perm_options::nofollow) != perm_options::nofollow) {
         if (::chmod(p.c_str(), static_cast<mode_t>(prms)) != 0) {

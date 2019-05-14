@@ -61,8 +61,8 @@ of the UTF-8 preference on Windows).
 
 Unit tests are currently run with:
 
-* macOS 10.12: XCode 9.2 (clang-900.0.39.2), GCC 8.1.0, Clang 7.0.0
-* Windows 10: Visual Studio 2017 15.8.5, MingW GCC 5.3
+* macOS 10.12: Xcode 9.2 (clang-900.0.39.2), Xcode 10.2, GCC 8.1.0, Clang 7.0.0
+* Windows: Visual Studio 2017, Visual Studio 2015, MingW GCC 6.3 (Win32), GCC 7.2 (Win64)
 * Linux (Ubuntu): GCC (5.5, 6.5, 7.4, 8.1, 8.2), Clang (5.0, 6.0, 7.1, 8.0)
 
 
@@ -410,7 +410,7 @@ just a more complicated syntax for the `fs::create_symlink` or `fs::create_hardl
 and I don't want to believe, that this was the intention of the original writing.
 As there is another issue related to copy, with a different take on the description.
 
-*Note:* With v1.1.2 I decided to integrate a behavior switch for this and make the LWG #2682
+**Note:** With v1.1.2 I decided to integrate a behavior switch for this and make the LWG #2682
 the default.
 
 ## Open Issues
@@ -444,6 +444,11 @@ to the expected behavior.
 
 
 ## Release Notes
+
+### v1.1.5 (wip)
+
+* Added MingW 32/64 and Visual Studio 2015 builds to the CI configuration.
+* Fixed additional compilation issues on MingW.
 
 ### [v1.1.4](https://github.com/gulrak/filesystem/releases/tag/v1.1.4)
 
