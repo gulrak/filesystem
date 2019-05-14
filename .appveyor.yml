@@ -2,6 +2,30 @@ environment:
   matrix:
     - platform: x86
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      generator: "Visual Studio 14 2015"
+      compiler: msvc
+      configuration: Release
+
+    - platform: x64
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      generator: "Visual Studio 14 2015 Win64"
+      compiler: msvc
+      configuration: Release
+
+    - platform: x86
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      generator: "Visual Studio 15 2017"
+      compiler: msvc
+      configuration: Release
+
+    - platform: x64
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      generator: "Visual Studio 15 2017 Win64"
+      compiler: msvc
+      configuration: Release
+
+    - platform: x86
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       generator: "MinGW Makefiles"
       compiler: mingw
       TOOLCHAIN_PATH: C:\mingw-w64\i686-6.3.0-posix-dwarf-rt_v5-rev1/mingw32\bin
