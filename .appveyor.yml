@@ -54,7 +54,7 @@ build_script:
   - cd build
   - if [%compiler%]==[msvc] cmake -G"%generator%" ..
   - if [%compiler%]==[mingw] set PATH=%toolchain%/bin;%PATH%
-  - if [%compiler%]==[mingw] cmake -G"%generator%" -DCMAKE_SH=CMAKE_SH-NOTFOUND -DCMAKE_PREFIX_PATH=C:\mingw-w64\%toolchain% -DCMAKE_BUILD_TYPE=%configuration% ..
+  - if [%compiler%]==[mingw] cmake -G"%generator%" -DCMAKE_SH=CMAKE_SH-NOTFOUND -DCMAKE_PREFIX_PATH=%toolchain% -DCMAKE_BUILD_TYPE=%configuration% ..
   - cmake --build . --config %configuration%
   
 test_script:
