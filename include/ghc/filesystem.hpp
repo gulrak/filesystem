@@ -1555,7 +1555,7 @@ GHC_INLINE path resolveSymlink(const path& p, std::error_code& ec)
                 UCHAR DataBuffer[1];
             } GenericReparseBuffer;
         } DUMMYUNIONNAME;
-    } REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
+    } REPARSE_DATA_BUFFER;
 #ifndef MAXIMUM_REPARSE_DATA_BUFFER_SIZE
 #define MAXIMUM_REPARSE_DATA_BUFFER_SIZE (16 * 1024)
 #endif
@@ -1568,7 +1568,7 @@ GHC_INLINE path resolveSymlink(const path& p, std::error_code& ec)
     }
 
     char buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE] = {0};
-    REPARSE_DATA_BUFFER& reparseData = *(REPARSE_DATA_BUFFER*)buffer;
+    REPARSE_DATA_BUFFER& reparseData = *reinterpret_cast<const REPARSE_DATA_BUFFER*>(buffer);
     ULONG bufferUsed;
     path result;
     if (DeviceIoControl(file.get(), FSCTL_GET_REPARSE_POINT, 0, 0, &reparseData, sizeof(buffer), &bufferUsed, 0)) {
