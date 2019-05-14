@@ -1567,18 +1567,17 @@ GHC_INLINE path resolveSymlink(const path& p, std::error_code& ec)
         return path();
     }
 
-    char buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE] = {0};
-    REPARSE_DATA_BUFFER& reparseData = *reinterpret_cast<REPARSE_DATA_BUFFER*>((void*)buffer);
+    std::shared_ptr<REPARSE_DATA_BUFFER> reparseData((REPARSE_DATA_BUFFER*)std::calloc(1, MAXIMUM_REPARSE_DATA_BUFFER_SIZE), std::free);
     ULONG bufferUsed;
     path result;
-    if (DeviceIoControl(file.get(), FSCTL_GET_REPARSE_POINT, 0, 0, &reparseData, sizeof(buffer), &bufferUsed, 0)) {
-        if (IsReparseTagMicrosoft(reparseData.ReparseTag)) {
-            switch (reparseData.ReparseTag) {
+    if (DeviceIoControl(file.get(), FSCTL_GET_REPARSE_POINT, 0, 0, reparseData.get(), MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &bufferUsed, 0)) {
+        if (IsReparseTagMicrosoft(reparseData->ReparseTag)) {
+            switch (reparseData->ReparseTag) {
                 case IO_REPARSE_TAG_SYMLINK:
-                    result = std::wstring(&reparseData.SymbolicLinkReparseBuffer.PathBuffer[reparseData.SymbolicLinkReparseBuffer.PrintNameOffset / sizeof(WCHAR)], reparseData.SymbolicLinkReparseBuffer.PrintNameLength / sizeof(WCHAR));
+                    result = std::wstring(&reparseData->SymbolicLinkReparseBuffer.PathBuffer[reparseData->SymbolicLinkReparseBuffer.PrintNameOffset / sizeof(WCHAR)], reparseData->SymbolicLinkReparseBuffer.PrintNameLength / sizeof(WCHAR));
                     break;
                 case IO_REPARSE_TAG_MOUNT_POINT:
-                    result = std::wstring(&reparseData.MountPointReparseBuffer.PathBuffer[reparseData.MountPointReparseBuffer.PrintNameOffset / sizeof(WCHAR)], reparseData.MountPointReparseBuffer.PrintNameLength / sizeof(WCHAR));
+                    result = std::wstring(&reparseData->MountPointReparseBuffer.PathBuffer[reparseData->MountPointReparseBuffer.PrintNameOffset / sizeof(WCHAR)], reparseData->MountPointReparseBuffer.PrintNameLength / sizeof(WCHAR));
                     break;
                 default:
                     break;
