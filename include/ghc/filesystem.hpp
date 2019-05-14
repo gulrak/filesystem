@@ -1568,7 +1568,7 @@ GHC_INLINE path resolveSymlink(const path& p, std::error_code& ec)
     }
 
     char buffer[MAXIMUM_REPARSE_DATA_BUFFER_SIZE] = {0};
-    REPARSE_DATA_BUFFER& reparseData = *reinterpret_cast<const REPARSE_DATA_BUFFER*>((void*)buffer);
+    REPARSE_DATA_BUFFER& reparseData = *reinterpret_cast<REPARSE_DATA_BUFFER*>((void*)buffer);
     ULONG bufferUsed;
     path result;
     if (DeviceIoControl(file.get(), FSCTL_GET_REPARSE_POINT, 0, 0, &reparseData, sizeof(buffer), &bufferUsed, 0)) {
