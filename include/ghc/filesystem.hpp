@@ -1247,36 +1247,40 @@ inline StringType fromUtf8(const std::string& utf8String, const typename StringT
     return result;
 }
 
-template <typename charT, typename traits, typename Alloc>
+template <typename charT, typename traits, typename Alloc, typename std::enable_if<(sizeof(charT) == 1)>::type* = nullptr>
 inline std::string toUtf8(const std::basic_string<charT, traits, Alloc>& unicodeString)
 {
-    using StringType = std::basic_string<charT, traits, Alloc>;
-    if (sizeof(typename StringType::value_type) == 1) {
-        return std::string(unicodeString.begin(), unicodeString.end());
-    }
+    return std::string(unicodeString.begin(), unicodeString.end());
+}
+
+template <typename charT, typename traits, typename Alloc, typename std::enable_if<(sizeof(charT) == 2)>::type* = nullptr>
+inline std::string toUtf8(const std::basic_string<charT, traits, Alloc>& unicodeString)
+{
     std::string result;
-    result.reserve(unicodeString.length());
-    if (sizeof(typename StringType::value_type) == 2) {
-        for (typename StringType::const_iterator iter = unicodeString.begin(); iter != unicodeString.end(); ++iter) {
-            char32_t c = *iter;
-            if (is_surrogate(c)) {
-                ++iter;
-                if (iter != unicodeString.end() && is_high_surrogate(c) && is_low_surrogate(*iter)) {
-                    appendUTF8(result, (char32_t(c) << 10) + *iter - 0x35fdc00);
-                }
-                else {
-                    appendUTF8(result, 0xfffd);
-                }
+    for (auto iter = unicodeString.begin(); iter != unicodeString.end(); ++iter) {
+        char32_t c = *iter;
+        if (is_surrogate(c)) {
+            ++iter;
+            if (iter != unicodeString.end() && is_high_surrogate(c) && is_low_surrogate(*iter)) {
+                appendUTF8(result, (char32_t(c) << 10) + *iter - 0x35fdc00);
             }
             else {
-                appendUTF8(result, c);
+                appendUTF8(result, 0xfffd);
             }
         }
-    }
-    else {
-        for (char32_t c : unicodeString) {
+        else {
             appendUTF8(result, c);
         }
+    }
+    return result;
+}
+
+template <typename charT, typename traits, typename Alloc, typename std::enable_if<(sizeof(charT) == 4)>::type* = nullptr>
+inline std::string toUtf8(const std::basic_string<charT, traits, Alloc>& unicodeString)
+{
+    std::string result;
+    for (auto c : unicodeString) {
+        appendUTF8(result, c);
     }
     return result;
 }

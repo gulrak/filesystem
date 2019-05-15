@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <chrono>
+#include <string>
 
 #if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include) && __has_include(<filesystem>)
 #include <filesystem>
