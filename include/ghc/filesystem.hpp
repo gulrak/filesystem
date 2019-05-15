@@ -142,6 +142,9 @@
 #include <stdexcept>
 #include <string>
 #include <system_error>
+#ifdef GHC_OS_WINDOWS
+#include <vector>
+#endif
 #endif  // GHC_EXPAND_IMPL
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
