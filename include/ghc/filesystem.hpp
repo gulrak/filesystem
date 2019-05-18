@@ -1211,7 +1211,7 @@ namespace detail {
 template <class StringType, typename std::enable_if<(sizeof(typename StringType::value_type) == 1)>::type* = nullptr>
 inline StringType fromUtf8(const std::string& utf8String, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
 {
-    return StringType(utf8String.begin(), utf8String.end());
+    return StringType(utf8String.begin(), utf8String.end(), alloc);
 }
 
 template <class StringType, typename std::enable_if<(sizeof(typename StringType::value_type) == 2)>::type* = nullptr>
