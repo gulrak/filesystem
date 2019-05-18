@@ -266,7 +266,7 @@ namespace fs = ghc::filesystem;
 int main(int argc, char* argv[])
 {
     fs::u8arguments u8guard(argc, argv);
-    if(u8guard.valid()) {
+    if(!u8guard.valid()) {
         std::cerr << "Bad encoding, needs UTF-8." << std::endl;
         exit(EXIT_FAILURE);
     }
