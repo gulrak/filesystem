@@ -1208,15 +1208,12 @@ GHC_INLINE unsigned consumeUtf8Fragment(const unsigned state, const uint8_t frag
     
 namespace detail {
     
-template <class StringType, typename std::enable_if<(sizeof(typename StringType::value_type) == 1)>::type* = nullptr>
+template <class StringType>
 inline StringType fromUtf8(const std::string& utf8String, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
 {
-    return StringType(utf8String.begin(), utf8String.end(), alloc);
-}
-
-template <class StringType, typename std::enable_if<(sizeof(typename StringType::value_type) == 2)>::type* = nullptr>
-inline StringType fromUtf8(const std::string& utf8String, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
-{
+    if (sizeof(typename StringType::value_type) == 1) {
+        return StringType(utf8String.begin(), utf8String.end(), alloc);
+    }
     StringType result(alloc);
     result.reserve(utf8String.length());
     std::string::const_iterator iter = utf8String.begin();
@@ -1224,39 +1221,19 @@ inline StringType fromUtf8(const std::string& utf8String, const typename StringT
     std::uint32_t codepoint = 0;
     while (iter < utf8String.end()) {
         if ((utf8_state = consumeUtf8Fragment(utf8_state, (uint8_t)*iter++, codepoint)) == S_STRT) {
-            if (codepoint <= 0xffff) {
-                result += (typename StringType::value_type)codepoint;
+            if (sizeof(typename StringType::value_type) == 4) {
+                result += codepoint;
             }
             else {
-                codepoint -= 0x10000;
-                result += (typename StringType::value_type)((codepoint >> 10) + 0xd800);
-                result += (typename StringType::value_type)((codepoint & 0x3ff) + 0xdc00);
+                if (codepoint <= 0xffff) {
+                    result += (typename StringType::value_type)codepoint;
+                }
+                else {
+                    codepoint -= 0x10000;
+                    result += (typename StringType::value_type)((codepoint >> 10) + 0xd800);
+                    result += (typename StringType::value_type)((codepoint & 0x3ff) + 0xdc00);
+                }
             }
-            codepoint = 0;
-        }
-        else if (utf8_state == S_RJCT) {
-            result += (typename StringType::value_type)0xfffd;
-            utf8_state = S_STRT;
-            codepoint = 0;
-        }
-    }
-    if (utf8_state) {
-        result += (typename StringType::value_type)0xfffd;
-    }
-    return result;
-}
-
-template <class StringType, typename std::enable_if<(sizeof(typename StringType::value_type) == 4)>::type* = nullptr>
-inline StringType fromUtf8(const std::string& utf8String, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
-{
-    StringType result(alloc);
-    result.reserve(utf8String.length());
-    std::string::const_iterator iter = utf8String.begin();
-    unsigned utf8_state = S_STRT;
-    std::uint32_t codepoint = 0;
-    while (iter < utf8String.end()) {
-        if ((utf8_state = consumeUtf8Fragment(utf8_state, (uint8_t)*iter++, codepoint)) == S_STRT) {
-            result += codepoint;
             codepoint = 0;
         }
         else if (utf8_state == S_RJCT) {
