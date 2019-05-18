@@ -1186,7 +1186,7 @@ GHC_INLINE void appendUTF8(std::string& str, uint32_t unicode)
         str.push_back(static_cast<char>((unicode & 0x3f) + 128));
     }
     else {
-        str.push_back(0xfffd);
+        appendUTF8(str, 0xfffd);
     }
 }
 
