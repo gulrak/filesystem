@@ -1179,11 +1179,14 @@ GHC_INLINE void appendUTF8(std::string& str, uint32_t unicode)
         str.push_back(static_cast<char>(((unicode & 0xfff) >> 6) + 128));
         str.push_back(static_cast<char>((unicode & 0x3f) + 128));
     }
-    else {
+    else if (unicode >= 0x10000 && unicode <= 0x10ffff) {
         str.push_back(static_cast<char>((unicode >> 18) + 240));
         str.push_back(static_cast<char>(((unicode & 0x3ffff) >> 12) + 128));
         str.push_back(static_cast<char>(((unicode & 0xfff) >> 6) + 128));
         str.push_back(static_cast<char>((unicode & 0x3f) + 128));
+    }
+    else {
+        str.push_back(0xfffd);
     }
 }
 
@@ -1192,27 +1195,28 @@ GHC_INLINE void appendUTF8(std::string& str, uint32_t unicode)
 // Generating debugging and shrinking my own DFA from scratch was a day of fun!
 GHC_INLINE unsigned consumeUtf8Fragment(const unsigned state, const uint8_t fragment, uint32_t& codepoint)
 {
-    static const uint32_t utf8_state_info[] = {
-        0x11111111u, 0x11111111u, 0x77777777u, 0x77777777u, 0x88888888u, 0x88888888u, 0x88888888u, 0x88888888u, 0x22222299u, 0x22222222u, 0x22222222u, 0x22222222u, 0x3333333au, 0x33433333u,
-        0x9995666bu, 0x99999999u, 0x88888880u, 0x22818108u, 0x88888881u, 0x88888882u, 0x88888884u, 0x88888887u, 0x88888886u, 0x82218108u, 0x82281108u, 0x88888888u, 0x88888883u, 0x88888885u,
-    };
+    static const uint32_t utf8_state_info[] = {0x11111111u, 0x11111111u, 0x77777777u, 0x77777777u, 0x88888888u, 0x88888888u, 0x88888888u, 0x88888888u, 0x22222299u, 0x22222222u, 0x22222222u, 0x22222222u, 0x3333333au, 0x33433333u, 0x9995666bu, 0x99999999u,
+        0x88888880u, 0x22818108u, 0x88888881u, 0x88888882u, 0x88888884u, 0x88888887u, 0x88888886u, 0x82218108u, 0x82281108u, 0x88888888u, 0x88888883u, 0x88888885u, 0u,          0u,          0u,          0u};
     uint8_t category = fragment < 128 ? 0 : (utf8_state_info[(fragment >> 3) & 0xf] >> ((fragment & 7) << 2)) & 0xf;
     codepoint = (state ? (codepoint << 6) | (fragment & 0x3f) : (0xff >> category) & fragment);
     return state == S_RJCT ? static_cast<unsigned>(S_RJCT) : static_cast<unsigned>((utf8_state_info[category + 16] >> (state << 2)) & 0xf);
 }
-
+    
 }  // namespace detail
-
+    
 #endif
-
+    
 namespace detail {
-
-template <class StringType>
+    
+template <class StringType, typename std::enable_if<(sizeof(typename StringType::value_type) == 1)>::type* = nullptr>
 inline StringType fromUtf8(const std::string& utf8String, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
 {
-    if (sizeof(typename StringType::value_type) == 1) {
-        return StringType(utf8String.begin(), utf8String.end());
-    }
+    return StringType(utf8String.begin(), utf8String.end());
+}
+
+template <class StringType, typename std::enable_if<(sizeof(typename StringType::value_type) == 2)>::type* = nullptr>
+inline StringType fromUtf8(const std::string& utf8String, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
+{
     StringType result(alloc);
     result.reserve(utf8String.length());
     std::string::const_iterator iter = utf8String.begin();
@@ -1220,18 +1224,13 @@ inline StringType fromUtf8(const std::string& utf8String, const typename StringT
     std::uint32_t codepoint = 0;
     while (iter < utf8String.end()) {
         if ((utf8_state = consumeUtf8Fragment(utf8_state, (uint8_t)*iter++, codepoint)) == S_STRT) {
-            if (sizeof(typename StringType::value_type) == 4) {
-                result += codepoint;
+            if (codepoint <= 0xffff) {
+                result += (typename StringType::value_type)codepoint;
             }
             else {
-                if (codepoint <= 0xffff) {
-                    result += (typename StringType::value_type)codepoint;
-                }
-                else {
-                    codepoint -= 0x10000;
-                    result += (typename StringType::value_type)((codepoint >> 10) + 0xd800);
-                    result += (typename StringType::value_type)((codepoint & 0x3ff) + 0xdc00);
-                }
+                codepoint -= 0x10000;
+                result += (typename StringType::value_type)((codepoint >> 10) + 0xd800);
+                result += (typename StringType::value_type)((codepoint & 0x3ff) + 0xdc00);
             }
             codepoint = 0;
         }
@@ -1247,36 +1246,65 @@ inline StringType fromUtf8(const std::string& utf8String, const typename StringT
     return result;
 }
 
-template <typename charT, typename traits, typename Alloc>
+template <class StringType, typename std::enable_if<(sizeof(typename StringType::value_type) == 4)>::type* = nullptr>
+inline StringType fromUtf8(const std::string& utf8String, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
+{
+    StringType result(alloc);
+    result.reserve(utf8String.length());
+    std::string::const_iterator iter = utf8String.begin();
+    unsigned utf8_state = S_STRT;
+    std::uint32_t codepoint = 0;
+    while (iter < utf8String.end()) {
+        if ((utf8_state = consumeUtf8Fragment(utf8_state, (uint8_t)*iter++, codepoint)) == S_STRT) {
+            result += codepoint;
+            codepoint = 0;
+        }
+        else if (utf8_state == S_RJCT) {
+            result += (typename StringType::value_type)0xfffd;
+            utf8_state = S_STRT;
+            codepoint = 0;
+        }
+    }
+    if (utf8_state) {
+        result += (typename StringType::value_type)0xfffd;
+    }
+    return result;
+}
+
+template <typename charT, typename traits, typename Alloc, typename std::enable_if<(sizeof(charT) == 1)>::type* = nullptr>
 inline std::string toUtf8(const std::basic_string<charT, traits, Alloc>& unicodeString)
 {
-    using StringType = std::basic_string<charT, traits, Alloc>;
-    if (sizeof(typename StringType::value_type) == 1) {
-        return std::string(unicodeString.begin(), unicodeString.end());
-    }
+    return std::string(unicodeString.begin(), unicodeString.end());
+}
+
+template <typename charT, typename traits, typename Alloc, typename std::enable_if<(sizeof(charT) == 2)>::type* = nullptr>
+inline std::string toUtf8(const std::basic_string<charT, traits, Alloc>& unicodeString)
+{
     std::string result;
-    result.reserve(unicodeString.length());
-    if (sizeof(typename StringType::value_type) == 2) {
-        for (typename StringType::const_iterator iter = unicodeString.begin(); iter != unicodeString.end(); ++iter) {
-            char32_t c = *iter;
-            if (is_surrogate(c)) {
-                ++iter;
-                if (iter != unicodeString.end() && is_high_surrogate(c) && is_low_surrogate(*iter)) {
-                    appendUTF8(result, (char32_t(c) << 10) + *iter - 0x35fdc00);
-                }
-                else {
-                    appendUTF8(result, 0xfffd);
-                }
+    for (auto iter = unicodeString.begin(); iter != unicodeString.end(); ++iter) {
+        char32_t c = *iter;
+        if (is_surrogate(c)) {
+            ++iter;
+            if (iter != unicodeString.end() && is_high_surrogate(c) && is_low_surrogate(*iter)) {
+                appendUTF8(result, (char32_t(c) << 10) + *iter - 0x35fdc00);
             }
             else {
-                appendUTF8(result, c);
+                appendUTF8(result, 0xfffd);
             }
         }
-    }
-    else {
-        for (char32_t c : unicodeString) {
+        else {
             appendUTF8(result, c);
         }
+    }
+    return result;
+}
+
+template <typename charT, typename traits, typename Alloc, typename std::enable_if<(sizeof(charT) == 4)>::type* = nullptr>
+inline std::string toUtf8(const std::basic_string<charT, traits, Alloc>& unicodeString)
+{
+    std::string result;
+    for (auto c : unicodeString) {
+        appendUTF8(result, c);
     }
     return result;
 }
