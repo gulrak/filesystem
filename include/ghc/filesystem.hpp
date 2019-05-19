@@ -1220,8 +1220,11 @@ GHC_INLINE void appendUTF8(std::string& str, uint32_t unicode)
 // Generating debugging and shrinking my own DFA from scratch was a day of fun!
 GHC_INLINE unsigned consumeUtf8Fragment(const unsigned state, const uint8_t fragment, uint32_t& codepoint)
 {
-    static const uint32_t utf8_state_info[] = {0x11111111u, 0x11111111u, 0x77777777u, 0x77777777u, 0x88888888u, 0x88888888u, 0x88888888u, 0x88888888u, 0x22222299u, 0x22222222u, 0x22222222u, 0x22222222u, 0x3333333au, 0x33433333u, 0x9995666bu, 0x99999999u,
-                                               0x88888880u, 0x22818108u, 0x88888881u, 0x88888882u, 0x88888884u, 0x88888887u, 0x88888886u, 0x82218108u, 0x82281108u, 0x88888888u, 0x88888883u, 0x88888885u, 0u,          0u,          0u,          0u};
+    static const uint32_t utf8_state_info[] = {
+        // encoded states
+        0x11111111u, 0x11111111u, 0x77777777u, 0x77777777u, 0x88888888u, 0x88888888u, 0x88888888u, 0x88888888u, 0x22222299u, 0x22222222u, 0x22222222u, 0x22222222u, 0x3333333au, 0x33433333u, 0x9995666bu, 0x99999999u,
+        0x88888880u, 0x22818108u, 0x88888881u, 0x88888882u, 0x88888884u, 0x88888887u, 0x88888886u, 0x82218108u, 0x82281108u, 0x88888888u, 0x88888883u, 0x88888885u, 0u,          0u,          0u,          0u,
+    };
     uint8_t category = fragment < 128 ? 0 : (utf8_state_info[(fragment >> 3) & 0xf] >> ((fragment & 7) << 2)) & 0xf;
     codepoint = (state ? (codepoint << 6) | (fragment & 0x3f) : (0xff >> category) & fragment);
     return state == S_RJCT ? static_cast<unsigned>(S_RJCT) : static_cast<unsigned>((utf8_state_info[category + 16] >> (state << 2)) & 0xf);
@@ -1236,7 +1239,7 @@ namespace detail {
 template <class StringType, typename std::enable_if<(sizeof(typename StringType::value_type) == 1)>::type* = nullptr>
 inline StringType fromUtf8(const std::string& utf8String, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
 {
-    return StringType(utf8String.begin(), utf8String.end());
+    return StringType(utf8String.begin(), utf8String.end(), alloc);
 }
 
 template <class StringType, typename std::enable_if<(sizeof(typename StringType::value_type) == 2)>::type* = nullptr>
@@ -4615,8 +4618,8 @@ public:
     impl(const path& p, directory_options options)
         : _base(p)
         , _options(options)
-        , _dirHandle(INVALID_HANDLE_VALUE)
         , _findData{0}
+        , _dirHandle(INVALID_HANDLE_VALUE)
     {
         if (!_base.empty()) {
             ZeroMemory(&_findData, sizeof(WIN32_FIND_DATAW));
