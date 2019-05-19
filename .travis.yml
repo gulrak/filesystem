@@ -17,10 +17,10 @@ matrix:
     - env: MATRIX_EVAL="CC=gcc-7 && CXX=g++-7 && GENERATOR='Unix Makefiles' && CONFIG=Release"
       addons: { apt: { packages: ["g++-7"], sources: ["ubuntu-toolchain-r-test"] } }
 
-    - env: MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && GENERATOR='Unix Makefiles' && CONFIG=Release"
-      addons: { apt: { packages: ["g++-8"], sources: ["ubuntu-toolchain-r-test"] } }
+    - env: MATRIX_EVAL="CC=gcc-7 && CXX=g++-7 && GENERATOR='Unix Makefiles' && CONFIG=Debug && GHC_COVERAGE=1"
+      addons: { apt: { packages: ["g++-7"], sources: ["ubuntu-toolchain-r-test"] } }
 
-    - env: MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && GENERATOR='Unix Makefiles' && CONFIG=Debug && GHC_COVERAGE=1"
+    - env: MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && GENERATOR='Unix Makefiles' && CONFIG=Release"
       addons: { apt: { packages: ["g++-8"], sources: ["ubuntu-toolchain-r-test"] } }
 
     - env: MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0 && GENERATOR='Unix Makefiles' && CONFIG=Release"
@@ -72,6 +72,6 @@ script:
 after_success:
   - |
     if [ "${GHC_COVERAGE}" = "1" ]; then
-      coveralls --verbose --root .. --gcov-options '\-lp' --gcov gcov-8
+      coveralls --verbose --root .. -E ".*catch.*"
     fi
  
