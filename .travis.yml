@@ -51,7 +51,7 @@ install:
       brew upgrade cmake
     fi
   - |
-    if [ "${GHC_COVERALLS}" = "1" ]; then
+    if [ "${GHC_COVERAGE}" = "1" ]; then
       pip install --user cpp-coveralls
     fi
   - $CC --version
@@ -70,5 +70,8 @@ script:
   - ctest -C ${CONFIG} -E Windows
 
 after_success:
-  - coveralls --root . -E ".*CMakeFiles.*"
+  - |
+    if [ "${GHC_COVERAGE}" = "1" ]; then
+      coveralls --root . -E ".*CMakeFiles.*"
+    fi
  
