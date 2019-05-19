@@ -67,8 +67,15 @@ before_script:
 
 script:
   - export VERBOSE=1
-  - cmake --build . --config ${CONFIG}
-  - ctest -C ${CONFIG} -E Windows
+  - cmake --build . --config ${CONFIG} --target filesystem_test
+  - |
+    if [ "${GHC_COVERAGE}" = "1" ]; then
+      cmake --build . --config ${CONFIG} --target filesystem_test
+      test/filesystem_test
+    else
+      cmake --build . --config ${CONFIG}
+      ctest -C ${CONFIG} -E Windows
+    fi
 
 after_success:
   - |
