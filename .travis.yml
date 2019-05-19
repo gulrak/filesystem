@@ -50,7 +50,10 @@ install:
       brew update
       brew upgrade cmake
     fi
-  - pip install --user cpp-coveralls
+  - |
+    if [ "${GHC_COVERALLS}" = "1" ]; then
+      pip install --user cpp-coveralls
+    fi
   - $CC --version
   - $CXX --version
   - cmake --version
