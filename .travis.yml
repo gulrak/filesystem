@@ -72,6 +72,6 @@ script:
 after_success:
   - |
     if [ "${GHC_COVERAGE}" = "1" ]; then
-      coveralls --root . -E ".*CMakeFiles.*"
+      coveralls --root . --gcov gcov-8 -E ".*CMakeFiles.*"
     fi
  
