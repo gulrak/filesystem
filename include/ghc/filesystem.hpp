@@ -1296,13 +1296,13 @@ inline StringType fromUtf8(const std::string& utf8String, const typename StringT
     return result;
 }
 
-template <typename charT, typename traits, typename Alloc, typename std::enable_if<(sizeof(charT) == 1)>::type* = nullptr>
+template <typename charT, typename traits, typename Alloc, typename std::enable_if<(sizeof(charT) == 1), int>::type size = 1>
 inline std::string toUtf8(const std::basic_string<charT, traits, Alloc>& unicodeString)
 {
     return std::string(unicodeString.begin(), unicodeString.end());
 }
 
-template <typename charT, typename traits, typename Alloc, typename std::enable_if<(sizeof(charT) == 2)>::type* = nullptr>
+template <typename charT, typename traits, typename Alloc, typename std::enable_if<(sizeof(charT) == 2), int>::type size = 2>
 inline std::string toUtf8(const std::basic_string<charT, traits, Alloc>& unicodeString)
 {
     std::string result;
@@ -1324,7 +1324,7 @@ inline std::string toUtf8(const std::basic_string<charT, traits, Alloc>& unicode
     return result;
 }
 
-template <typename charT, typename traits, typename Alloc, typename std::enable_if<(sizeof(charT) == 4)>::type* = nullptr>
+template <typename charT, typename traits, typename Alloc, typename std::enable_if<(sizeof(charT) == 4), int>::type size = 4>
 inline std::string toUtf8(const std::basic_string<charT, traits, Alloc>& unicodeString)
 {
     std::string result;
@@ -1334,10 +1334,10 @@ inline std::string toUtf8(const std::basic_string<charT, traits, Alloc>& unicode
     return result;
 }
 
-template <typename SourceType>
-inline std::string toUtf8(const SourceType* unicodeString)
+template <typename charT>
+inline std::string toUtf8(const charT* unicodeString)
 {
-    return toUtf8(std::basic_string<SourceType, std::char_traits<SourceType>>(unicodeString));
+    return toUtf8(std::basic_string<charT, std::char_traits<charT>>(unicodeString));
 }
 
 }  // namespace detail
