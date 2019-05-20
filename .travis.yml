@@ -71,16 +71,11 @@ script:
     if [ "${GHC_COVERAGE}" = "1" ]; then
       cmake --build . --config ${CONFIG} --target filesystem_test
       test/filesystem_test
+      lcov --compat-libtool --directory . --capture --output-file coverage_output.info
+      lcov --remove coverage_output.info '/usr/*' '*/c++/*' '*.h' '*/catch.hpp' -o coverage.info
+      coveralls-lcov coverage.info
     else
       cmake --build . --config ${CONFIG}
       ctest -C ${CONFIG} -E Windows
     fi
 
-after_success:
-  - |
-    if [ "${GHC_COVERAGE}" = "1" ]; then
-      lcov --compat-libtool --directory . --capture --output-file coverage_output.info
-      lcov --remove coverage_output.info '/usr/*' '*/c++/*' '*/catch.hpp' -o coverage.info
-      coveralls-lcov coverage.info
-    fi
- 
