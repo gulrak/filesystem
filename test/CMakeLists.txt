@@ -3,21 +3,23 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 set(PARSE_CATCH_TESTS_ADD_TO_CONFIGURE_DEPENDS ON)
 include(ParseAndAddCatchTests)
 
-add_executable(filesystem_test filesystem_test.cpp catch.hpp)
-target_link_libraries(filesystem_test ghc_filesystem)
-target_compile_options(filesystem_test PRIVATE
+if(NOT DEFINED ENV{GHC_COVERAGE})
+    add_executable(filesystem_test filesystem_test.cpp catch.hpp)
+    target_link_libraries(filesystem_test ghc_filesystem)
+    target_compile_options(filesystem_test PRIVATE
           $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Werror>
           $<$<CXX_COMPILER_ID:GNU>:-Wall -Werror>
           $<$<CXX_COMPILER_ID:MSVC>:/WX>)
-if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
-    target_compile_definitions(filesystem_test PRIVATE _CRT_SECURE_NO_WARNINGS)
-endif()
-if(DEFINED ENV{GHC_COVERAGE})
+    if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
+        target_compile_definitions(filesystem_test PRIVATE _CRT_SECURE_NO_WARNINGS)
+    endif()
+    ParseAndAddCatchTests(filesystem_test filesystem_test)
+    AddExecutableWithStdFS(std_filesystem_test filesystem_test.cpp catch.hpp)
+else()
+    add_executable(filesystem_test filesystem_test.cpp catch.hpp)
+    target_link_libraries(filesystem_test ghc_filesystem --coverage)
     target_compile_options(filesystem_test PRIVATE "--coverage")
-    set_property(TARGET filesystem_test APPEND_STRING PROPERTY LINK_FLAGS " --coverage")
 endif()
-ParseAndAddCatchTests(filesystem_test filesystem_test)
-AddExecutableWithStdFS(std_filesystem_test filesystem_test.cpp catch.hpp)
 
 add_executable(multifile_test multi1.cpp multi2.cpp catch.hpp)
 target_link_libraries(multifile_test ghc_filesystem)
