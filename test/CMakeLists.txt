@@ -4,6 +4,7 @@ set(PARSE_CATCH_TESTS_ADD_TO_CONFIGURE_DEPENDS ON)
 include(ParseAndAddCatchTests)
 
 if(GHC_COVERAGE)
+    message("Generating test runner for normal test...")
     add_executable(filesystem_test filesystem_test.cpp catch.hpp)
     target_link_libraries(filesystem_test ghc_filesystem)
     target_compile_options(filesystem_test PRIVATE

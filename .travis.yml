@@ -64,7 +64,7 @@ before_script:
   - cd build
   - export VERBOSE=1
   - |
-    if [ "${GHC_COVERAGE}" = "1" ]; then
+    if [ "${CONFIG}" = "Debug" ]; then
       cmake -G"${GENERATOR}" -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_C_COMPILER=${CC} -DCMAKE_BUILD_TYPE=${CONFIG} -DGHC_COVERAGE=ON ..
     else
       cmake -G"${GENERATOR}" -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_C_COMPILER=${CC} -DCMAKE_BUILD_TYPE=${CONFIG} ..
