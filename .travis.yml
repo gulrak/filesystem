@@ -87,6 +87,6 @@ after_success:
     if [ "${GHC_COVERAGE}" = "1" ]; then
       lcov --compat-libtool --directory . --capture --output-file coverage_output.info
       lcov --remove coverage_output.info '/usr/*' '*/c++/*' '*.h' '*/catch.hpp' -o coverage.info
-      sed -i 's|SF:/.*/|SF:|g' coverage.info
+      sed -i 's|SF:/.*/filesystem/|SF:../|g' coverage.info
       coveralls-lcov coverage.info
     fi
