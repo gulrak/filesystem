@@ -59,6 +59,7 @@ install:
   - cmake --version
 
 before_script:
+  - eval "${MATRIX_EVAL}"
   - mkdir build
   - cd build
   - export VERBOSE=1
