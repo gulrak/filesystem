@@ -225,7 +225,7 @@ There is a version macro `GHC_FILESYSTEM_VERSION` defined in case future changes
 might make it needed to react on the version, but I don't plan to break anything.
 It's the version as decimal number `(major * 10000 + minor * 100 + patch)`.
 
-**Note:** Starting from v1.0.2 only even path versions will be used for releases
+**Note:** Starting from v1.0.2 only even patch versions will be used for releases
 and odd patch version will only be used for in between commits while working on
 the next version.
 
@@ -449,6 +449,12 @@ to the expected behavior.
 
 * Added MingW 32/64 and Visual Studio 2015 builds to the CI configuration.
 * Fixed additional compilation issues on MingW.
+* Bugfix for ([#15](https://github.com/gulrak/filesystem/issues/15)), the
+  forward/impl way of using `ghc::filesystem` missed a `<vector>` include
+  in the windows case.
+* Bugfix for ([#16](https://github.com/gulrak/filesystem/issues/16)),
+  VS2019 didn't like the old size dispatching in the utf8 decoder, so it
+  was changed to a sfinae based approach.
 
 ### [v1.1.4](https://github.com/gulrak/filesystem/releases/tag/v1.1.4)
 
