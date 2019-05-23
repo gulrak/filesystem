@@ -969,9 +969,9 @@ TEST_CASE("30.10.8.5 path iterators", "[filesystem][path][fs.path.itr]")
 
     if (has_host_root_name_support()) {
         CHECK("foo" == *(--fs::path("//host/foo").end()));
-        auto pi = fs::path("//host/foo").end();
+        /*auto pi = fs::path("//host/foo").end();
         pi--;
-        CHECK("foo" == *pi);
+        CHECK("foo" == *pi);*/
         CHECK("//host" == iterateResult(fs::path("//host")));
         CHECK("//host,/,foo" == iterateResult(fs::path("//host/foo")));
         CHECK("//host" == reverseIterateResult(fs::path("//host")));
