@@ -1267,6 +1267,9 @@ inline std::string toUtf8(const std::basic_string<charT, traits, Alloc>& unicode
             }
             else {
                 appendUTF8(result, 0xfffd);
+                if(iter == unicodeString.end()) {
+                    break;
+                }
             }
         }
         else {
@@ -1316,7 +1319,6 @@ GHC_INLINE void postprocess_path_with_format(path::string_type& p, path::format 
 #ifdef GHC_OS_WINDOWS
         case path::auto_format:
         case path::native_format:
-#endif
             if (startsWith(p, std::string("\\\\?\\"))) {
                 // remove Windows long filename marker
                 p.erase(0, 4);
@@ -1331,6 +1333,7 @@ GHC_INLINE void postprocess_path_with_format(path::string_type& p, path::format 
                 }
             }
             break;
+#endif
     }
     if (p.length() > 2 && p[0] == '/' && p[1] == '/' && p[2] != '/') {
         std::string::iterator new_end = std::unique(p.begin() + 2, p.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == '/'; });
@@ -2065,7 +2068,7 @@ inline path::path_type<Source>& path::operator+=(const Source& x)
 template <class EcharT>
 inline path::path_type_EcharT<EcharT>& path::operator+=(EcharT x)
 {
-    std::basic_string<EcharT> part(x);
+    std::basic_string<EcharT> part(1, x);
     concat(detail::toUtf8(part));
     return *this;
 }

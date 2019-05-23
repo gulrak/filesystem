@@ -319,7 +319,20 @@ TEST_CASE("fs::detail::fromUf88", "[filesystem][fs.detail.utf8]")
     CHECK(fs::detail::toUtf8(std::wstring(L"foobar")) == "foobar");
     CHECK(fs::detail::toUtf8(std::wstring(L"föobar")).length() == 7);
     CHECK(fs::detail::toUtf8(std::wstring(L"föobar")) == u8"föobar");
+    
+    CHECK(std::u16string(2,0xfffd) == fs::detail::fromUtf8<std::u16string>(std::string("\xed\xa0\x80")));
 }
+
+#ifndef GHC_OS_WINDOWS
+TEST_CASE("fws::detail::toUtf8", "[filesystem][fs.detail.utf8]")
+{
+    CHECK(std::string("\xc3\xa4/\xe2\x82\xac\xf0\x9d\x84\x9e") == fs::detail::toUtf8(std::u16string(u"\u00E4/\u20AC\U0001D11E")));
+    CHECK(std::string("\xEF\xBF\xBD") == fs::detail::toUtf8(std::u16string(1, 0xd800)));
+    std::string t;
+    fs::detail::appendUTF8(t, 0x200000);
+    CHECK(std::string("\xEF\xBF\xBD") == t);
+}
+#endif
 #endif
 
 #ifndef GHC_OS_WINDOWS
@@ -338,6 +351,7 @@ TEST_CASE("30.10.8.4.1 path constructors and destructor", "[filesystem][path][fs
     std::u16string u16str = u"/usr/local/bin";
     std::u32string u32str = U"/usr/local/bin";
     CHECK(str == fs::path(str.begin(), str.end()));
+    CHECK(fs::path(std::wstring(3, 67)) == "CCC");
     CHECK(str == fs::path(u16str.begin(), u16str.end()));
     CHECK(str == fs::path(u32str.begin(), u32str.end()));
 #ifdef GHC_OS_WINDOWS
@@ -459,7 +473,8 @@ TEST_CASE("30.10.8.4.4 path concatenation", "[filesystem][path][fs.path.concat]"
 
     CHECK(fs::path("foo").concat("bar") == "foobar");
     CHECK(fs::path("foo").concat("/bar") == "foo/bar");
-
+    std::string bar = "bar";
+    CHECK(fs::path("foo").concat(bar.begin(), bar.end()) == "foobar");
 #ifndef USE_STD_FS
     CHECK((fs::path("/foo/bar") += "/some///other") == "/foo/bar/some/other");
 #endif
@@ -567,6 +582,14 @@ TEST_CASE("30.10.8.4.8 path compare", "[filesystem][path][fs.path.compare]")
     CHECK(fs::path("/foo/b").compare("/foo/a") > 0);
     CHECK(fs::path("/foo/b").compare("/foo/b") == 0);
     CHECK(fs::path("/foo/b").compare("/foo/c") < 0);
+
+    CHECK(fs::path("/foo/b").compare(std::string("/foo/a")) > 0);
+    CHECK(fs::path("/foo/b").compare(std::string("/foo/b")) == 0);
+    CHECK(fs::path("/foo/b").compare(std::string("/foo/c")) < 0);
+
+    CHECK(fs::path("/foo/b").compare(fs::path("/foo/a")) > 0);
+    CHECK(fs::path("/foo/b").compare(fs::path("/foo/b")) == 0);
+    CHECK(fs::path("/foo/b").compare(fs::path("/foo/c")) < 0);
 }
 
 TEST_CASE("30.10.8.4.9 path decomposition", "[filesystem][path][fs.path.decompose]")
@@ -946,6 +969,9 @@ TEST_CASE("30.10.8.5 path iterators", "[filesystem][path][fs.path.itr]")
 
     if (has_host_root_name_support()) {
         CHECK("foo" == *(--fs::path("//host/foo").end()));
+        auto pi = fs::path("//host/foo").end();
+        pi--;
+        CHECK("foo" == *pi);
         CHECK("//host" == iterateResult(fs::path("//host")));
         CHECK("//host,/,foo" == iterateResult(fs::path("//host/foo")));
         CHECK("//host" == reverseIterateResult(fs::path("//host")));
@@ -1144,7 +1170,14 @@ TEST_CASE("30.10.13 class directory_iterator", "[filesystem][directory_iterator]
         generateFile(t.path() / "test", 1234);
         REQUIRE(fs::directory_iterator(t.path()) != fs::directory_iterator());
         auto iter = fs::directory_iterator(t.path());
+        fs::directory_iterator iter2(iter);
+        fs::directory_iterator iter3, iter4;
+        iter3 = iter;
         CHECK(iter->path().filename() == "test");
+        CHECK(iter2->path().filename() == "test");
+        CHECK(iter3->path().filename() == "test");
+        iter4 = std::move(iter3);
+        CHECK(iter4->path().filename() == "test");
         CHECK(iter->path() == t.path() / "test");
         CHECK(!iter->is_symlink());
         CHECK(iter->is_regular_file());
@@ -1538,6 +1571,9 @@ TEST_CASE("30.10.15.7 create_directory", "[filesystem][operations][fs.op.create_
     CHECK(fs::create_directory(p));
     CHECK(fs::is_directory(p));
     CHECK(!fs::is_regular_file(p));
+    CHECK(fs::create_directory(p / "nested", p));
+    CHECK(fs::is_directory(p / "nested"));
+    CHECK(!fs::is_regular_file(p / "nested"));
 #ifdef TEST_LWG_2935_BEHAVIOUR
     INFO("This test expects LWG #2935 result conformance.");
     p = t.path() / "testfile";
@@ -2463,5 +2499,23 @@ TEST_CASE("Windows: UNC path support", "[filesystem][path][fs.path.win.unc]")
     auto p2 = fs::canonical(p, ec);
     CHECK(!ec);
     CHECK(p2 == p);
+
+    std::vector<fs::path> variants = {
+        R"(C:\Windows\notepad.exe)",
+        R"(\\.\C:\Windows\notepad.exe)",
+        R"(\\?\C:\Windows\notepad.exe)",
+        R"(\??\C:\Windows\notepad.exe)",
+        R"(\\?\HarddiskVolume1\Windows\notepad.exe)",
+        R"(\\?\Harddisk0Partition1\Windows\notepad.exe)",
+        R"(\\.\GLOBALROOT\Device\HarddiskVolume1\Windows\notepad.exe)",
+        R"(\\?\GLOBALROOT\Device\Harddisk0\Partition1\Windows\notepad.exe)",
+        R"(\\?\Volume{e8a4a89d-0000-0000-0000-100000000000}\Windows\notepad.exe)",
+        R"(\\LOCALHOST\C$\Windows\notepad.exe)",
+        R"(\\?\UNC\C$\Windows\notepad.exe)",
+        R"(\\?\GLOBALROOT\Device\Mup\C$\Windows\notepad.exe)",
+    };
+    for (auto p : variants) {
+        std::cerr << p.string() << " - " << p.root_name() << ", " << p.root_path() << ": " << iterateResult(p) << std::endl;
+    }
 }
 #endif
