@@ -323,8 +323,7 @@ TEST_CASE("fs::detail::fromUf88", "[filesystem][fs.detail.utf8]")
     CHECK(std::u16string(2,0xfffd) == fs::detail::fromUtf8<std::u16string>(std::string("\xed\xa0\x80")));
 }
 
-#ifndef GHC_OS_WINDOWS
-TEST_CASE("fws::detail::toUtf8", "[filesystem][fs.detail.utf8]")
+TEST_CASE("fs::detail::toUtf8", "[filesystem][fs.detail.utf8]")
 {
     CHECK(std::string("\xc3\xa4/\xe2\x82\xac\xf0\x9d\x84\x9e") == fs::detail::toUtf8(std::u16string(u"\u00E4/\u20AC\U0001D11E")));
     CHECK(std::string("\xEF\xBF\xBD") == fs::detail::toUtf8(std::u16string(1, 0xd800)));
@@ -332,7 +331,6 @@ TEST_CASE("fws::detail::toUtf8", "[filesystem][fs.detail.utf8]")
     fs::detail::appendUTF8(t, 0x200000);
     CHECK(std::string("\xEF\xBF\xBD") == t);
 }
-#endif
 #endif
 
 #ifndef GHC_OS_WINDOWS
