@@ -37,6 +37,7 @@
 #include <iomanip>
 #include <iostream>
 #include <map>
+#include <set>
 #include <random>
 #include <sstream>
 #include <thread>
@@ -308,7 +309,7 @@ TEST_CASE("Temporary Directory", "[fs.test.tempdir]")
 }
 
 #ifdef GHC_FILESYSTEM_VERSION
-TEST_CASE("fs::detail::fromUf88", "[filesystem][fs.detail.utf8]")
+TEST_CASE("fs::detail::fromUtf8", "[filesystem][fs.detail.utf8]")
 {
     CHECK(fs::detail::fromUtf8<std::wstring>("foobar").length() == 6);
     CHECK(fs::detail::fromUtf8<std::wstring>("foobar") == L"foobar");
@@ -352,6 +353,10 @@ TEST_CASE("30.10.8.4.1 path constructors and destructor", "[filesystem][path][fs
     CHECK(fs::path(std::wstring(3, 67)) == "CCC");
     CHECK(str == fs::path(u16str.begin(), u16str.end()));
     CHECK(str == fs::path(u32str.begin(), u32str.end()));
+#ifndef USE_STD_FS
+    CHECK(fs::path("///foo/bar") == "/foo/bar");
+    CHECK(fs::path("//foo//bar") == "//foo/bar");
+#endif
 #ifdef GHC_OS_WINDOWS
     CHECK("\\usr\\local\\bin" == fs::path("/usr/local/bin"));
     CHECK("C:\\usr\\local\\bin" == fs::path("C:\\usr\\local\\bin"));
@@ -1068,7 +1073,8 @@ TEST_CASE("30.10.8.6.2 path factory functions", "[filesystem][path][fs.path.fact
 TEST_CASE("30.10.9 class filesystem_error", "[filesystem][filesystem_error][fs.class.filesystem_error]")
 {
     std::error_code ec(1, std::system_category());
-    auto fse = fs::filesystem_error("Some error", ec);
+    fs::filesystem_error fse("None", std::error_code());
+    fse = fs::filesystem_error("Some error", ec);
     CHECK(fse.code().value() == 1);
     CHECK(!std::string(fse.what()).empty());
     CHECK(fse.path1().empty());
@@ -1132,8 +1138,10 @@ TEST_CASE("30.10.11 class file_status", "[filesystem][file_status][fs.class.file
 TEST_CASE("30.10.12 class directory_entry", "[filesystem][directory_entry][fs.dir.entry]")
 {
     TemporaryDirectory t;
+    std::error_code ec;
     auto de = fs::directory_entry(t.path());
     CHECK(de.path() == t.path());
+    CHECK((fs::path)de == t.path());
     CHECK(de.exists());
     CHECK(!de.is_block_file());
     CHECK(!de.is_character_file());
@@ -1143,21 +1151,98 @@ TEST_CASE("30.10.12 class directory_entry", "[filesystem][directory_entry][fs.di
     CHECK(!de.is_regular_file());
     CHECK(!de.is_socket());
     CHECK(!de.is_symlink());
+    CHECK(de.status().type() == fs::file_type::directory);
+    ec.clear();
+    CHECK(de.status(ec).type() == fs::file_type::directory);
+    CHECK(!ec);
     CHECK_NOTHROW(de.refresh());
+    fs::directory_entry none;
+    CHECK_THROWS_AS(none.refresh(), fs::filesystem_error);
+    CHECK_THROWS_AS(de.assign(""), fs::filesystem_error);
+    ec.clear();
+    CHECK_NOTHROW(de.assign("", ec));
+    CHECK(ec);
     generateFile(t.path() / "foo", 1234);
+    auto now = fs::file_time_type::clock::now();
+    CHECK_NOTHROW(de.assign(t.path() / "foo"));
+    CHECK_NOTHROW(de.assign(t.path() / "foo", ec));
+    CHECK(!ec);
     de = fs::directory_entry(t.path() / "foo");
     CHECK(de.path() == t.path() / "foo");
     CHECK(de.exists());
+    CHECK(de.exists(ec));
+    CHECK(!ec);
     CHECK(!de.is_block_file());
+    CHECK(!de.is_block_file(ec));
+    CHECK(!ec);
     CHECK(!de.is_character_file());
+    CHECK(!de.is_character_file(ec));
+    CHECK(!ec);
     CHECK(!de.is_directory());
+    CHECK(!de.is_directory(ec));
+    CHECK(!ec);
     CHECK(!de.is_fifo());
+    CHECK(!de.is_fifo(ec));
+    CHECK(!ec);
     CHECK(!de.is_other());
+    CHECK(!de.is_other(ec));
+    CHECK(!ec);
     CHECK(de.is_regular_file());
+    CHECK(de.is_regular_file(ec));
+    CHECK(!ec);
     CHECK(!de.is_socket());
+    CHECK(!de.is_socket(ec));
+    CHECK(!ec);
     CHECK(!de.is_symlink());
+    CHECK(!de.is_symlink(ec));
+    CHECK(!ec);
     CHECK(de.file_size() == 1234);
+    CHECK(de.file_size(ec) == 1234);
+    CHECK(std::abs(std::chrono::duration_cast<std::chrono::seconds>(de.last_write_time() - now).count()) < 3);
+    ec.clear();
+    CHECK(std::abs(std::chrono::duration_cast<std::chrono::seconds>(de.last_write_time(ec) - now).count()) < 3);
+    CHECK(!ec);
     CHECK(de.hard_link_count() == 1);
+    CHECK(de.hard_link_count(ec) == 1);
+    CHECK(!ec);
+    CHECK_THROWS_AS(de.replace_filename("bar"), fs::filesystem_error);
+    CHECK_NOTHROW(de.replace_filename("foo"));
+    ec.clear();
+    CHECK_NOTHROW(de.replace_filename("bar", ec));
+    CHECK(ec);
+    auto de2none = fs::directory_entry();
+    ec.clear();
+    CHECK(de2none.hard_link_count(ec) == static_cast<uintmax_t>(-1));
+    CHECK_THROWS_AS(de2none.hard_link_count(), fs::filesystem_error);
+    CHECK(ec);
+    ec.clear();
+    CHECK_NOTHROW(de2none.last_write_time(ec));
+    CHECK_THROWS_AS(de2none.last_write_time(), fs::filesystem_error);
+    CHECK(ec);
+    ec.clear();
+    CHECK_THROWS_AS(de2none.file_size(), fs::filesystem_error);
+    CHECK(de2none.file_size(ec) == static_cast<uintmax_t>(-1));
+    CHECK(ec);
+    ec.clear();
+    CHECK(de2none.status().type() == fs::file_type::not_found);
+    CHECK(de2none.status(ec).type() == fs::file_type::not_found);
+    CHECK(ec);
+    generateFile(t.path() / "a");
+    generateFile(t.path() / "b");
+    auto d1 = fs::directory_entry(t.path() / "a");
+    auto d2 = fs::directory_entry(t.path() / "b");
+    CHECK(d1 < d2);
+    CHECK(!(d2 < d1));
+    CHECK(d1 <= d2);
+    CHECK(!(d2 <= d1));
+    CHECK(d2 > d1);
+    CHECK(!(d1 > d2));
+    CHECK(d2 >= d1);
+    CHECK(!(d1 >= d2));
+    CHECK(d1 != d2);
+    CHECK(!(d2 != d2));
+    CHECK(d1 == d1);
+    CHECK(!(d1 == d2));
 }
 
 TEST_CASE("30.10.13 class directory_iterator", "[filesystem][directory_iterator][fs.class.directory_iterator]")
@@ -1176,6 +1261,9 @@ TEST_CASE("30.10.13 class directory_iterator", "[filesystem][directory_iterator]
         CHECK(iter3->path().filename() == "test");
         iter4 = std::move(iter3);
         CHECK(iter4->path().filename() == "test");
+        iter3 = fs::directory_iterator();
+        iter3.swap(iter4);
+        CHECK(iter3->path().filename() == "test");
         CHECK(iter->path() == t.path() / "test");
         CHECK(!iter->is_symlink());
         CHECK(iter->is_regular_file());
@@ -1183,6 +1271,11 @@ TEST_CASE("30.10.13 class directory_iterator", "[filesystem][directory_iterator]
         CHECK(iter->file_size() == 1234);
         CHECK(++iter == fs::directory_iterator());
         CHECK_THROWS_AS(fs::directory_iterator(t.path() / "non-existing"), fs::filesystem_error);
+        int cnt = 0;
+        for(auto de : fs::directory_iterator(t.path())) {
+            ++cnt;
+        }
+        CHECK(cnt == 1);
     }
     if (is_symlink_creation_supported()) {
         TemporaryDirectory t;
@@ -1218,6 +1311,11 @@ TEST_CASE("30.10.13 class directory_iterator", "[filesystem][directory_iterator]
 
 TEST_CASE("30.10.14 class recursive_directory_iterator", "[filesystem][recursive_directory_iterator][fs.class.rec.dir.itr]")
 {
+    {
+        auto iter = fs::recursive_directory_iterator(".");
+        iter.pop();
+        CHECK(iter == fs::recursive_directory_iterator());
+    }
     {
         TemporaryDirectory t;
         CHECK(fs::recursive_directory_iterator(t.path()) == fs::recursive_directory_iterator());
@@ -1301,6 +1399,25 @@ TEST_CASE("30.10.14 class recursive_directory_iterator", "[filesystem][recursive
             os << "[" << p.first << "," << p.second << "],";
         }
         CHECK(os.str() == "[./a,0],[./d1,0],[./d1/b,1],[./d1/c,1],[./d1/d2,1],[./d1/d2/d,2],[./e,0],");
+    }
+    {
+        TemporaryDirectory t(TempOpt::change_path);
+        generateFile("a");
+        fs::create_directory("d1");
+        fs::create_directory("d1/d2");
+        generateFile("d1/b");
+        generateFile("d1/c");
+        generateFile("d1/d2/d");
+        generateFile("e");
+        std::multiset<std::string> result;
+        for(auto de : fs::recursive_directory_iterator(".")) {
+            result.insert(de.path().generic_string());
+        }
+        std::stringstream os;
+        for(auto p : result) {
+            os << p << ",";
+        }
+        CHECK(os.str() == "./a,./d1,./d1/b,./d1/c,./d1/d2,./d1/d2/d,./e,");
     }
     {
         TemporaryDirectory t(TempOpt::change_path);
@@ -2243,6 +2360,9 @@ TEST_CASE("30.10.15.29 relative", "[filesystem][operations][fs.op.relative]")
     CHECK(fs::relative("a/b/c", "a/b/c/x/y") == "../..");
     CHECK(fs::relative("a/b/c", "a/b/c") == ".");
     CHECK(fs::relative("a/b", "c/d") == "../../a/b");
+    std::error_code ec;
+    CHECK(fs::relative(fs::current_path() / "foo", ec) == "foo");
+    CHECK(!ec);
 }
 
 TEST_CASE("30.10.15.30 remove", "[filesystem][operations][fs.op.remove]")
