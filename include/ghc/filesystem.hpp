@@ -681,7 +681,6 @@ public:
     }
     bool operator==(const directory_iterator& rhs) const;
     bool operator!=(const directory_iterator& rhs) const;
-    void swap(directory_iterator& rhs);
 
 private:
     friend class recursive_directory_iterator;
@@ -740,7 +739,6 @@ public:
     }
     bool operator==(const recursive_directory_iterator& rhs) const;
     bool operator!=(const recursive_directory_iterator& rhs) const;
-    void swap(recursive_directory_iterator& rhs);
 
 private:
     struct recursive_directory_iterator_impl
@@ -4780,11 +4778,6 @@ GHC_INLINE bool directory_iterator::operator!=(const directory_iterator& rhs) co
     return _impl->_current != rhs._impl->_current;
 }
 
-GHC_INLINE void directory_iterator::swap(directory_iterator& rhs)
-{
-    std::swap(_impl, rhs._impl);
-}
-
 // 30.10.13.2 directory_iterator non-member functions
 
 GHC_INLINE directory_iterator begin(directory_iterator iter) noexcept
@@ -4948,11 +4941,6 @@ GHC_INLINE bool recursive_directory_iterator::operator==(const recursive_directo
 GHC_INLINE bool recursive_directory_iterator::operator!=(const recursive_directory_iterator& rhs) const
 {
     return _impl->_dir_iter_stack.top() != rhs._impl->_dir_iter_stack.top();
-}
-
-GHC_INLINE void recursive_directory_iterator::swap(recursive_directory_iterator& rhs)
-{
-    std::swap(_impl, rhs._impl);
 }
 
 // 30.10.14.2 directory_iterator non-member functions

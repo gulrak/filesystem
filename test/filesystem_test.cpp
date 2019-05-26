@@ -1267,9 +1267,6 @@ TEST_CASE("30.10.13 class directory_iterator", "[filesystem][directory_iterator]
         CHECK(iter3->path().filename() == "test");
         iter4 = std::move(iter3);
         CHECK(iter4->path().filename() == "test");
-        iter3 = fs::directory_iterator();
-        iter3.swap(iter4);
-        CHECK(iter3->path().filename() == "test");
         CHECK(iter->path() == t.path() / "test");
         CHECK(!iter->is_symlink());
         CHECK(iter->is_regular_file());
