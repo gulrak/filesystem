@@ -2515,16 +2515,18 @@ GHC_INLINE path::iterator::iterator(const path::string_type::const_iterator& fir
     }
     else
 #endif
+    {
         if (_first != _last && *_first == '/') {
-        if (_last - _first >= 2 && *(_first + 1) == '/' && !(_last - _first >= 3 && *(_first + 2) == '/')) {
-            _root = increment(_first);
+            if (_last - _first >= 2 && *(_first + 1) == '/' && !(_last - _first >= 3 && *(_first + 2) == '/')) {
+                _root = increment(_first);
+            }
+            else {
+                _root = _first;
+            }
         }
         else {
-            _root = _first;
+            _root = _last;
         }
-    }
-    else {
-        _root = _last;
     }
 }
 
@@ -2631,7 +2633,7 @@ GHC_INLINE path::iterator& path::iterator::operator--()
 
 GHC_INLINE path::iterator path::iterator::operator--(int)
 {
-    path::iterator i{*this};
+    auto i = *this;
     --(*this);
     return i;
 }
