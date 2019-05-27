@@ -322,6 +322,7 @@ TEST_CASE("fs::detail::fromUtf8", "[filesystem][fs.detail.utf8]")
     CHECK(fs::detail::toUtf8(std::wstring(L"föobar")) == u8"föobar");
     
     CHECK(std::u16string(2,0xfffd) == fs::detail::fromUtf8<std::u16string>(std::string("\xed\xa0\x80")));
+    CHECK(std::u16string(1,0xfffd) == fs::detail::fromUtf8<std::u16string>(std::string("\xc3")));
 }
 
 TEST_CASE("fs::detail::toUtf8", "[filesystem][fs.detail.utf8]")
@@ -349,11 +350,12 @@ TEST_CASE("30.10.8.4.1 path constructors and destructor", "[filesystem][path][fs
     std::string str = "/usr/local/bin";
     std::u16string u16str = u"/usr/local/bin";
     std::u32string u32str = U"/usr/local/bin";
+    CHECK(str == fs::path(str, fs::path::generic_format));
     CHECK(str == fs::path(str.begin(), str.end()));
     CHECK(fs::path(std::wstring(3, 67)) == "CCC");
     CHECK(str == fs::path(u16str.begin(), u16str.end()));
     CHECK(str == fs::path(u32str.begin(), u32str.end()));
-#ifndef USE_STD_FS
+#ifdef GHC_FILESYSTEM_VERSION
     CHECK(fs::path("///foo/bar") == "/foo/bar");
     CHECK(fs::path("//foo//bar") == "//foo/bar");
 #endif
