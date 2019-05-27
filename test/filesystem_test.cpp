@@ -350,7 +350,7 @@ TEST_CASE("30.10.8.4.1 path constructors and destructor", "[filesystem][path][fs
     std::string str = "/usr/local/bin";
     std::u16string u16str = u"/usr/local/bin";
     std::u32string u32str = U"/usr/local/bin";
-    CHECK(str == fs::path(str, fs::path::generic_format));
+    CHECK(str == fs::path(str, fs::path::format::generic_format));
     CHECK(str == fs::path(str.begin(), str.end()));
     CHECK(fs::path(std::wstring(3, 67)) == "CCC");
     CHECK(str == fs::path(u16str.begin(), u16str.end()));
