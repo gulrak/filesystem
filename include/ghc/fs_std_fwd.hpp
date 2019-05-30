@@ -50,6 +50,7 @@ using ofstream = std::ofstream;
 using fstream = std::fstream;
 }
 #else
+#define GHC_WIN_WSTRING_STRING_TYPE
 #define GHC_FILESYSTEM_FWD
 #include <ghc/filesystem.hpp>
 namespace fs {

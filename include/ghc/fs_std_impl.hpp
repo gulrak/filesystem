@@ -40,6 +40,7 @@
 // header to work.
 //---------------------------------------------------------------------------------------
 #if !(defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include) && __has_include(<filesystem>))
+#define GHC_WIN_WSTRING_STRING_TYPE
 #define GHC_FILESYSTEM_IMPLEMENTATION
 #include <ghc/filesystem.hpp>
 #endif
