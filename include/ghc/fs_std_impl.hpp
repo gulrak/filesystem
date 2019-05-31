@@ -39,8 +39,12 @@
 // The cpp has to include this before including fs_std_fwd.hpp directly or via a different
 // header to work.
 //---------------------------------------------------------------------------------------
-#if !(defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include) && __has_include(<filesystem>))
+#if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include)
+#if __has_include(<filesystem>)
+#define GHC_USE_STD_FS
+#endif
+#endif
+#ifndef GHC_USE_STD_FS
 #define GHC_FILESYSTEM_IMPLEMENTATION
 #include <ghc/filesystem.hpp>
 #endif
-

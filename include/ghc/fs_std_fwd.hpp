@@ -41,7 +41,9 @@
 //---------------------------------------------------------------------------------------
 #ifndef GHC_FILESYSTEM_STD_FWD_H
 #define GHC_FILESYSTEM_STD_FWD_H
-#if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include) && __has_include(<filesystem>)
+#if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include)
+#if __has_include(<filesystem>)
+#define GHC_USE_STD_FS
 #include <filesystem>
 namespace fs {
 using namespace std::filesystem;
@@ -49,7 +51,9 @@ using ifstream = std::ifstream;
 using ofstream = std::ofstream;
 using fstream = std::fstream;
 }
-#else
+#endif
+#endif
+#ifndef GHC_USE_STD_FS
 #define GHC_FILESYSTEM_FWD
 #include <ghc/filesystem.hpp>
 namespace fs {

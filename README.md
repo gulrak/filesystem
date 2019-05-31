@@ -446,16 +446,28 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.1.5 (wip)
+### v1.1.99 (wip)
 
 * Added MingW 32/64 and Visual Studio 2015 builds to the CI configuration.
 * Fixed additional compilation issues on MingW.
+* Pull request ([#13](https://github.com/gulrak/filesystem/pull/13)), set
+  minimum required CMake version to 3.7.2 (as in Debian 8).
+* Pull request ([#14](https://github.com/gulrak/filesystem/pull/14)), added
+  support for a make install target.
 * Bugfix for ([#15](https://github.com/gulrak/filesystem/issues/15)), the
   forward/impl way of using `ghc::filesystem` missed a `<vector>` include
   in the windows case.
 * Bugfix for ([#16](https://github.com/gulrak/filesystem/issues/16)),
   VS2019 didn't like the old size dispatching in the utf8 decoder, so it
   was changed to a sfinae based approach.
+* New feature ([#17](https://github.com/gulrak/filesystem/issues/17)), optional
+  support for standard conforming `wchar_t/std::wstring` interface when
+  compiling on Windows with defined `GHC_WIN_WSTRING_STRING_TYPE`, this is
+  default when using the `ghc/fs_std*.hpp` header, to enhance compatibility.
+* Pull request ([#20](https://github.com/gulrak/filesystem/pull/14)), fix for
+  file handle leak in `fs::copy_file`.
+* Coverage now checked in CI (~95% line coverage).
+
 
 ### [v1.1.4](https://github.com/gulrak/filesystem/releases/tag/v1.1.4)
 

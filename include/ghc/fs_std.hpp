@@ -38,7 +38,9 @@
 //              namespace fs.
 //---------------------------------------------------------------------------------------
 #ifndef GHC_FILESYSTEM_STD_H
-#if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include) && __has_include(<filesystem>)
+#if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include)
+#if __has_include(<filesystem>)
+#define GHC_USE_STD_FS
 #include <filesystem>
 namespace fs {
 using namespace std::filesystem;
@@ -46,7 +48,9 @@ using ifstream = std::ifstream;
 using ofstream = std::ofstream;
 using fstream = std::fstream;
 }
-#else
+#endif
+#endif
+#ifndef GHC_USE_STD_FS
 #include <ghc/filesystem.hpp>
 namespace fs {
 using namespace ghc::filesystem;

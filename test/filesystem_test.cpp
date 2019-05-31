@@ -405,7 +405,7 @@ TEST_CASE("30.10.8.4.2 path assignments", "[filesystem][path][fs.path.assign]")
     REQUIRE(p1 == p3);
     p3 = fs::path{"/usr/local"};
     REQUIRE(p2 == p3);
-#ifdef IS_WCHAR_PATH
+#if defined(IS_WCHAR_PATH) || defined(GHC_USE_WCHAR_T)
     p3 = fs::path::string_type{L"/foo/bar"};
     REQUIRE(p1 == p3);
     p3.assign(fs::path::string_type{L"/usr/local"});
@@ -528,7 +528,7 @@ TEST_CASE("30.10.8.4.5 path modifiers", "[filesystem][path][fs.path.modifiers]")
 TEST_CASE("30.10.8.4.6 path native format observers", "[filesystem][path][fs.path.native.obs]")
 {
 #ifdef GHC_OS_WINDOWS
-#ifdef IS_WCHAR_PATH
+#if defined(IS_WCHAR_PATH) || defined(GHC_USE_WCHAR_T)
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").native() == fs::path::string_type(L"\u00E4\\\u20AC"));
     // CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").string() == std::string("ä\\€")); // MSVCs returns local DBCS encoding
 #else
