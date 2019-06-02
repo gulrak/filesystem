@@ -155,10 +155,12 @@ without that switch ([see](https://blogs.msdn.microsoft.com/vcblog/2018/04/09/ms
 Be aware too, as a header-only library, it is not hiding the fact, that it
 uses system includes, so they "pollute" your global namespace.
 
-There is an additional header named `ghc/fs_std.hpp` that implements this
+**Hint:** There is an additional header named `ghc/fs_std.hpp` that implements this
 dynamic selection of a filesystem implementation, that you can include
 instead of `ghc/filesystem.hpp` when you want std::filesystem where
-available and ghc::filesystem where not.
+available and ghc::filesystem where not. It also enables the `wchar_t`
+support on `ghc::filesystem` on Windows, so the resulting implementation
+in the `fs` namespace will be compatible.
 
 
 ### Using it as Forwarding-/Implementation-Header
@@ -207,9 +209,12 @@ to take precedence:
 #endif
 ```
 
-There are additional helper headers, named `ghc/fs_std_fwd.hpp` and `ghc/fs_std_impl.hpp`
-that use this technique, so you can simply include them if you want to dynamically select
-the filesystem implementation.
+**Hint:** There are additional helper headers, named `ghc/fs_std_fwd.hpp` and
+`ghc/fs_std_impl.hpp` that use this technique, so you can simply include them
+if you want to dynamically select the filesystem implementation. they also
+enable the `wchar_t` support on `ghc::filesystem` on Windows, so the resulting
+implementation in the `fs` namespace will be compatible.
+
 
 
 ### Git Submodule and CMake
@@ -233,10 +238,10 @@ the next version.
 
 ## Documentation
 
-There is almost no documentation in this release, as any `std::filesystem` documentation
-would work, besides the few differences explained in the next section. So you might
-head over to https://en.cppreference.com/w/cpp/filesystem for a description of
-the components of this library.
+There is almost no documentation in this release, as any `std::filesystem`
+documentation would work, besides the few differences explained in the next
+section. So you might head over to https://en.cppreference.com/w/cpp/filesystem
+for a description of the components of this library.
 
 The only additions to the standard are documented here:
 
@@ -314,10 +319,7 @@ P1161R1 was agreed upon on Kona 2019 meeting [see merge](https://github.com/cplu
 and GCC by now switched to following its proposal
 ([GCC #86910](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86910)). 
 
-### Not Implemented
-
-Besides this still being work-in-progress, there are a few cases where
-there will be no implementation in the close future:
+### Not Implemented on C++ before C++17
 
 ```cpp
 // methods in ghc::filesystem::path:
@@ -347,6 +349,13 @@ with the `path::wstring()` member
 (e.g. `GetFileAttributesW(p.wstring().c_str())`). This gives you the
 Unicode variant independant of the `UNICODE` macro and makes sharing code
 between Windows, Linux and macOS easier.
+
+Starting with v1.2.0 `ghc::filesystem` has the option to select the more
+standard conforming APi with `wchar_t` and `std::wstring` on Windows by
+defining `GHC_WIN_WSTRING_STRING_TYPE`. This define has no effect on other
+platforms and will be set by the helping headers `ghc/fs_std.hpp` and
+the pair `ghc/fs_std_fwd.hpp`/`ghc/fs_std_impl.hpp` to enhance compatibility.
+
 
 ```cpp
 const path::string_type& path::native() const /*noexcept*/;
@@ -446,7 +455,7 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.1.99 (wip)
+### [v1.2.0](https://github.com/gulrak/filesystem/releases/tag/v1.2.0)
 
 * Added MingW 32/64 and Visual Studio 2015 builds to the CI configuration.
 * Fixed additional compilation issues on MingW.
@@ -464,6 +473,10 @@ to the expected behavior.
   support for standard conforming `wchar_t/std::wstring` interface when
   compiling on Windows with defined `GHC_WIN_WSTRING_STRING_TYPE`, this is
   default when using the `ghc/fs_std*.hpp` header, to enhance compatibility.
+* New feature ([#18](https://github.com/gulrak/filesystem/issues/18)), optional
+  filesystem exceptions/errors on unicode errors with defined
+  `GHC_RAISE_UNICODE_ERRORS` (instead of replacing invalid code points or
+  UTF-8 encoding errors with the replacement character `U+FFFD`).
 * Pull request ([#20](https://github.com/gulrak/filesystem/pull/14)), fix for
   file handle leak in `fs::copy_file`.
 * Coverage now checked in CI (~95% line coverage).
