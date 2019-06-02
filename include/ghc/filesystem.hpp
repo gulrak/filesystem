@@ -930,7 +930,7 @@ public:
 #if defined(GHC_OS_WINDOWS) && !defined(__GNUC__)
         return std::basic_filebuf<charT, traits>::open(p.wstring().c_str(), mode) ? this : 0;
 #else
-        return std::basic_filebuf<charT, traits>::open(p.c_str(), mode) ? this : 0;
+        return std::basic_filebuf<charT, traits>::open(p.string().c_str(), mode) ? this : 0;
 #endif
     }
 };
@@ -948,10 +948,10 @@ public:
     void open(const path& p, std::ios_base::openmode mode = std::ios_base::in) { std::basic_ifstream<charT, traits>::open(p.wstring().c_str(), mode); }
 #else
     explicit basic_ifstream(const path& p, std::ios_base::openmode mode = std::ios_base::in)
-        : std::basic_ifstream<charT, traits>(p.c_str(), mode)
+        : std::basic_ifstream<charT, traits>(p.string().c_str(), mode)
     {
     }
-    void open(const path& p, std::ios_base::openmode mode = std::ios_base::in) { std::basic_ifstream<charT, traits>::open(p.c_str(), mode); }
+    void open(const path& p, std::ios_base::openmode mode = std::ios_base::in) { std::basic_ifstream<charT, traits>::open(p.string().c_str(), mode); }
 #endif
     basic_ifstream(const basic_ifstream&) = delete;
     const basic_ifstream& operator=(const basic_ifstream&) = delete;
@@ -971,10 +971,10 @@ public:
     void open(const path& p, std::ios_base::openmode mode = std::ios_base::out) { std::basic_ofstream<charT, traits>::open(p.wstring().c_str(), mode); }
 #else
     explicit basic_ofstream(const path& p, std::ios_base::openmode mode = std::ios_base::out)
-        : std::basic_ofstream<charT, traits>(p.c_str(), mode)
+        : std::basic_ofstream<charT, traits>(p.string().c_str(), mode)
     {
     }
-    void open(const path& p, std::ios_base::openmode mode = std::ios_base::out) { std::basic_ofstream<charT, traits>::open(p.c_str(), mode); }
+    void open(const path& p, std::ios_base::openmode mode = std::ios_base::out) { std::basic_ofstream<charT, traits>::open(p.string().c_str(), mode); }
 #endif
     basic_ofstream(const basic_ofstream&) = delete;
     const basic_ofstream& operator=(const basic_ofstream&) = delete;
@@ -994,10 +994,10 @@ public:
     void open(const path& p, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out) { std::basic_fstream<charT, traits>::open(p.wstring().c_str(), mode); }
 #else
     explicit basic_fstream(const path& p, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out)
-        : std::basic_fstream<charT, traits>(p.c_str(), mode)
+        : std::basic_fstream<charT, traits>(p.string().c_str(), mode)
     {
     }
-    void open(const path& p, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out) { std::basic_fstream<charT, traits>::open(p.c_str(), mode); }
+    void open(const path& p, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out) { std::basic_fstream<charT, traits>::open(p.string().c_str(), mode); }
 #endif
     basic_fstream(const basic_fstream&) = delete;
     const basic_fstream& operator=(const basic_fstream&) = delete;
