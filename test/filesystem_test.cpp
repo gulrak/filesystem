@@ -320,18 +320,28 @@ TEST_CASE("fs::detail::fromUtf8", "[filesystem][fs.detail.utf8]")
     CHECK(fs::detail::toUtf8(std::wstring(L"foobar")) == "foobar");
     CHECK(fs::detail::toUtf8(std::wstring(L"föobar")).length() == 7);
     CHECK(fs::detail::toUtf8(std::wstring(L"föobar")) == u8"föobar");
-    
+
+#ifdef GHC_RAISE_UNICODE_ERRORS
+    CHECK_THROWS_AS(fs::detail::fromUtf8<std::u16string>(std::string("\xed\xa0\x80")), fs::filesystem_error);
+    CHECK_THROWS_AS(fs::detail::fromUtf8<std::u16string>(std::string("\xc3")), fs::filesystem_error);
+#else
     CHECK(std::u16string(2,0xfffd) == fs::detail::fromUtf8<std::u16string>(std::string("\xed\xa0\x80")));
     CHECK(std::u16string(1,0xfffd) == fs::detail::fromUtf8<std::u16string>(std::string("\xc3")));
+#endif
 }
 
 TEST_CASE("fs::detail::toUtf8", "[filesystem][fs.detail.utf8]")
 {
-    CHECK(std::string("\xc3\xa4/\xe2\x82\xac\xf0\x9d\x84\x9e") == fs::detail::toUtf8(std::u16string(u"\u00E4/\u20AC\U0001D11E")));
-    CHECK(std::string("\xEF\xBF\xBD") == fs::detail::toUtf8(std::u16string(1, 0xd800)));
     std::string t;
+    CHECK(std::string("\xc3\xa4/\xe2\x82\xac\xf0\x9d\x84\x9e") == fs::detail::toUtf8(std::u16string(u"\u00E4/\u20AC\U0001D11E")));
+#ifdef GHC_RAISE_UNICODE_ERRORS
+    CHECK_THROWS_AS(fs::detail::toUtf8(std::u16string(1, 0xd800)), fs::filesystem_error);
+    CHECK_THROWS_AS(fs::detail::appendUTF8(t, 0x200000), fs::filesystem_error);
+#else
+    CHECK(std::string("\xEF\xBF\xBD") == fs::detail::toUtf8(std::u16string(1, 0xd800)));
     fs::detail::appendUTF8(t, 0x200000);
     CHECK(std::string("\xEF\xBF\xBD") == t);
+#endif
 }
 #endif
 

@@ -166,6 +166,11 @@
 // as ghc::filesystem::string_type.
 // #define GHC_WIN_WSTRING_STRING_TYPE
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Rais errors/exceptions when invalid unicode codepoints or UTF-8 sequences are found,
+// instead of replacing them with the unicode replacement character (U+FFFD).
+// #define GHC_RAISE_UNICODE_ERRORS
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 // ghc::filesystem version in decimal (major * 10000 + minor * 100 + patch)
 #define GHC_FILESYSTEM_VERSION 10199L
 
@@ -1209,7 +1214,11 @@ GHC_INLINE void appendUTF8(std::string& str, uint32_t unicode)
         str.push_back(static_cast<char>((unicode & 0x3f) + 128));
     }
     else {
+#ifdef GHC_RAISE_UNICODE_ERRORS
+        throw filesystem_error("Illegal code point for unicode character.", str, std::make_error_code(std::errc::illegal_byte_sequence));
+#else
         appendUTF8(str, 0xfffd);
+#endif
     }
 }
 
@@ -1228,6 +1237,22 @@ GHC_INLINE unsigned consumeUtf8Fragment(const unsigned state, const uint8_t frag
     return state == S_RJCT ? static_cast<unsigned>(S_RJCT) : static_cast<unsigned>((utf8_state_info[category + 16] >> (state << 2)) & 0xf);
 }
     
+GHC_INLINE bool validUtf8(const std::string& utf8String)
+{
+    std::string::const_iterator iter = utf8String.begin();
+    unsigned utf8_state = S_STRT;
+    std::uint32_t codepoint = 0;
+    while (iter < utf8String.end()) {
+        if ((utf8_state = consumeUtf8Fragment(utf8_state, (uint8_t)*iter++, codepoint)) == S_RJCT) {
+            return false;
+        }
+    }
+    if (utf8_state) {
+        return false;
+    }
+    return true;
+}
+
 }  // namespace detail
     
 #endif
@@ -1261,13 +1286,21 @@ inline StringType fromUtf8(const std::string& utf8String, const typename StringT
             codepoint = 0;
         }
         else if (utf8_state == S_RJCT) {
+#ifdef GHC_RAISE_UNICODE_ERRORS
+            throw filesystem_error("Illegal byte sequence for unicode character.", utf8String, std::make_error_code(std::errc::illegal_byte_sequence));
+#else
             result += (typename StringType::value_type)0xfffd;
             utf8_state = S_STRT;
             codepoint = 0;
+#endif
         }
     }
     if (utf8_state) {
+#ifdef GHC_RAISE_UNICODE_ERRORS
+        throw filesystem_error("Illegal byte sequence for unicode character.", utf8String, std::make_error_code(std::errc::illegal_byte_sequence));
+#else
         result += (typename StringType::value_type)0xfffd;
+#endif
     }
     return result;
 }
@@ -1286,13 +1319,21 @@ inline StringType fromUtf8(const std::string& utf8String, const typename StringT
             codepoint = 0;
         }
         else if (utf8_state == S_RJCT) {
+#ifdef GHC_RAISE_UNICODE_ERRORS
+            throw filesystem_error("Illegal byte sequence for unicode character.", utf8String, std::make_error_code(std::errc::illegal_byte_sequence));
+#else
             result += (typename StringType::value_type)0xfffd;
             utf8_state = S_STRT;
             codepoint = 0;
+#endif
         }
     }
     if (utf8_state) {
+#ifdef GHC_RAISE_UNICODE_ERRORS
+        throw filesystem_error("Illegal byte sequence for unicode character.", utf8String, std::make_error_code(std::errc::illegal_byte_sequence));
+#else
         result += (typename StringType::value_type)0xfffd;
+#endif
     }
     return result;
 }
@@ -1315,10 +1356,14 @@ inline std::string toUtf8(const std::basic_string<charT, traits, Alloc>& unicode
                 appendUTF8(result, (char32_t(c) << 10) + *iter - 0x35fdc00);
             }
             else {
+#ifdef GHC_RAISE_UNICODE_ERRORS
+                throw filesystem_error("Illegal code point for unicode character.", result, std::make_error_code(std::errc::illegal_byte_sequence));
+#else
                 appendUTF8(result, 0xfffd);
                 if(iter == unicodeString.end()) {
                     break;
                 }
+#endif
             }
         }
         else {
@@ -1359,6 +1404,13 @@ GHC_INLINE bool startsWith(const std::string& what, const std::string& with)
 
 GHC_INLINE void path::postprocess_path_with_format(path::impl_string_type& p, path::format fmt)
 {
+#ifdef GHC_RAISE_UNICODE_ERRORS
+    if(!detail::validUtf8(p)) {
+        path t;
+        t._path = p;
+        throw filesystem_error("Illegal byte sequence for unicode character.", t, std::make_error_code(std::errc::illegal_byte_sequence));
+    }
+#endif
     switch (fmt) {
 #ifndef GHC_OS_WINDOWS
         case path::auto_format:
@@ -4658,10 +4710,20 @@ public:
             do {
                 if (FindNextFileW(_dirHandle, &_findData)) {
                     _current = _base;
-                    _current.append_name(detail::toUtf8(_findData.cFileName).c_str());
+                    try {
+                        _current.append_name(detail::toUtf8(_findData.cFileName).c_str());
+                    }
+                    catch(filesystem_error& fe) {
+                        ec = fe.code();
+                        return;
+                    }
                     copyToDirEntry(ec);
                 }
                 else {
+                    auto err = ::GetLastError();
+                    if(err != ERROR_NO_MORE_FILES) {
+                        _ec = ec = std::error_code(err, std::system_category());
+                    }
                     FindClose(_dirHandle);
                     _dirHandle = INVALID_HANDLE_VALUE;
                     _current = filesystem::path();
