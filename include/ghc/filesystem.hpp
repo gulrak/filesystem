@@ -172,7 +172,7 @@
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 // ghc::filesystem version in decimal (major * 10000 + minor * 100 + patch)
-#define GHC_FILESYSTEM_VERSION 10200L
+#define GHC_FILESYSTEM_VERSION 10201L
 
 namespace ghc {
 namespace filesystem {
@@ -1514,6 +1514,19 @@ GHC_INLINE bool equals_simple_insensitive(const char* str1, const char* str2)
 #endif
 }
 
+GHC_INLINE const char* strerror_adapter(char* gnu, char*)
+{
+    return gnu;
+}
+
+GHC_INLINE const char* strerror_adapter(int posix, char* buffer)
+{
+    if(posix) {
+        return "Error in strerror_r!";
+    }
+    return buffer;
+}
+
 template <typename ErrorNumber>
 GHC_INLINE std::string systemErrorText(ErrorNumber code = 0)
 {
@@ -1524,14 +1537,9 @@ GHC_INLINE std::string systemErrorText(ErrorNumber code = 0)
     std::string msg = toUtf8(std::wstring((LPWSTR)msgBuf));
     LocalFree(msgBuf);
     return msg;
-#elif defined(GHC_OS_MACOS) || ((_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && !defined(_GNU_SOURCE)) || (defined(GHC_OS_ANDROID) && __ANDROID_API__ < 23)
-    char buffer[512];
-    int rc = strerror_r(code ? code : errno, buffer, sizeof(buffer));
-    return rc == 0 ? (const char*)buffer : "Error in strerror_r!";
 #else
     char buffer[512];
-    char* msg = strerror_r(code ? code : errno, buffer, sizeof(buffer));
-    return msg ? msg : buffer;
+    return strerror_adapter(strerror_r(code ? code : errno, buffer, sizeof(buffer)), buffer);
 #endif
 }
 
