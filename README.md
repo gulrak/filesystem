@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/gulrak/filesystem.svg?branch=master)](https://travis-ci.org/gulrak/filesystem)
 [![Build status](https://ci.appveyor.com/api/projects/status/t07wp3k2cddo0hpo/branch/master?svg=true)](https://ci.appveyor.com/project/gulrak/filesystem)
 [![Coverage Status](https://coveralls.io/repos/github/gulrak/filesystem/badge.svg?branch=master)](https://coveralls.io/github/gulrak/filesystem?branch=master)
-[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.2.0)
+[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.2.2)
 
 # Filesystem
 
