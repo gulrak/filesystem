@@ -7,9 +7,9 @@
 # Filesystem
 
 This is a header-only single-file std::filesystem compatible helper library,
-based on the C++17 specs, but implemented for C++11 or C++14 (so not 100%
-conforming to the C++17 standard). It is currently tested on macOS 10.12, Windows 10,
-and Ubuntu 18.04 but should work on other versions too, as long as you have a
+based on the C++17 specs, but implemented for C++11, C++14 or C++17 (tightly following
+the C++17 with very few documented exceptions). It is currently tested on
+macOS 10.12/10.14, Windows 10, and Ubuntu 18.04 but should work on other versions too, as long as you have a
 C++11 compatible compiler. It is of course in its own namespace `ghc::filesystem`
 to not interfere with a regular `std::filesystem` should you use it in a mixed C++17
 environment.
@@ -62,8 +62,8 @@ of the UTF-8 preference on Windows).
 
 Unit tests are currently run with:
 
-* macOS 10.12: Xcode 9.2 (clang-900.0.39.2), Xcode 10.2, GCC 8.1.0, Clang 7.0.0
-* Windows: Visual Studio 2017, Visual Studio 2015, MingW GCC 6.3 (Win32), GCC 7.2 (Win64)
+* macOS 10.12: Xcode 9.2 (clang-900.0.39.2), GCC 8.1.0, Clang 7.0.0, macOS 10.14: Xcode 10.2
+* Windows: Visual Studio 2017, Visual Studio 2015, Visual Studio 2019, MingW GCC 6.3 (Win32), GCC 7.2 (Win64)
 * Linux (Ubuntu): GCC (5.5, 6.5, 7.4, 8.1, 8.2), Clang (5.0, 6.0, 7.1, 8.0)
 
 
@@ -155,7 +155,7 @@ without that switch ([see](https://blogs.msdn.microsoft.com/vcblog/2018/04/09/ms
 Be aware too, as a header-only library, it is not hiding the fact, that it
 uses system includes, so they "pollute" your global namespace.
 
-**Hint:** There is an additional header named `ghc/fs_std.hpp` that implements this
+:information_source: **Hint:** There is an additional header named `ghc/fs_std.hpp` that implements this
 dynamic selection of a filesystem implementation, that you can include
 instead of `ghc/filesystem.hpp` when you want std::filesystem where
 available and ghc::filesystem where not. It also enables the `wchar_t`
@@ -209,7 +209,7 @@ to take precedence:
 #endif
 ```
 
-**Hint:** There are additional helper headers, named `ghc/fs_std_fwd.hpp` and
+:information_source: **Hint:** There are additional helper headers, named `ghc/fs_std_fwd.hpp` and
 `ghc/fs_std_impl.hpp` that use this technique, so you can simply include them
 if you want to dynamically select the filesystem implementation. they also
 enable the `wchar_t` support on `ghc::filesystem` on Windows, so the resulting
@@ -455,6 +455,13 @@ to the expected behavior.
 
 ## Release Notes
 
+### v1.2.2 (wip)
+
+* Fix for ([#21](https://github.com/gulrak/filesystem/pull/21)), when compiling
+  on Alpine Linux with musl instead of glibc, the wrong `strerror_r` signature
+  was expected. The complex preprocessor define mix was dropped in favor of
+  the usual dispatch by overloading a unifying wrapper.
+
 ### [v1.2.0](https://github.com/gulrak/filesystem/releases/tag/v1.2.0)
 
 * Added MingW 32/64 and Visual Studio 2015 builds to the CI configuration.
@@ -477,10 +484,9 @@ to the expected behavior.
   filesystem exceptions/errors on unicode errors with defined
   `GHC_RAISE_UNICODE_ERRORS` (instead of replacing invalid code points or
   UTF-8 encoding errors with the replacement character `U+FFFD`).
-* Pull request ([#20](https://github.com/gulrak/filesystem/pull/14)), fix for
+* Pull request ([#20](https://github.com/gulrak/filesystem/pull/20)), fix for
   file handle leak in `fs::copy_file`.
 * Coverage now checked in CI (~95% line coverage).
-
 
 ### [v1.1.4](https://github.com/gulrak/filesystem/releases/tag/v1.1.4)
 

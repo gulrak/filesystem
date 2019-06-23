@@ -172,7 +172,7 @@
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 // ghc::filesystem version in decimal (major * 10000 + minor * 100 + patch)
-#define GHC_FILESYSTEM_VERSION 10201L
+#define GHC_FILESYSTEM_VERSION 10202L
 
 namespace ghc {
 namespace filesystem {
