@@ -100,8 +100,8 @@ in the standard, and there might be issues in these implementations too.
 
 ### Downloads
 
-The latest release version is [v1.1.4](https://github.com/gulrak/filesystem/tree/v1.1.4) and
-source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.1.4).
+The latest release version is [v1.2.2](https://github.com/gulrak/filesystem/tree/v1.2.2) and
+source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.2.2).
 
 ### Using it as Single-File-Header
 
