@@ -455,7 +455,7 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.2.2 (wip)
+### [v1.2.2](https://github.com/gulrak/filesystem/releases/tag/v1.2.2)
 
 * Fix for ([#21](https://github.com/gulrak/filesystem/pull/21)), when compiling
   on Alpine Linux with musl instead of glibc, the wrong `strerror_r` signature
