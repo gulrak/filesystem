@@ -2643,8 +2643,8 @@ TEST_CASE("Windows: UNC path support", "[filesystem][path][fs.path.win.unc]")
         R"(\\?\UNC\C$\Windows\notepad.exe)",
         R"(\\?\GLOBALROOT\Device\Mup\C$\Windows\notepad.exe)",
     };
-    for (auto p : variants) {
-        std::cerr << p.string() << " - " << p.root_name() << ", " << p.root_path() << ": " << iterateResult(p) << std::endl;
+    for (auto pt : variants) {
+        std::cerr << pt.string() << " - " << pt.root_name() << ", " << pt.root_path() << ": " << iterateResult(pt) << std::endl;
     }
 }
 #endif
