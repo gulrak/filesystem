@@ -116,7 +116,7 @@ TP from_time_t(std::time_t t)
 {
     using namespace std::chrono;
     auto sctp = system_clock::from_time_t(t);
-    auto tp = time_point_cast<TP::duration>(sctp - system_clock::now() + TP::clock::now());
+    auto tp = time_point_cast<typename TP::duration>(sctp - system_clock::now() + TP::clock::now());
     return tp;
 }
 
@@ -2261,11 +2261,7 @@ static fs::file_time_type timeFromString(const std::string& str)
     if (is.fail()) {
         throw std::exception();
     }
-#ifdef IS_WCHAR_PATH
     return from_time_t<fs::file_time_type>(std::mktime(&tm));
-#else
-    return fs::file_time_type::clock::from_time_t(std::mktime(&tm));
-#endif
 }
 
 TEST_CASE("30.10.15.25 last_write_time", "[filesystem][operations][fs.op.last_write_time]")

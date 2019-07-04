@@ -705,9 +705,9 @@ public:
     // other members as required by 27.2.3, input iterators
     proxy operator++(int)
     {
-        proxy proxy{**this};
+        proxy p{**this};
         ++*this;
-        return proxy;
+        return p;
     }
     bool operator==(const directory_iterator& rhs) const;
     bool operator!=(const directory_iterator& rhs) const;
