@@ -2287,10 +2287,10 @@ TEST_CASE("30.10.15.25 last_write_time", "[filesystem][operations][fs.op.last_wr
     }
     auto nt = timeFromString("2015-10-21T04:30:00");
     CHECK_NOTHROW(fs::last_write_time(t.path() / "foo", nt));
-    CHECK(fs::last_write_time("foo") == nt);
+    CHECK(std::abs(std::chrono::duration_cast<std::chrono::seconds>(fs::last_write_time("foo") - nt).count()) < 1);
     nt = timeFromString("2015-10-21T04:29:00");
     CHECK_NOTHROW(fs::last_write_time("foo", nt, ec));
-    CHECK(fs::last_write_time("foo") == nt);
+    CHECK(std::abs(std::chrono::duration_cast<std::chrono::seconds>(fs::last_write_time("foo") - nt).count()) < 1);
     CHECK(!ec);
     CHECK_THROWS_AS(fs::last_write_time("bar", nt), fs::filesystem_error);
     CHECK_NOTHROW(fs::last_write_time("bar", nt, ec));
