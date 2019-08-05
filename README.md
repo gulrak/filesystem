@@ -63,7 +63,7 @@ of the UTF-8 preference on Windows).
 Unit tests are currently run with:
 
 * macOS 10.12: Xcode 9.2 (clang-900.0.39.2), GCC 8.1.0, Clang 7.0.0, macOS 10.14: Xcode 10.2
-* Windows: Visual Studio 2017, Visual Studio 2015, Visual Studio 2019, MingW GCC 6.3 (Win32), GCC 7.2 (Win64)
+* Windows: Visual Studio 2017, Visual Studio 2015, Visual Studio 2019, MinGW GCC 6.3 (Win32), GCC 7.2 (Win64)
 * Linux (Ubuntu): GCC (5.5, 6.5, 7.4, 8.1, 8.2), Clang (5.0, 6.0, 7.1, 8.0)
 
 
@@ -113,20 +113,33 @@ Everything is in the namespace `ghc::filesystem`, so one way to use it only as
 a fallback could be:
 
 ```cpp
-#if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include) && __has_include(<filesystem>)
+#if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include)
+#if __has_include(<filesystem>)
+#define GHC_USE_STD_FS
 #include <filesystem>
 namespace fs = std::filesystem;
-#else
+#endif
+#endif
+#ifndef GHC_USE_STD_FS
 #include <ghc/filesystem.hpp>
 namespace fs = ghc::filesystem;
 #endif
 ```
 
+**Note that this code uses a two-stage preprocessor condition because Visual Studio 2015
+doesn't like the `(<...>)` syntax, even if it could cut evaluation early before.**
+
+**Note also, that on MSVC this detection only works starting from version 15.7 on and when setting
+the `/Zc:__cplusplus` compile switch, as the compiler allways reports `199711L`
+without that switch ([see](https://blogs.msdn.microsoft.com/vcblog/2018/04/09/msvc-now-correctly-reports-__cplusplus/)).**
+
 If you want to also use the `fstream` wrapper with `path` support as fallback,
 you might use:
 
 ```cpp
-#if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include) && __has_include(<filesystem>)
+#if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include)
+#if __has_include(<filesystem>)
+#define GHC_USE_STD_FS
 #include <filesystem>
 namespace fs {
 using namespace std::filesystem;
@@ -134,7 +147,9 @@ using ifstream = std::ifstream;
 using ofstream = std::ofstream;
 using fstream = std::fstream;
 }
-#else
+#endif
+#endif
+#ifndef GHC_USE_STD_FS
 #include <ghc/filesystem.hpp>
 namespace fs {
 using namespace ghc::filesystem;
@@ -148,12 +163,8 @@ using fstream = ghc::filesystem::fstream;
 Now you have e.g. `fs::ofstream out(somePath);` and it is either the wrapper or
 the C++17 `std::ofstream`.
 
-**Note, that on MSVC this detection only works starting from version 15.7 on and when setting
-the `/Zc:__cplusplus` compile switch, as the compiler allways reports `199711L`
-without that switch ([see](https://blogs.msdn.microsoft.com/vcblog/2018/04/09/msvc-now-correctly-reports-__cplusplus/)).**
-
-Be aware too, as a header-only library, it is not hiding the fact, that it
-uses system includes, so they "pollute" your global namespace.
+**Be aware, as a header-only library, it is not hiding the fact, that it
+uses system includes, so they "pollute" your global namespace.**
 
 :information_source: **Hint:** There is an additional header named `ghc/fs_std.hpp` that implements this
 dynamic selection of a filesystem implementation, that you can include
@@ -181,7 +192,9 @@ If you use the forwarding/implementation approach, you can still use the dynamic
 switching like this:
 
 ```cpp
-#if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include) && __has_include(<filesystem>)
+#if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include)
+#if __has_include(<filesystem>)
+#define GHC_USE_STD_FS
 #include <filesystem>
 namespace fs {
 using namespace std::filesystem;
@@ -189,7 +202,9 @@ using ifstream = std::ifstream;
 using ofstream = std::ofstream;
 using fstream = std::fstream;
 }
-#else
+#endif
+#endif
+#ifndef GHC_USE_STD_FS
 #include <ghc/fs-fwd.hpp>
 namespace fs {
 using namespace ghc::filesystem;
@@ -204,8 +219,10 @@ and in the implementation hiding cpp, you might use (before any include that inc
 to take precedence:
 
 ```cpp
-#if !(defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include) && __has_include(<filesystem>))
+#if !(defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include)
+#if __has_include(<filesystem>))
 #include <ghc/fs_impl.hpp>
+#endif
 #endif
 ```
 
@@ -455,6 +472,10 @@ to the expected behavior.
 
 ## Release Notes
 
+### v1.2.3 (wip)
+
+* Enabled stronger warning switches and fixed issues on GCC and MinGW
+
 ### [v1.2.2](https://github.com/gulrak/filesystem/releases/tag/v1.2.2)
 
 * Fix for ([#21](https://github.com/gulrak/filesystem/pull/21)), when compiling
@@ -464,8 +485,8 @@ to the expected behavior.
 
 ### [v1.2.0](https://github.com/gulrak/filesystem/releases/tag/v1.2.0)
 
-* Added MingW 32/64 and Visual Studio 2015 builds to the CI configuration.
-* Fixed additional compilation issues on MingW.
+* Added MinGW 32/64 and Visual Studio 2015 builds to the CI configuration.
+* Fixed additional compilation issues on MinGW.
 * Pull request ([#13](https://github.com/gulrak/filesystem/pull/13)), set
   minimum required CMake version to 3.7.2 (as in Debian 8).
 * Pull request ([#14](https://github.com/gulrak/filesystem/pull/14)), added
@@ -539,7 +560,7 @@ to the expected behavior.
 * The `std::basic_string_view` variants of the `fs::path` api are
   now supported when compiling with C++17. 
 * Added CI integration for Travis-CI and Appveyor.
-* Fixed MingW compilation issues.
+* Fixed MinGW compilation issues.
 * Added long filename support for Windows.
 
 ### [v1.0.10](https://github.com/gulrak/filesystem/releases/tag/v1.0.10)
