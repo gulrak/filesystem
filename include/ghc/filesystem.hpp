@@ -3169,7 +3169,7 @@ GHC_INLINE void copy(const path& from, const path& to, copy_options options, std
                 copy_file(from, to / from.filename(), options, ec);
             }
             else {
-                copy_file(from, to, ec);
+                copy_file(from, to, options, ec);
             }
         }
     }

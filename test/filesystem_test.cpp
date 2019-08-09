@@ -1553,6 +1553,10 @@ TEST_CASE("30.10.15.3 copy", "[filesystem][operations][fs.op.copy]")
         CHECK(fs::exists("dir4/file1"));
         CHECK(fs::exists("dir4/file2"));
         CHECK(fs::exists("dir4/dir2/file3"));
+        fs::create_directory("dir5");
+        generateFile("dir5/file1");
+        CHECK_THROWS_AS(fs::copy("dir1/file1", "dir5/file1"), fs::filesystem_error);
+        CHECK_NOTHROW(fs::copy("dir1/file1", "dir5/file1", fs::copy_options::skip_existing));
     }
     if (is_symlink_creation_supported()) {
         TemporaryDirectory t(TempOpt::change_path);
