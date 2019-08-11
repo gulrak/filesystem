@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/gulrak/filesystem.svg?branch=master)](https://travis-ci.org/gulrak/filesystem)
 [![Build status](https://ci.appveyor.com/api/projects/status/t07wp3k2cddo0hpo/branch/master?svg=true)](https://ci.appveyor.com/project/gulrak/filesystem)
 [![Coverage Status](https://coveralls.io/repos/github/gulrak/filesystem/badge.svg?branch=master)](https://coveralls.io/github/gulrak/filesystem?branch=master)
-[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.2.2)
+[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.2.4)
 
 # Filesystem
 
@@ -100,8 +100,8 @@ in the standard, and there might be issues in these implementations too.
 
 ### Downloads
 
-The latest release version is [v1.2.2](https://github.com/gulrak/filesystem/tree/v1.2.2) and
-source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.2.2).
+The latest release version is [v1.2.4](https://github.com/gulrak/filesystem/tree/v1.2.4) and
+source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.2.4).
 
 ### Using it as Single-File-Header
 
@@ -472,9 +472,11 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.2.3 (wip)
+### [v1.2.4](https://github.com/gulrak/filesystem/releases/tag/v1.2.4)
 
-* Enabled stronger warning switches and fixed issues on GCC and MinGW
+* Enabled stronger warning switches and resulting fixed issues on GCC and MinGW
+* Bugfix for #22, the `fs::copy_options` where not forwarded from `fs::copy` to
+  `fs::copy_file` in one of the cases.
 
 ### [v1.2.2](https://github.com/gulrak/filesystem/releases/tag/v1.2.2)
 
