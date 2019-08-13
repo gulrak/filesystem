@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.7.2)
 project(ghcfilesystem)
 
+option(BUILD_TESTING "Enable tests" ON)
+option(BUILD_EXAMPLES "Build examples" ON)
+
 if(NOT DEFINED CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 11)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -28,9 +31,15 @@ if(NOT hasParent)
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
     include(GhcHelper)
-    enable_testing()
-    add_subdirectory(test)
-    add_subdirectory(examples)
+
+    if(BUILD_TESTING)
+        enable_testing()
+        add_subdirectory(test)
+    endif()
+
+    if(BUILD_EXAMPLES)
+        add_subdirectory(examples)
+    endif()
 endif()
 
 include(CMakePackageConfigHelpers)
