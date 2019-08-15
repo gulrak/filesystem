@@ -1475,6 +1475,15 @@ inline path::path(const std::u32string& source, format fmt)
     postprocess_path_with_format(_path, fmt);
 }
 
+#ifdef __cpp_lib_string_view
+template <>
+inline path::path(const std::string_view& source, format fmt)
+{
+    _path = detail::toUtf8(std::string(source));
+    postprocess_path_with_format(_path, fmt);
+}
+#endif
+
 template <class Source, typename>
 inline path u8path(const Source& source)
 {
