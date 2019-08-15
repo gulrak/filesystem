@@ -472,6 +472,16 @@ to the expected behavior.
 
 ## Release Notes
 
+### v1.2.5 (wip)
+
+* Pull request [#23](https://github.com/gulrak/filesystem/pull/23), tests and
+  examples can now be disabled in CMake via seting `BUILD_TESTING` and
+  `BUILD_EXAMPLES` to `NO`, `OFF` or `FALSE`.
+* Pull request [#25](https://github.com/gulrak/filesystem/pull/25),
+  missing specialization for construction from `std::string_view` when
+  available was added.
+* Additional test case when `std::string_view` is available.
+
 ### [v1.2.4](https://github.com/gulrak/filesystem/releases/tag/v1.2.4)
 
 * Enabled stronger warning switches and resulting fixed issues on GCC and MinGW

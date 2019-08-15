@@ -48,10 +48,14 @@
 #ifndef GHC_FILESYSTEM_H
 #define GHC_FILESYSTEM_H
 
+#ifndef GHC_OS_DETECTED
 #if defined(__APPLE__) && defined(__MACH__)
 #define GHC_OS_MACOS
 #elif defined(__linux__)
 #define GHC_OS_LINUX
+#if defined(__ANDROID__)
+#define GHC_OS_ANDROID
+#endif
 #elif defined(_WIN64)
 #define GHC_OS_WINDOWS
 #define GHC_OS_WIN64
@@ -60,6 +64,8 @@
 #define GHC_OS_WIN32
 #else
 #error "Operating system currently not supported!"
+#endif
+#define GHC_OS_DETECTED
 #endif
 
 #if defined(GHC_FILESYSTEM_IMPLEMENTATION)
@@ -108,8 +114,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
-#if defined(__ANDROID__)
-#define GHC_OS_ANDROID
+#ifdef GHC_OS_ANDROID
 #include <android/api-level.h>
 #endif
 #endif
@@ -172,7 +177,7 @@
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 // ghc::filesystem version in decimal (major * 10000 + minor * 100 + patch)
-#define GHC_FILESYSTEM_VERSION 10204L
+#define GHC_FILESYSTEM_VERSION 10205L
 
 namespace ghc {
 namespace filesystem {
@@ -5125,5 +5130,10 @@ GHC_INLINE recursive_directory_iterator end(const recursive_directory_iterator&)
 
 }  // namespace filesystem
 }  // namespace ghc
+
+// cleanup some macros
+#undef GHC_INLINE
+#undef GHC_EXPAND_IMPL
+#undef GHC_USE_WCHAR_T
 
 #endif  // GHC_FILESYSTEM_H
