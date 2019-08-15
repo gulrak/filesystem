@@ -5134,6 +5134,5 @@ GHC_INLINE recursive_directory_iterator end(const recursive_directory_iterator&)
 // cleanup some macros
 #undef GHC_INLINE
 #undef GHC_EXPAND_IMPL
-#undef GHC_USE_WCHAR_T
 
 #endif  // GHC_FILESYSTEM_H
