@@ -192,24 +192,35 @@ public:
     }
 };
 
-// 30.10.8 class path
-class GHC_FS_API_CLASS path
+template<typename char_type>
+class path_helper_base
 {
 public:
+    using value_type = char_type;
 #ifdef GHC_OS_WINDOWS
-#ifdef GHC_WIN_WSTRING_STRING_TYPE
-#define GHC_USE_WCHAR_T
-    using value_type = std::wstring::value_type;
-#else
-    using value_type = std::string::value_type;
-#endif
-    using string_type = std::basic_string<value_type>;
     static constexpr value_type preferred_separator = '\\';
 #else
-    using value_type = std::string::value_type;
-    using string_type = std::basic_string<value_type>;
     static constexpr value_type preferred_separator = '/';
 #endif
+};
+
+template <typename char_type>
+constexpr char_type path_helper_base<char_type>::preferred_separator;
+    
+// 30.10.8 class path
+class GHC_FS_API_CLASS path
+#if defined(GHC_OS_WINDOWS) && defined(GHC_WIN_WSTRING_STRING_TYPE)
+#define GHC_USE_WCHAR_T
+    : private path_helper_base<std::wstring::value_type>
+#else
+    : private path_helper_base<std::string::value_type>
+#endif
+{
+public:
+    using path_helper_base::value_type;
+    using string_type = std::basic_string<value_type>;
+    using path_helper_base::preferred_separator;
+    
     // 30.10.10.1 enumeration format
     /// The path format in wich the constructor argument is given.
     enum format {
