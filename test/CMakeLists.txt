@@ -18,8 +18,8 @@ else()
     add_executable(filesystem_test filesystem_test.cpp catch.hpp)
     target_link_libraries(filesystem_test ghc_filesystem)
     target_compile_options(filesystem_test PRIVATE
-        $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wshadow -Werror>
-        $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wshadow -Werror>
+        $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wpedantic -Werror>
+        $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wpedantic -Werror>
         $<$<CXX_COMPILER_ID:MSVC>:/WX>)
     if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
         target_compile_definitions(filesystem_test PRIVATE _CRT_SECURE_NO_WARNINGS)

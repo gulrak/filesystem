@@ -1238,7 +1238,7 @@ GHC_INLINE unsigned consumeUtf8Fragment(const unsigned state, const uint8_t frag
         0x88888880u, 0x22818108u, 0x88888881u, 0x88888882u, 0x88888884u, 0x88888887u, 0x88888886u, 0x82218108u, 0x82281108u, 0x88888888u, 0x88888883u, 0x88888885u, 0u,          0u,          0u,          0u,
     };
     uint8_t category = fragment < 128 ? 0 : (utf8_state_info[(fragment >> 3) & 0xf] >> ((fragment & 7) << 2)) & 0xf;
-    codepoint = (state ? (codepoint << 6) | (fragment & 0x3f) : (0xff >> category) & fragment);
+    codepoint = (state ? (codepoint << 6) | (fragment & 0x3fu) : (0xffu >> category) & fragment);
     return state == S_RJCT ? static_cast<unsigned>(S_RJCT) : static_cast<unsigned>((utf8_state_info[category + 16] >> (state << 2)) & 0xf);
 }
     
@@ -1320,7 +1320,7 @@ inline StringType fromUtf8(const std::string& utf8String, const typename StringT
     std::uint32_t codepoint = 0;
     while (iter < utf8String.end()) {
         if ((utf8_state = consumeUtf8Fragment(utf8_state, (uint8_t)*iter++, codepoint)) == S_STRT) {
-            result += codepoint;
+            result += static_cast<typename StringType::value_type>(codepoint);
             codepoint = 0;
         }
         else if (utf8_state == S_RJCT) {
@@ -1383,7 +1383,7 @@ inline std::string toUtf8(const std::basic_string<charT, traits, Alloc>& unicode
 {
     std::string result;
     for (auto c : unicodeString) {
-        appendUTF8(result, c);
+        appendUTF8(result, static_cast<uint32_t>(c));
     }
     return result;
 }
@@ -1732,7 +1732,7 @@ GHC_INLINE path resolveSymlink(const path& p, std::error_code& ec)
             return path();
         }
         else if (rc < static_cast<int>(bufferSize)) {
-            return path(std::string(buffer.data(), rc));
+            return path(std::string(buffer.data(), static_cast<std::string::size_type>(rc)));
         }
         bufferSize *= 2;
     }
@@ -1903,7 +1903,7 @@ GHC_INLINE file_status status_ex(const path& p, std::error_code& ec, file_status
             }
         }
         if (sz) {
-            *sz = st.st_size;
+            *sz = static_cast<uintmax_t>(st.st_size);
         }
         if (nhl) {
             *nhl = st.st_nlink;
@@ -3289,9 +3289,9 @@ GHC_INLINE bool copy_file(const path& from, const path& to, copy_options options
     std::shared_ptr<void> guard_out(nullptr, [out](void*) { ::close(out); });
     ssize_t br, bw;
     while ((br = ::read(in, buffer.data(), buffer.size())) > 0) {
-        int offset = 0;
+        ssize_t offset = 0;
         do {
-            if ((bw = ::write(out, buffer.data() + offset, br)) > 0) {
+            if ((bw = ::write(out, buffer.data() + offset, static_cast<size_t>(br))) > 0) {
                 br -= bw;
                 offset += bw;
             }
@@ -4170,7 +4170,7 @@ GHC_INLINE void resize_file(const path& p, uintmax_t size, std::error_code& ec) 
         ec = std::error_code(::GetLastError(), std::system_category());
     }
 #else
-    if (::truncate(p.c_str(), size) != 0) {
+    if (::truncate(p.c_str(), static_cast<off_t>(size)) != 0) {
         ec = std::error_code(errno, std::system_category());
     }
 #endif
