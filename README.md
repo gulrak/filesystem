@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/gulrak/filesystem.svg?branch=master)](https://travis-ci.org/gulrak/filesystem)
 [![Build status](https://ci.appveyor.com/api/projects/status/t07wp3k2cddo0hpo/branch/master?svg=true)](https://ci.appveyor.com/project/gulrak/filesystem)
 [![Coverage Status](https://coveralls.io/repos/github/gulrak/filesystem/badge.svg?branch=master)](https://coveralls.io/github/gulrak/filesystem?branch=master)
-[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.2.4)
+[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.2.6)
 
 # Filesystem
 
@@ -100,8 +100,8 @@ in the standard, and there might be issues in these implementations too.
 
 ### Downloads
 
-The latest release version is [v1.2.4](https://github.com/gulrak/filesystem/tree/v1.2.4) and
-source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.2.4).
+The latest release version is [v1.2.6](https://github.com/gulrak/filesystem/tree/v1.2.6) and
+source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.2.6).
 
 ### Using it as Single-File-Header
 
@@ -472,7 +472,7 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.2.5 (wip)
+### [v1.2.5](https://github.com/gulrak/filesystem/releases/tag/v1.2.6)
 
 * Pull request [#23](https://github.com/gulrak/filesystem/pull/23), tests and
   examples can now be disabled in CMake via seting `BUILD_TESTING` and
@@ -484,10 +484,10 @@ to the expected behavior.
 * Bugfix for [#27](https://github.com/gulrak/filesystem/issues/27), the
   `fs::path::preferred_seperator` declaration was not compiling on pre
   C++17 compilers and no test accessed it, to show the problem. Fixed
-  it to an construction C++11 compiler should accep and added a test that
-  is successfull on all combinations tested.
+  it to an construction C++11 compiler should accept and added a test that
+  is successful on all combinations tested.
 * Bugfix for [#29](https://github.com/gulrak/filesystem/issues/29), stricter
-  warning settings where choosen and resulting warnings where fixed.
+  warning settings where chosen and resulting warnings where fixed.
 
 ### [v1.2.4](https://github.com/gulrak/filesystem/releases/tag/v1.2.4)
 
