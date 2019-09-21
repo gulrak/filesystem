@@ -472,7 +472,7 @@ to the expected behavior.
 
 ## Release Notes
 
-### [v1.2.5](https://github.com/gulrak/filesystem/releases/tag/v1.2.6)
+### [v1.2.6](https://github.com/gulrak/filesystem/releases/tag/v1.2.6)
 
 * Pull request [#23](https://github.com/gulrak/filesystem/pull/23), tests and
   examples can now be disabled in CMake via seting `BUILD_TESTING` and
