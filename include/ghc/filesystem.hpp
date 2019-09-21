@@ -212,14 +212,17 @@ class GHC_FS_API_CLASS path
 #if defined(GHC_OS_WINDOWS) && defined(GHC_WIN_WSTRING_STRING_TYPE)
 #define GHC_USE_WCHAR_T
     : private path_helper_base<std::wstring::value_type>
-#else
-    : private path_helper_base<std::string::value_type>
-#endif
 {
 public:
-    using path_helper_base::value_type;
+    using path_helper_base<std::wstring::value_type>::value_type;
+#else
+    : private path_helper_base<std::string::value_type>
+{
+public:
+    using path_helper_base<std::string::value_type>::value_type;
+#endif
     using string_type = std::basic_string<value_type>;
-    using path_helper_base::preferred_separator;
+    using path_helper_base<value_type>::preferred_separator;
     
     // 30.10.10.1 enumeration format
     /// The path format in wich the constructor argument is given.
