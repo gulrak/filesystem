@@ -481,6 +481,13 @@ to the expected behavior.
   missing specialization for construction from `std::string_view` when
   available was added.
 * Additional test case when `std::string_view` is available.
+* Bugfix for [#27](https://github.com/gulrak/filesystem/issues/27), the
+  `fs::path::preferred_seperator` declaration was not compiling on pre
+  C++17 compilers and no test accessed it, to show the problem. Fixed
+  it to an construction C++11 compiler should accep and added a test that
+  is successfull on all combinations tested.
+* Bugfix for [#29](https://github.com/gulrak/filesystem/issues/29), stricter
+  warning settings where choosen and resulting warnings where fixed.
 
 ### [v1.2.4](https://github.com/gulrak/filesystem/releases/tag/v1.2.4)
 
