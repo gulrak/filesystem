@@ -345,6 +345,15 @@ TEST_CASE("fs::detail::toUtf8", "[filesystem][fs.detail.utf8]")
 }
 #endif
 
+TEST_CASE("30.10.8.1 path::preferred_separator", "[filesystem][path][fs.path.generic]")
+{
+#ifdef GHC_OS_WINDOWS
+    CHECK(fs::path::preferred_separator == '\\');
+#else
+    CHECK(fs::path::preferred_separator == '/');
+#endif
+}
+
 #ifndef GHC_OS_WINDOWS
 TEST_CASE("30.10.8.1 path(\"//host\").has_root_name()", "[filesystem][path][fs.path.generic]")
 {
