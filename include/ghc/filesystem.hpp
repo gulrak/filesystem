@@ -204,8 +204,10 @@ public:
 #endif
 };
 
+#if  __cplusplus < 201703L
 template <typename char_type>
 constexpr char_type path_helper_base<char_type>::preferred_separator;
+#endif
     
 // 30.10.8 class path
 class GHC_FS_API_CLASS path
