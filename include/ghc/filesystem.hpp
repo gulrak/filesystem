@@ -1211,7 +1211,7 @@ namespace detail {
 
 GHC_INLINE bool in_range(uint32_t c, uint32_t lo, uint32_t hi)
 {
-    return ((uint32_t)(c - lo) < (hi - lo + 1));
+    return (static_cast<uint32_t>(c - lo) < (hi - lo + 1));
 }
 
 GHC_INLINE bool is_surrogate(uint32_t c)
@@ -1279,7 +1279,7 @@ GHC_INLINE bool validUtf8(const std::string& utf8String)
     unsigned utf8_state = S_STRT;
     std::uint32_t codepoint = 0;
     while (iter < utf8String.end()) {
-        if ((utf8_state = consumeUtf8Fragment(utf8_state, (uint8_t)*iter++, codepoint)) == S_RJCT) {
+        if ((utf8_state = consumeUtf8Fragment(utf8_state, static_cast<uint8_t>(*iter++), codepoint)) == S_RJCT) {
             return false;
         }
     }
@@ -1310,14 +1310,14 @@ inline StringType fromUtf8(const std::string& utf8String, const typename StringT
     unsigned utf8_state = S_STRT;
     std::uint32_t codepoint = 0;
     while (iter < utf8String.end()) {
-        if ((utf8_state = consumeUtf8Fragment(utf8_state, (uint8_t)*iter++, codepoint)) == S_STRT) {
+        if ((utf8_state = consumeUtf8Fragment(utf8_state, static_cast<uint8_t>(*iter++), codepoint)) == S_STRT) {
             if (codepoint <= 0xffff) {
-                result += (typename StringType::value_type)codepoint;
+                result += static_cast<typename StringType::value_type>(codepoint);
             }
             else {
                 codepoint -= 0x10000;
-                result += (typename StringType::value_type)((codepoint >> 10) + 0xd800);
-                result += (typename StringType::value_type)((codepoint & 0x3ff) + 0xdc00);
+                result += static_cast<typename StringType::value_type>((codepoint >> 10) + 0xd800);
+                result += static_cast<typename StringType::value_type>((codepoint & 0x3ff) + 0xdc00);
             }
             codepoint = 0;
         }
@@ -1325,7 +1325,7 @@ inline StringType fromUtf8(const std::string& utf8String, const typename StringT
 #ifdef GHC_RAISE_UNICODE_ERRORS
             throw filesystem_error("Illegal byte sequence for unicode character.", utf8String, std::make_error_code(std::errc::illegal_byte_sequence));
 #else
-            result += (typename StringType::value_type)0xfffd;
+            result += static_cast<typename StringType::value_type>(0xfffd);
             utf8_state = S_STRT;
             codepoint = 0;
 #endif
@@ -1335,7 +1335,7 @@ inline StringType fromUtf8(const std::string& utf8String, const typename StringT
 #ifdef GHC_RAISE_UNICODE_ERRORS
         throw filesystem_error("Illegal byte sequence for unicode character.", utf8String, std::make_error_code(std::errc::illegal_byte_sequence));
 #else
-        result += (typename StringType::value_type)0xfffd;
+        result += static_cast<typename StringType::value_type>(0xfffd);
 #endif
     }
     return result;
@@ -1350,7 +1350,7 @@ inline StringType fromUtf8(const std::string& utf8String, const typename StringT
     unsigned utf8_state = S_STRT;
     std::uint32_t codepoint = 0;
     while (iter < utf8String.end()) {
-        if ((utf8_state = consumeUtf8Fragment(utf8_state, (uint8_t)*iter++, codepoint)) == S_STRT) {
+        if ((utf8_state = consumeUtf8Fragment(utf8_state, static_cast<uint8_t>(*iter++), codepoint)) == S_STRT) {
             result += static_cast<typename StringType::value_type>(codepoint);
             codepoint = 0;
         }
@@ -1358,7 +1358,7 @@ inline StringType fromUtf8(const std::string& utf8String, const typename StringT
 #ifdef GHC_RAISE_UNICODE_ERRORS
             throw filesystem_error("Illegal byte sequence for unicode character.", utf8String, std::make_error_code(std::errc::illegal_byte_sequence));
 #else
-            result += (typename StringType::value_type)0xfffd;
+            result += static_cast<typename StringType::value_type>(0xfffd);
             utf8_state = S_STRT;
             codepoint = 0;
 #endif
@@ -1368,7 +1368,7 @@ inline StringType fromUtf8(const std::string& utf8String, const typename StringT
 #ifdef GHC_RAISE_UNICODE_ERRORS
         throw filesystem_error("Illegal byte sequence for unicode character.", utf8String, std::make_error_code(std::errc::illegal_byte_sequence));
 #else
-        result += (typename StringType::value_type)0xfffd;
+        result += static_cast<typename StringType::value_type>(0xfffd);
 #endif
     }
     return result;
@@ -1756,7 +1756,7 @@ GHC_INLINE path resolveSymlink(const path& p, std::error_code& ec)
 #else
     size_t bufferSize = 256;
     while (true) {
-        std::vector<char> buffer(bufferSize, (char)0);
+        std::vector<char> buffer(bufferSize, static_cast<char>(0));
         auto rc = ::readlink(p.c_str(), buffer.data(), buffer.size());
         if (rc < 0) {
             ec = detail::make_system_error();
