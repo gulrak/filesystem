@@ -472,6 +472,22 @@ to the expected behavior.
 
 ## Release Notes
 
+### v1.2.7 (wip)
+
+* Pull request [#30](https://github.com/gulrak/filesystem/pull/30), the
+  `CMakeLists.txt` will automatically exclude building examples and tests when
+  used as submodule, the configuration options now use a prefixed name to
+  reduce risk of conflicts.
+* Pull request [#24](https://github.com/gulrak/filesystem/pull/24), install
+  target now creates a `ghcFilesystemConfig.cmake` in
+  `${CMAKE_INSTALL_LIBDIR}/cmake/ghcFilesystem` for `find_package` that
+  exports a target as `ghcFilesystem::ghc_filesystem`.
+* Pull request [#31](https://github.com/gulrak/filesystem/pull/31), fixes
+  `error: redundant redeclaration of 'constexpr' static data member` deprecation
+  warning in C++17 mode.
+* Pull request [#32](https://github.com/gulrak/filesystem/pull/32), fixes
+  old-style-cast warnings.
+
 ### [v1.2.6](https://github.com/gulrak/filesystem/releases/tag/v1.2.6)
 
 * Pull request [#23](https://github.com/gulrak/filesystem/pull/23), tests and
