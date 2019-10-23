@@ -2621,6 +2621,7 @@ GHC_INLINE bool path::is_relative() const
 GHC_INLINE path path::lexically_normal() const
 {
     path dest;
+    bool lastDotDot = false;
     for (const string_type& s : *this) {
         if (s == ".") {
             dest /= "";
@@ -2639,16 +2640,13 @@ GHC_INLINE path path::lexically_normal() const
                 continue;
             }
         }
-        dest /= s;
+        if (!(s.empty() && lastDotDot)) {
+            dest /= s;
+        }
+        lastDotDot = s == "..";
     }
     if (dest.empty()) {
         dest = ".";
-    }
-    else {
-        static const path suffix[2] = {"", ".."};
-        if(std::equal(std::reverse_iterator<path::const_iterator>(dest.end()), std::reverse_iterator<path::const_iterator>(dest.begin()), suffix)) {
-            dest._path.pop_back();
-        }
     }
     return dest;
 }
