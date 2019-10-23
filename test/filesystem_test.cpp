@@ -873,10 +873,12 @@ TEST_CASE("30.10.8.4.11 path generation", "[filesystem][path][fs.path.gen]")
     CHECK(fs::path("foo/..").lexically_normal() == ".");
     CHECK(fs::path("ab/cd/ef/../../qw").lexically_normal() == "ab/qw");
     CHECK(fs::path("a/b/../../../c").lexically_normal() == "../c");
+    CHECK(fs::path("../").lexically_normal() == "..");
 #ifdef GHC_OS_WINDOWS
     CHECK(fs::path("\\/\\///\\/").lexically_normal() == "/");
     CHECK(fs::path("a/b/..\\//..///\\/../c\\\\/").lexically_normal() == "../c/");
     CHECK(fs::path("..a/b/..\\//..///\\/../c\\\\/").lexically_normal() == "../c/");
+    CHECK(fs::path("..\\").lexically_normal() == "..");
 #endif
 
     // lexically_relative()

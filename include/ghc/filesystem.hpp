@@ -2644,6 +2644,12 @@ GHC_INLINE path path::lexically_normal() const
     if (dest.empty()) {
         dest = ".";
     }
+    else {
+        static const path suffix[2] = {"", ".."};
+        if(std::equal(std::reverse_iterator<path::const_iterator>(dest.end()), std::reverse_iterator<path::const_iterator>(dest.begin()), suffix)) {
+            dest._path.pop_back();
+        }
+    }
     return dest;
 }
 
