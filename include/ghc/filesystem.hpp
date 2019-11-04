@@ -3391,7 +3391,12 @@ GHC_INLINE bool create_directories(const path& p, std::error_code& ec) noexcept
             if (!exists(fs)) {
                 create_directory(current, ec);
                 if (ec) {
-                    return false;
+                    std::error_code tmp_ec;
+                    if (is_directory(current, tmp_ec)) {
+                        ec.clear();
+                    } else {
+                        return false;
+                    }
                 }
             }
 #ifndef LWG_2935_BEHAVIOUR
