@@ -9,6 +9,9 @@ cmake_dependent_option(GHC_FILESYSTEM_BUILD_TESTING
 cmake_dependent_option(GHC_FILESYSTEM_BUILD_EXAMPLES
     "Build examples" ON
     "CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR" OFF)
+cmake_dependent_option(GHC_FILESYSTEM_WITH_INSTALL
+    "With install target" ON
+    "CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR" OFF)
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 11)
@@ -42,9 +45,12 @@ if(NOT hasParent)
     endif()
 endif()
 
-include(CMakePackageConfigHelpers)
-include(GNUInstallDirs)
+if(GHC_FILESYSTEM_WITH_INSTALL)
+    include(CMakePackageConfigHelpers)
+    include(GNUInstallDirs)
 
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(TARGETS ghc_filesystem EXPORT ghcFilesystemConfig)
-install(EXPORT ghcFilesystemConfig NAMESPACE ghcFilesystem:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ghcFilesystem)
+    install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    install(TARGETS ghc_filesystem EXPORT ghcFilesystemConfig)
+    install(EXPORT ghcFilesystemConfig NAMESPACE ghcFilesystem:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ghcFilesystem)
+endif()
+
