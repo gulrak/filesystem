@@ -41,14 +41,17 @@ matrix:
 
     - os: osx
       env: MATRIX_EVAL="CC=clang && CXX=clang++ && GENERATOR=Xcode && CONFIG=Release"
-      osx_image: xcode10.2
+      osx_image: xcode10.1
+
+    - os: osx
+      env: MATRIX_EVAL="CC=clang && CXX=clang++ && GENERATOR=Xcode && CONFIG=Release"
+      osx_image: xcode11.2
 
 install:
   - eval "${MATRIX_EVAL}"
   - |
     if [ "${TRAVIS_OS_NAME}" = "osx" ]; then
       brew update
-      brew upgrade cmake
     fi
   - |
     if [ "${GHC_COVERAGE}" = "1" ]; then
