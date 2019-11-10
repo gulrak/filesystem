@@ -171,7 +171,7 @@
 // as ghc::filesystem::string_type.
 // #define GHC_WIN_WSTRING_STRING_TYPE
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Rais errors/exceptions when invalid unicode codepoints or UTF-8 sequences are found,
+// Raise errors/exceptions when invalid unicode codepoints or UTF-8 sequences are found,
 // instead of replacing them with the unicode replacement character (U+FFFD).
 // #define GHC_RAISE_UNICODE_ERRORS
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
