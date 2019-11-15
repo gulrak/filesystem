@@ -242,6 +242,15 @@ as a git submodule, add the directory to your `CMakeLists.txt` with
 to ensure correct include path that allow `#include <ghc/filesystem.hpp>`
 to work.
 
+The `CMakeLists.txt` offers a few options to customize its behaviour:
+
+* `GHC_FILESYSTEM_BUILD_TESTING` - Compile tests, default is `OFF` when used as
+  a submodule, else `ON`.
+* `GHC_FILESYSTEM_BUILD_EXAMPLES` - Compile the examples, default is `OFF` when used as
+  a submodule, else `ON`.
+* `GHC_FILESYSTEM_WITH_INSTALL` - Add install target to build, default is `OFF` when used as
+  a submodule, else `ON`.
+
 ### Versioning
 
 There is a version macro `GHC_FILESYSTEM_VERSION` defined in case future changes
@@ -472,7 +481,7 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.2.7 (wip)
+### [v1.2.8](https://github.com/gulrak/filesystem/releases/tag/v1.2.8)
 
 * Pull request [#30](https://github.com/gulrak/filesystem/pull/30), the
   `CMakeLists.txt` will automatically exclude building examples and tests when
@@ -487,6 +496,17 @@ to the expected behavior.
   warning in C++17 mode.
 * Pull request [#32](https://github.com/gulrak/filesystem/pull/32), fixes
   old-style-cast warnings.
+* Pull request [#34](https://github.com/gulrak/filesystem/pull/34), fixes
+  [TOCTOU](https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use) situation
+  on `fs::create_directories`, thanks for the PR!
+* Feature [#35](https://github.com/gulrak/filesystem/issues/35), new CMake
+  option to add an install target `GHC_FILESYSTEM_WITH_INSTALL` that is
+  defaulted to ON if `ghc::filesystem` is used as via `add_subdirectory`.
+* Bugfix for [#33](https://github.com/gulrak/filesystem/issues/33), fixes
+  an issue with `fs::path::lexically_normal()` that leaves a trailing separator
+  in case of a resulting path ending with `..` as last element.
+* Bugfix for [#36](https://github.com/gulrak/filesystem/issues/36), warings
+  on Xcode 11.2 due to unhelpfull references in path element iteration.
 
 ### [v1.2.6](https://github.com/gulrak/filesystem/releases/tag/v1.2.6)
 
