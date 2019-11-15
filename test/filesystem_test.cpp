@@ -1187,6 +1187,9 @@ TEST_CASE("30.10.12 class directory_entry", "[filesystem][directory_entry][fs.di
     CHECK_NOTHROW(de.refresh());
     fs::directory_entry none;
     CHECK_THROWS_AS(none.refresh(), fs::filesystem_error);
+    ec.clear();
+    CHECK_NOTHROW(none.refresh(ec));
+    CHECK(ec);
     CHECK_THROWS_AS(de.assign(""), fs::filesystem_error);
     ec.clear();
     CHECK_NOTHROW(de.assign("", ec));
@@ -2623,12 +2626,14 @@ TEST_CASE("std::string_view support", "[filesystem][fs.string_view]")
     p2 += std::string_view("o");
     CHECK(p2 == "foo");
     CHECK(p2.compare(std::string_view("foo")) == 0);
+#else
+    WARN("std::string_view specific tests are empty without std::string_view.");
 #endif
 }
 
-#ifdef GHC_OS_WINDOWS
 TEST_CASE("Windows: Long filename support", "[filesystem][path][fs.path.win.long]")
 {
+#ifdef GHC_OS_WINDOWS
     TemporaryDirectory t(TempOpt::change_path);
     char c = 'A';
     fs::path dir = "\\\\?\\" + fs::current_path().u8string();
@@ -2645,10 +2650,14 @@ TEST_CASE("Windows: Long filename support", "[filesystem][path][fs.path.win.long
         }
     }
     CHECK(c <= 'Z');
+#else
+    WARN("Windows specific tests are empty on non-Windows systems.");
+#endif
 }
 
 TEST_CASE("Windows: UNC path support", "[filesystem][path][fs.path.win.unc]")
 {
+#ifdef GHC_OS_WINDOWS
     std::error_code ec;
     fs::path p(R"(\\localhost\c$\Windows)");
     auto symstat = fs::symlink_status(p, ec);
@@ -2674,5 +2683,7 @@ TEST_CASE("Windows: UNC path support", "[filesystem][path][fs.path.win.unc]")
     for (auto pt : variants) {
         std::cerr << pt.string() << " - " << pt.root_name() << ", " << pt.root_path() << ": " << iterateResult(pt) << std::endl;
     }
-}
+#else
+    WARN("Windows specific tests are empty on non-Windows systems.");
 #endif
+}
