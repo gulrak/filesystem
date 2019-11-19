@@ -501,7 +501,7 @@ to the expected behavior.
   on `fs::create_directories`, thanks for the PR!
 * Feature [#35](https://github.com/gulrak/filesystem/issues/35), new CMake
   option to add an install target `GHC_FILESYSTEM_WITH_INSTALL` that is
-  defaulted to ON if `ghc::filesystem` is used as via `add_subdirectory`.
+  defaulted to OFF if `ghc::filesystem` is used via `add_subdirectory`.
 * Bugfix for [#33](https://github.com/gulrak/filesystem/issues/33), fixes
   an issue with `fs::path::lexically_normal()` that leaves a trailing separator
   in case of a resulting path ending with `..` as last element.
