@@ -4176,7 +4176,7 @@ GHC_INLINE void rename(const path& from, const path& to, std::error_code& ec) no
     ec.clear();
 #ifdef GHC_OS_WINDOWS
     if (from != to) {
-        if (!MoveFileW(detail::fromUtf8<std::wstring>(from.u8string()).c_str(), detail::fromUtf8<std::wstring>(to.u8string()).c_str())) {
+        if (!MoveFileExW(detail::fromUtf8<std::wstring>(from.u8string()).c_str(), detail::fromUtf8<std::wstring>(to.u8string()).c_str(), (DWORD)MOVEFILE_REPLACE_EXISTING)) {
             ec = detail::make_system_error();
         }
     }

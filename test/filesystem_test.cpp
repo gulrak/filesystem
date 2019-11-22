@@ -2444,12 +2444,20 @@ TEST_CASE("30.10.15.32 rename", "[filesystem][operations][fs.op.rename]")
 {
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
-    generateFile("foo");
+    generateFile("foo", 123);
     fs::create_directory("dir1");
     CHECK_NOTHROW(fs::rename("foo", "bar"));
+    CHECK(!fs::exists("foo"));
     CHECK(fs::exists("bar"));
     CHECK_NOTHROW(fs::rename("dir1", "dir2"));
     CHECK(fs::exists("dir2"));
+    generateFile("foo2", 42);
+    CHECK_NOTHROW(fs::rename("bar", "foo2"));
+    CHECK(fs::exists("foo2"));
+    CHECK(fs::file_size("foo2") == 123u);
+    CHECK(!fs::exists("bar"));
+    CHECK_NOTHROW(fs::rename("foo2", "foo", ec));
+    CHECK(!ec);
     CHECK_THROWS_AS(fs::rename("foobar", "barfoo"), fs::filesystem_error);
     CHECK_NOTHROW(fs::rename("foobar", "barfoo", ec));
     CHECK(ec);
