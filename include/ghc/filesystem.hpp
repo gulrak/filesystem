@@ -1086,7 +1086,7 @@ enum class portable_error {
 };
 GHC_FS_API std::error_code make_error_code(portable_error err);
 #ifdef GHC_OS_WINDOWS
-GHC_FS_API std::error_code make_system_error(DWORD err = 0);
+GHC_FS_API std::error_code make_system_error(uint32_t err = 0);
 #else
 GHC_FS_API std::error_code make_system_error(int err = 0);
 #endif
@@ -1141,7 +1141,7 @@ GHC_INLINE std::error_code make_error_code(portable_error err)
 }
 
 #ifdef GHC_OS_WINDOWS
-GHC_INLINE std::error_code make_system_error(DWORD err)
+GHC_INLINE std::error_code make_system_error(uint32_t err)
 {
     return std::error_code(err ? static_cast<int>(err) : static_cast<int>(::GetLastError()), std::system_category());
 }
