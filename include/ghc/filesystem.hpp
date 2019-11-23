@@ -1602,7 +1602,14 @@ GHC_INLINE void create_symlink(const path& target_name, const path& new_symlink,
         ec = detail::make_error_code(detail::portable_error::not_supported);
         return;
     }
-    static CreateSymbolicLinkW_fp api_call = reinterpret_cast<CreateSymbolicLinkW_fp>(reinterpret_cast<void*>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "CreateSymbolicLinkW")));
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
+    static CreateSymbolicLinkW_fp api_call = reinterpret_cast<CreateSymbolicLinkW_fp>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "CreateSymbolicLinkW"));
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
     if (api_call) {
         if (api_call(detail::fromUtf8<std::wstring>(new_symlink.u8string()).c_str(), detail::fromUtf8<std::wstring>(target_name.u8string()).c_str(), to_directory ? 1 : 0) == 0) {
             auto result = ::GetLastError();
@@ -1619,7 +1626,14 @@ GHC_INLINE void create_symlink(const path& target_name, const path& new_symlink,
 
 GHC_INLINE void create_hardlink(const path& target_name, const path& new_hardlink, std::error_code& ec)
 {
-    static CreateHardLinkW_fp api_call = reinterpret_cast<CreateHardLinkW_fp>(reinterpret_cast<void*>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "CreateHardLinkW")));
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
+    static CreateHardLinkW_fp api_call = reinterpret_cast<CreateHardLinkW_fp>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "CreateHardLinkW"));
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
     if (api_call) {
         if (api_call(detail::fromUtf8<std::wstring>(new_hardlink.u8string()).c_str(), detail::fromUtf8<std::wstring>(target_name.u8string()).c_str(), NULL) == 0) {
             ec = detail::make_system_error();
