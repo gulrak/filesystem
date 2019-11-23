@@ -1602,12 +1602,12 @@ GHC_INLINE void create_symlink(const path& target_name, const path& new_symlink,
         ec = detail::make_error_code(detail::portable_error::not_supported);
         return;
     }
-#ifdef __GNUC__
+#if defined(__GNUC__) && __GNUC__ >= 8
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-function-type"
 #endif
     static CreateSymbolicLinkW_fp api_call = reinterpret_cast<CreateSymbolicLinkW_fp>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "CreateSymbolicLinkW"));
-#ifdef __GNUC__
+#if defined(__GNUC__) && __GNUC__ >= 8
 #pragma GCC diagnostic pop
 #endif
     if (api_call) {
@@ -1626,12 +1626,12 @@ GHC_INLINE void create_symlink(const path& target_name, const path& new_symlink,
 
 GHC_INLINE void create_hardlink(const path& target_name, const path& new_hardlink, std::error_code& ec)
 {
-#ifdef __GNUC__
+#if defined(__GNUC__) && __GNUC__ >= 8
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-function-type"
 #endif
     static CreateHardLinkW_fp api_call = reinterpret_cast<CreateHardLinkW_fp>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "CreateHardLinkW"));
-#ifdef __GNUC__
+#if defined(__GNUC__) && __GNUC__ >= 8
 #pragma GCC diagnostic pop
 #endif
     if (api_call) {
