@@ -33,7 +33,7 @@ environment:
 
     - platform: x64
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      generator: "Visual Studio 16 2019 Win64"
+      generator: "Visual Studio 16 2019"
       compiler: msvc19
       configuration: Release
       arch: x64
