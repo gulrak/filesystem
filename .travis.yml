@@ -39,7 +39,7 @@ matrix:
       addons: { apt: { packages: ["clang-8", "libc++-8-dev", "libc++abi-8-dev"], sources: ["llvm-toolchain-xenial-8"] } }
 
     - env: MATRIX_EVAL="CC=clang-9 && CXX=clang++-9 && GENERATOR='Unix Makefiles' && CONFIG=Release"
-      addons: { apt: { packages: ["clang-9", "libc++-9-dev", "libc++abi-9-dev"], sources: ["llvm-toolchain-xenial-9"] } }
+      addons: { apt: { packages: ["clang-9", "libc++-9-dev", "libc++abi-9-dev"], sources: [{sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main', key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'}] } }
 
     - os: osx
       env: MATRIX_EVAL="CC=clang && CXX=clang++ && GENERATOR=Xcode && CONFIG=Release"
