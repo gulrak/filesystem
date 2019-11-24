@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/gulrak/filesystem.svg?branch=master)](https://travis-ci.org/gulrak/filesystem)
 [![Build status](https://ci.appveyor.com/api/projects/status/t07wp3k2cddo0hpo/branch/master?svg=true)](https://ci.appveyor.com/project/gulrak/filesystem)
 [![Coverage Status](https://coveralls.io/repos/github/gulrak/filesystem/badge.svg?branch=master)](https://coveralls.io/github/gulrak/filesystem?branch=master)
-[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.2.8)
+[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.2.10)
 
 # Filesystem
 
@@ -62,9 +62,9 @@ of the UTF-8 preference on Windows).
 
 Unit tests are currently run with:
 
-* macOS 10.12: Xcode 9.2 (clang-900.0.39.2), GCC 8.1.0, Clang 7.0.0, macOS 10.13: Xcode 10.1, macOS 10.14: Xcode 11.2
+* macOS 10.12: Xcode 9.2 (clang-900.0.39.2), GCC 9.2, Clang 9.0, macOS 10.13: Xcode 10.1, macOS 10.14: Xcode 11.2
 * Windows: Visual Studio 2017, Visual Studio 2015, Visual Studio 2019, MinGW GCC 6.3 (Win32), GCC 7.2 (Win64)
-* Linux (Ubuntu): GCC (5.5, 6.5, 7.4, 8.1, 8.2), Clang (5.0, 6.0, 7.1, 8.0)
+* Linux (Ubuntu): GCC (5.5, 6.5, 7.4, 8.3, 9.2), Clang (5.0, 6.0, 7.1, 8.0, 9.0)
 
 
 ## Tests
@@ -100,8 +100,8 @@ in the standard, and there might be issues in these implementations too.
 
 ### Downloads
 
-The latest release version is [v1.2.8](https://github.com/gulrak/filesystem/tree/v1.2.8) and
-source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.2.8).
+The latest release version is [v1.2.10](https://github.com/gulrak/filesystem/tree/v1.2.10) and
+source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.2.10).
 
 ### Using it as Single-File-Header
 
@@ -480,6 +480,22 @@ to the expected behavior.
 
 
 ## Release Notes
+
+### [v1.2.10](https://github.com/gulrak/filesystem/releases/tag/v1.2.10)
+
+* The Visual Studio 2019 compiler, GCC 9.2 and Clang 9.0 where added to the
+  CI configuration.
+* Bugfix for [#39](https://github.com/gulrak/filesystem/issues/39), `fs::rename`
+  on Windows didn't replace an axisting regular file as required by the standard,
+  but gave an error. New tests and a fix as provided in the issue was implemented.
+* Bugfix for [#39](https://github.com/gulrak/filesystem/issues/39), for the
+  forwarding use via `fs_fwd.hpp` or `fs_std_fwd.hpp` der was a use of
+  `DWORD` in the forwarding part leading to an error if `Windows.h` was not
+  included before the header. The tests were changed to give an error in that
+  case too and the useage of `DWORD` was removed.
+* Bugfix for [#38](https://github.com/gulrak/filesystem/issues/38), casting the
+  return value of `GetProcAddress` gave a warning with `-Wcast-function-type`
+  on MSYS2 and MinGW GCC 9 builds.
 
 ### [v1.2.8](https://github.com/gulrak/filesystem/releases/tag/v1.2.8)
 
