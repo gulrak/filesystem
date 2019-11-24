@@ -65,5 +65,6 @@ test_script:
   - cd %APPVEYOR_BUILD_FOLDER%\build
   - set CTEST_OUTPUT_ON_FAILURE=1
   - ctest -C %configuration% 
+  - if exist "test\Release\std_filesystem_test.exe" test\Release\std_filesystem_test.exe & exit 0
   - cd ..
 
