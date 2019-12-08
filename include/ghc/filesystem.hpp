@@ -177,7 +177,7 @@
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 // ghc::filesystem version in decimal (major * 10000 + minor * 100 + patch)
-#define GHC_FILESYSTEM_VERSION 10210L
+#define GHC_FILESYSTEM_VERSION 10211L
 
 namespace ghc {
 namespace filesystem {
@@ -677,7 +677,7 @@ private:
     file_status _symlink_status;
     uintmax_t _file_size = 0;
 #ifndef GHC_OS_WINDOWS
-    uintmax_t _hard_link_count;
+    uintmax_t _hard_link_count = 0;
 #endif
     time_t _last_write_time = 0;
 };
@@ -2551,7 +2551,7 @@ GHC_INLINE path path::stem() const
 {
     impl_string_type fn = filename().string();
     if (fn != "." && fn != "..") {
-        impl_string_type::size_type n = fn.rfind(".");
+        impl_string_type::size_type n = fn.rfind('.');
         if (n != impl_string_type::npos && n != 0) {
             return fn.substr(0, n);
         }

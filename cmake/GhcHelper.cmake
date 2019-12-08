@@ -16,6 +16,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND (CMAKE_CXX_COMPILER_VERSION 
         endif()
     else()
         if(NOT APPLE)
+            target_compile_options(${targetName} PRIVATE "-stdlib=libc++")
             target_link_libraries(${targetName} -stdlib=libc++)
         endif()
     endif()

@@ -1515,6 +1515,11 @@ TEST_CASE("30.10.15.1 absolute", "[filesystem][operations][fs.op.absolute]")
 TEST_CASE("30.10.15.2 canonical", "[filesystem][operations][fs.op.canonical]")
 {
     CHECK_THROWS_AS(fs::canonical(""), fs::filesystem_error);
+    {
+        std::error_code ec;
+        CHECK(fs::canonical("", ec) == "");
+        CHECK(ec);
+    }
     CHECK(fs::canonical(fs::current_path()) == fs::current_path());
 
     CHECK(fs::canonical(".") == fs::current_path());
