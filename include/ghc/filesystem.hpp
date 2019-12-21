@@ -2553,10 +2553,10 @@ GHC_INLINE path path::stem() const
     if (fn != "." && fn != "..") {
         impl_string_type::size_type n = fn.rfind('.');
         if (n != impl_string_type::npos && n != 0) {
-            return fn.substr(0, n);
+            return path{fn.substr(0, n)};
         }
     }
-    return fn;
+    return path{fn};
 }
 
 GHC_INLINE path path::extension() const
@@ -3558,7 +3558,7 @@ GHC_INLINE path current_path(std::error_code& ec)
 #else
     size_t pathlen = static_cast<size_t>(std::max(int(::pathconf(".", _PC_PATH_MAX)), int(PATH_MAX)));
     std::unique_ptr<char[]> buffer(new char[pathlen + 1]);
-    if (::getcwd(buffer.get(), pathlen) == NULL) {
+    if (::getcwd(buffer.get(), pathlen) == nullptr) {
         ec = detail::make_system_error();
         return path();
     }
