@@ -51,7 +51,7 @@ matrix:
 
     - os: osx
       env: MATRIX_EVAL="CC=clang && CXX=clang++ && GENERATOR=Xcode && CONFIG=Release"
-      osx_image: xcode11.2
+      osx_image: xcode11.3
 
 install:
   - eval "${MATRIX_EVAL}"
