@@ -481,6 +481,11 @@ to the expected behavior.
 
 ## Release Notes
 
+### v1.3.0 (wip)
+
+* Initial support for C++20 - `ghc::filesystem` now supports interfacing with
+  `char8_t` based `std::u8string`, when compiled in C++20 mode.
+   
 ### [v1.2.10](https://github.com/gulrak/filesystem/releases/tag/v1.2.10)
 
 * The Visual Studio 2019 compiler, GCC 9.2 and Clang 9.0 where added to the

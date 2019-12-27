@@ -31,6 +31,11 @@ if (CMAKE_COMPILER_IS_GNUCXX AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 8.0 O
     endif()
     target_compile_definitions(${targetName} PRIVATE USE_STD_FS)
 endif()
+if (CMAKE_COMPILER_IS_GNUCXX AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 9.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 9.0))
+    add_executable(${targetName}_20 ${ARGN})
+    set_property(TARGET ${targetName}_20 PROPERTY CXX_STANDARD 20)
+    target_compile_definitions(${targetName}_20 PRIVATE USE_STD_FS)
+endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES MSVC AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 19.15 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 19.15))
     add_executable(${targetName} ${ARGN})
@@ -40,4 +45,15 @@ if(CMAKE_CXX_COMPILER_ID MATCHES MSVC AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQ
     target_compile_definitions(${targetName} PRIVATE USE_STD_FS _CRT_SECURE_NO_WARNINGS)
 endif()
 
+endmacro()
+
+macro(AddExecutableWithCppStd targetName cppStd)
+    if ((CMAKE_COMPILER_IS_GNUCXX AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 9.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 9.0)) OR
+        ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 9.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 9.0)))
+        add_executable(${targetName} ${ARGN})
+        set_property(TARGET ${targetName} PROPERTY CXX_STANDARD ${cppStd})
+        set_property(TARGET ${targetName} PROPERTY CXX_STANDARD_REQUIRED ON)
+        target_link_libraries(${targetName} ghc_filesystem)
+        target_compile_options(${targetName} PRIVATE -fchar8_t -Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wpedantic -Werror)
+    endif()
 endmacro()

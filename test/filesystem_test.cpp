@@ -29,8 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //---------------------------------------------------------------------------------------
-#include <algorithm>
+
 #include <cstdio>
+#include <algorithm>
 #include <cstring>
 #include <fstream>
 #include <functional>
@@ -48,6 +49,7 @@
 
 #ifdef USE_STD_FS
 #include <filesystem>
+#include <codecvt>
 namespace fs {
 using namespace std::filesystem;
 using ifstream = std::ifstream;
@@ -89,6 +91,7 @@ using fstream = ghc::filesystem::fstream;
 #ifndef GHC_FILESYSTEM_FWD_TEST
 #define CATCH_CONFIG_MAIN
 #endif
+#define CATCH_CONFIG_NO_WCHAR
 #include "catch.hpp"
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -134,6 +137,25 @@ struct StringMaker<fs::perms>
 {
     static std::string convert(fs::perms const& value) { return std::to_string(static_cast<unsigned int>(value)); }
 };
+
+template <>
+struct StringMaker<std::wstring>
+{
+    static std::string convert(std::wstring const& value)
+    {
+#ifdef USE_STD_FS
+#ifdef GHC_OS_WINDOWS
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> wcu8;
+#else
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> wcu8;
+#endif
+        return wcu8.to_bytes( value );
+#else
+        return ghc::filesystem::detail::toUtf8(value);
+#endif
+    }
+};
+
 
 template <>
 struct StringMaker<fs::file_time_type>
@@ -269,6 +291,27 @@ static bool has_host_root_name_support()
     return fs::path("//host").has_root_name();
 }
 
+#ifdef __cpp_char8_t
+inline std::string U8S(const std::u8string& str)
+{
+    std::string result(reinterpret_cast<const std::string::value_type*>(str.data()), str.length());
+    return result;
+}
+inline const char* U8C(const char8_t* str)
+{
+    return reinterpret_cast<const char*>(str);
+}
+#else
+inline std::string U8S(const std::string& str)
+{
+    return str;
+}
+inline const char* U8C(const char* str)
+{
+    return str;
+}
+#endif
+
 template <class T>
 class TestAllocator
 {
@@ -315,13 +358,13 @@ TEST_CASE("fs::detail::fromUtf8", "[filesystem][fs.detail.utf8]")
 {
     CHECK(fs::detail::fromUtf8<std::wstring>("foobar").length() == 6);
     CHECK(fs::detail::fromUtf8<std::wstring>("foobar") == L"foobar");
-    CHECK(fs::detail::fromUtf8<std::wstring>(u8"föobar").length() == 6);
-    CHECK(fs::detail::fromUtf8<std::wstring>(u8"föobar") == L"föobar");
+    CHECK(fs::detail::fromUtf8<std::wstring>(U8S(u8"föobar")).length() == 6);
+    CHECK(fs::detail::fromUtf8<std::wstring>(U8S(u8"föobar")) == L"föobar");
 
     CHECK(fs::detail::toUtf8(std::wstring(L"foobar")).length() == 6);
     CHECK(fs::detail::toUtf8(std::wstring(L"foobar")) == "foobar");
     CHECK(fs::detail::toUtf8(std::wstring(L"föobar")).length() == 7);
-    CHECK(fs::detail::toUtf8(std::wstring(L"föobar")) == u8"föobar");
+    CHECK(fs::detail::toUtf8(std::wstring(L"föobar")) == U8C(u8"föobar"));
 
 #ifdef GHC_RAISE_UNICODE_ERRORS
     CHECK_THROWS_AS(fs::detail::fromUtf8<std::u16string>(std::string("\xed\xa0\x80")), fs::filesystem_error);
@@ -563,16 +606,21 @@ TEST_CASE("30.10.8.4.6 path native format observers", "[filesystem][path][fs.pat
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").u16string() == std::u16string(u"\u00E4\\\u20AC"));
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").u32string() == std::u32string(U"\U000000E4\\\U000020AC"));
 #else
-    CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").native() == fs::path::string_type(u8"\xc3\xa4/\xe2\x82\xac"));
-    CHECK(!::strcmp(fs::u8path("\xc3\xa4/\xe2\x82\xac").c_str(), u8"\xc3\xa4/\xe2\x82\xac"));
-    CHECK((std::string)fs::u8path("\xc3\xa4/\xe2\x82\xac") == std::string(u8"\xc3\xa4/\xe2\x82\xac"));
-    CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").string() == std::string(u8"\xc3\xa4/\xe2\x82\xac"));
+    CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").native() == fs::path::string_type(U8S(u8"\xc3\xa4/\xe2\x82\xac")));
+    CHECK(!::strcmp(fs::u8path("\xc3\xa4/\xe2\x82\xac").c_str(), U8C(u8"\xc3\xa4/\xe2\x82\xac")));
+    CHECK((std::string)fs::u8path("\xc3\xa4/\xe2\x82\xac") == std::string(U8C(u8"\xc3\xa4/\xe2\x82\xac")));
+    CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").string() == std::string(U8C(u8"\xc3\xa4/\xe2\x82\xac")));
+    CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").wstring() == std::wstring(L"\u00E4/\u20AC"));
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").wstring() == std::wstring(L"ä/€"));
-    CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").u8string() == std::string(u8"\xc3\xa4/\xe2\x82\xac"));
+    CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").wstring().length() == std::wstring(L"\u00E4/\u20AC").length());
+    CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").u8string() == (u8"\xc3\xa4/\xe2\x82\xac"));
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").u16string() == std::u16string(u"\u00E4/\u20AC"));
     INFO("This check might fail on GCC8 (with \"Illegal byte sequence\") due to not detecting the valid unicode codepoint U+1D11E.");
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac\xf0\x9d\x84\x9e").u16string() == std::u16string(u"\u00E4/\u20AC\U0001D11E"));
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").u32string() == std::u32string(U"\U000000E4/\U000020AC"));
+#ifdef __cpp_char8_t
+    CHECK(fs::path(u8"\xc3\xa4/\xe2\x82\xac").u8string() == u8"\xc3\xa4/\xe2\x82\xac");
+#endif
 #endif
 }
 
@@ -591,13 +639,13 @@ TEST_CASE("30.10.8.4.7 path generic format observers", "[filesystem][path][fs.pa
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_u16string() == std::u16string(u"\u00E4/\u20AC"));
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_u32string() == std::u32string(U"\U000000E4/\U000020AC"));
 #else
-    CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").generic_string() == std::string(u8"\xc3\xa4/\xe2\x82\xac"));
+    CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").generic_string() == std::string(U8S(u8"\xc3\xa4/\xe2\x82\xac")));
 #ifndef USE_STD_FS
     auto t = fs::u8path("\xc3\xa4/\xe2\x82\xac").generic_string<char, std::char_traits<char>, TestAllocator<char>>();
-    CHECK(t.c_str() == std::string(u8"\xc3\xa4/\xe2\x82\xac"));
+    CHECK(t.c_str() == std::string(U8S(u8"\xc3\xa4/\xe2\x82\xac")));
 #endif
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").generic_wstring() == std::wstring(L"ä/€"));
-    CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").generic_u8string() == std::string(u8"\xc3\xa4/\xe2\x82\xac"));
+    CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").generic_u8string() == (u8"\xc3\xa4/\xe2\x82\xac"));
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").generic_u16string() == std::u16string(u"\u00E4/\u20AC"));
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").generic_u32string() == std::u32string(U"\U000000E4/\U000020AC"));
 #endif

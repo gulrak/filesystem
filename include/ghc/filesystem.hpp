@@ -261,8 +261,14 @@ public:
     template <typename T>
     using path_type_EcharT = typename std::enable_if<std::is_same<T, char>::value || std::is_same<T, char16_t>::value || std::is_same<T, char32_t>::value, path>::type;
 #else
+#ifdef __cpp_lib_char8_t
+    template <typename T>
+    using path_from_string = typename std::enable_if<_is_basic_string<T>::value || std::is_same<char const*, typename std::decay<T>::type>::value || std::is_same<char*, typename std::decay<T>::type>::value
+                                                                                || std::is_same<char8_t const*, typename std::decay<T>::type>::value || std::is_same<char8_t*, typename std::decay<T>::type>::value, path>::type;
+#else
     template <typename T>
     using path_from_string = typename std::enable_if<_is_basic_string<T>::value || std::is_same<char const*, typename std::decay<T>::type>::value || std::is_same<char*, typename std::decay<T>::type>::value, path>::type;
+#endif
     template <typename T>
     using path_type_EcharT = typename std::enable_if<std::is_same<T, char>::value || std::is_same<T, char16_t>::value || std::is_same<T, char32_t>::value || std::is_same<T, wchar_t>::value, path>::type;
 #endif
@@ -335,7 +341,11 @@ public:
     std::basic_string<EcharT, traits, Allocator> string(const Allocator& a = Allocator()) const;
     std::string string() const;
     std::wstring wstring() const;
+#ifdef __cpp_lib_char8_t
+    std::u8string u8string() const;
+#else
     std::string u8string() const;
+#endif
     std::u16string u16string() const;
     std::u32string u32string() const;
 
@@ -344,7 +354,11 @@ public:
     std::basic_string<EcharT, traits, Allocator> generic_string(const Allocator& a = Allocator()) const;
     const std::string& generic_string() const;  // this is different from the standard, that returns by value
     std::wstring generic_wstring() const;
+#ifdef __cpp_lib_char8_t
+    std::u8string generic_u8string() const;
+#else
     std::string generic_u8string() const;
+#endif
     std::u16string generic_u16string() const;
     std::u32string generic_u32string() const;
 
@@ -1297,11 +1311,19 @@ GHC_INLINE bool validUtf8(const std::string& utf8String)
     
 namespace detail {
 
-template <class StringType, typename std::enable_if<(sizeof(typename StringType::value_type) == 1)>::type* = nullptr>
+template <class StringType, typename std::enable_if<std::is_same<typename StringType::value_type, char>::value>::type* = nullptr>
 inline StringType fromUtf8(const std::string& utf8String, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
 {
     return StringType(utf8String.begin(), utf8String.end(), alloc);
 }
+
+#ifdef __cpp_lib_char8_t
+template <class StringType, typename std::enable_if<std::is_same<typename StringType::value_type, char8_t>::value>::type* = nullptr>
+inline StringType fromUtf8(const std::string& utf8String, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
+{
+    return StringType(reinterpret_cast<const char8_t*>(utf8String.data()), utf8String.length(), alloc);
+}
+#endif
 
 template <class StringType, typename std::enable_if<(sizeof(typename StringType::value_type) == 2)>::type* = nullptr>
 inline StringType fromUtf8(const std::string& utf8String, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
@@ -1376,11 +1398,19 @@ inline StringType fromUtf8(const std::string& utf8String, const typename StringT
     return result;
 }
 
-template <typename charT, typename traits, typename Alloc, typename std::enable_if<(sizeof(charT) == 1), int>::type size = 1>
+template <typename charT, typename traits, typename Alloc, typename std::enable_if<std::is_same<charT,char>::value, int>::type size = 1>
 inline std::string toUtf8(const std::basic_string<charT, traits, Alloc>& unicodeString)
 {
     return std::string(unicodeString.begin(), unicodeString.end());
 }
+
+#ifdef __cpp_lib_char8_t
+template <typename charT, typename traits, typename Alloc, typename std::enable_if<std::is_same<charT,char8_t>::value, int>::type size = 1>
+inline std::string toUtf8(const std::basic_string<charT, traits, Alloc>& unicodeString)
+{
+    return std::string(reinterpret_cast<const char*>(unicodeString.data()), unicodeString.length());
+}
+#endif
 
 template <typename charT, typename traits, typename Alloc, typename std::enable_if<(sizeof(charT) == 2), int>::type size = 2>
 inline std::string toUtf8(const std::basic_string<charT, traits, Alloc>& unicodeString)
@@ -2400,10 +2430,17 @@ GHC_INLINE std::wstring path::wstring() const
 #endif
 }
 
+#ifdef __cpp_lib_char8_t
+GHC_INLINE std::u8string path::u8string() const
+{
+    return detail::fromUtf8<std::u8string>(native_impl());
+}
+#else
 GHC_INLINE std::string path::u8string() const
 {
     return native_impl();
 }
+#endif
 
 GHC_INLINE std::u16string path::u16string() const
 {
@@ -2437,10 +2474,17 @@ GHC_INLINE std::wstring path::generic_wstring() const
     return detail::fromUtf8<std::wstring>(_path);
 }
 
+#ifdef __cpp_lib_char8_t
+GHC_INLINE std::u8string path::generic_u8string() const
+{
+    return detail::fromUtf8<std::u8string>(_path);
+}
+#else
 GHC_INLINE std::string path::generic_u8string() const
 {
     return _path;
 }
+#endif
 
 GHC_INLINE std::u16string path::generic_u16string() const
 {
@@ -2999,7 +3043,11 @@ GHC_INLINE filesystem_error::filesystem_error(const std::string& what_arg, const
     , _p1(p1)
 {
     if (!_p1.empty()) {
+#ifdef __cpp_lib_char8_t
+        _what_arg += ": '" + detail::toUtf8(_p1.u8string()) + "'";
+#else
         _what_arg += ": '" + _p1.u8string() + "'";
+#endif
     }
 }
 
@@ -3011,10 +3059,18 @@ GHC_INLINE filesystem_error::filesystem_error(const std::string& what_arg, const
     , _p2(p2)
 {
     if (!_p1.empty()) {
+#ifdef __cpp_lib_char8_t
+        _what_arg += ": '" + detail::toUtf8(_p1.u8string()) + "'";
+#else
         _what_arg += ": '" + _p1.u8string() + "'";
+#endif
     }
     if (!_p2.empty()) {
+#ifdef __cpp_lib_char8_t
+        _what_arg += ", '" + detail::toUtf8(_p2.u8string()) + "'";
+#else
         _what_arg += ", '" + _p2.u8string() + "'";
+#endif
     }
 }
 

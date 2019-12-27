@@ -4,6 +4,7 @@
 // fs_fwd.hpp (to test this with maximum functionality, the unit tests
 // are included here, signaling they should only include the fs_fwd.hpp)
 #define NOMINMAX
+#include <cstdio>
 #include <ghc/fs_impl.hpp>
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
