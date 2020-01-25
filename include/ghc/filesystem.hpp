@@ -4266,6 +4266,7 @@ GHC_INLINE space_info space(const path& p, std::error_code& ec) noexcept
     }
     return {static_cast<uintmax_t>(sfs.f_blocks * sfs.f_frsize), static_cast<uintmax_t>(sfs.f_bfree * sfs.f_frsize), static_cast<uintmax_t>(sfs.f_bavail * sfs.f_frsize)};
 #else
+    (void)p;
     ec = detail::make_error_code(detail::portable_error::not_supported);
     return {static_cast<uintmax_t>(-1), static_cast<uintmax_t>(-1), static_cast<uintmax_t>(-1)};
 #endif
