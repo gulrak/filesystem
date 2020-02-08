@@ -1707,6 +1707,11 @@ TEST_CASE("30.10.15.6 create_directories", "[filesystem][operations][fs.op.creat
     CHECK(fs::is_regular_file(p));
     CHECK(!fs::is_directory(p));
     CHECK(!fs::create_directories(p, ec));
+    ec.clear();
+    CHECK(fs::create_directories(t.path() / "a/b/c", ec));
+    CHECK(!ec);
+    CHECK(fs::create_directories(t.path() / "d/e/f/", ec));
+    CHECK(!ec);
 #endif
 }
 
