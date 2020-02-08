@@ -1,8 +1,9 @@
 ![Supported Platforms](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 [![Build Status](https://travis-ci.org/gulrak/filesystem.svg?branch=master)](https://travis-ci.org/gulrak/filesystem)
 [![Build status](https://ci.appveyor.com/api/projects/status/t07wp3k2cddo0hpo/branch/master?svg=true)](https://ci.appveyor.com/project/gulrak/filesystem)
 [![Coverage Status](https://coveralls.io/repos/github/gulrak/filesystem/badge.svg?branch=master)](https://coveralls.io/github/gulrak/filesystem?branch=master)
-[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.2.10)
+[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.3.0)
 
 # Filesystem
 
@@ -100,8 +101,8 @@ in the standard, and there might be issues in these implementations too.
 
 ### Downloads
 
-The latest release version is [v1.2.10](https://github.com/gulrak/filesystem/tree/v1.2.10) and
-source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.2.10).
+The latest release version is [v1.3.0](https://github.com/gulrak/filesystem/tree/v1.3.0) and
+source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.3.0).
 
 ### Using it as Single-File-Header
 
@@ -481,11 +482,20 @@ to the expected behavior.
 
 ## Release Notes
 
+### [v1.3.0](https://github.com/gulrak/filesystem/releases/tag/v1.3.0)
+
+* **Important: `ghc::filesystem` is re-licensed from BSD-3-Clause to MIT license.** (see
+  [#47](https://github.com/gulrak/filesystem/issues/47))
+* Pull request [#46](https://github.com/gulrak/filesystem/pull/46), suppresses
+  unused parameter warning on Android.
+* Bugfix for [#44](https://github.com/gulrak/filesystem/issues/44), fixes
+  for warnings from newer Xcode versions.
+
 ### [v1.2.10](https://github.com/gulrak/filesystem/releases/tag/v1.2.10)
 
 * The Visual Studio 2019 compiler, GCC 9.2 and Clang 9.0 where added to the
   CI configuration.
-* Bugfix for [#39](https://github.com/gulrak/filesystem/issues/39), `fs::rename`
+* Bugfix for [#41](https://github.com/gulrak/filesystem/issues/41), `fs::rename`
   on Windows didn't replace an axisting regular file as required by the standard,
   but gave an error. New tests and a fix as provided in the issue was implemented.
 * Bugfix for [#39](https://github.com/gulrak/filesystem/issues/39), for the
