@@ -1,0 +1,13 @@
+freebsd_instance:
+  image_family: freebsd-12-1
+
+task:
+  install_script: |
+    pkg install -y cmake
+    pw groupadd testgrp
+    pw useradd testuser -g testgrp -w none -m
+    chown -R testuser:testgrp .
+  build_script: |
+    sudo -u testuser .ci/unix-build.sh
+  test_script: |
+    sudo -u testuser .ci/unix-test.sh
