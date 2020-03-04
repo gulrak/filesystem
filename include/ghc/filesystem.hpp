@@ -2951,7 +2951,8 @@ template <class charT, class traits>
 inline std::basic_istream<charT, traits>& operator>>(std::basic_istream<charT, traits>& is, path& p)
 {
     std::basic_string<charT, traits> tmp;
-    auto c = is.get();
+    charT c;
+    is >> c;
     if (c == '"') {
         auto sf = is.flags();
         is >> std::noskipws;
