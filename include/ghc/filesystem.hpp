@@ -2957,19 +2957,19 @@ inline std::basic_istream<charT, traits>& operator>>(std::basic_istream<charT, t
         auto sf = is.flags();
         is >> std::noskipws;
         while (is) {
-            c = is.get();
+            auto c2 = is.get();
             if (is) {
-                if (c == '\\') {
-                    c = is.get();
+                if (c2 == '\\') {
+                    c2 = is.get();
                     if (is) {
-                        tmp += static_cast<charT>(c);
+                        tmp += static_cast<charT>(c2);
                     }
                 }
-                else if (c == '"') {
+                else if (c2 == '"') {
                     break;
                 }
                 else {
-                    tmp += static_cast<charT>(c);
+                    tmp += static_cast<charT>(c2);
                 }
             }
         }
