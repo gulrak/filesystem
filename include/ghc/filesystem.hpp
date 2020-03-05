@@ -3397,6 +3397,7 @@ GHC_INLINE bool create_directories(const path& p, std::error_code& ec) noexcept
 {
     path current;
     ec.clear();
+    bool didCreate = false;
     for (path::string_type part : p) {
         current /= part;
         if (current != p.root_name() && current != p.root_path()) {
@@ -3416,6 +3417,7 @@ GHC_INLINE bool create_directories(const path& p, std::error_code& ec) noexcept
                         return false;
                     }
                 }
+                didCreate = true;
             }
 #ifndef LWG_2935_BEHAVIOUR
             else if (!is_directory(fs)) {
@@ -3425,7 +3427,7 @@ GHC_INLINE bool create_directories(const path& p, std::error_code& ec) noexcept
 #endif
         }
     }
-    return true;
+    return didCreate;
 }
 
 GHC_INLINE bool create_directory(const path& p)

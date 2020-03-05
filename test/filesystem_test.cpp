@@ -1674,6 +1674,7 @@ TEST_CASE("30.10.15.6 create_directories", "[filesystem][operations][fs.op.creat
     CHECK(fs::create_directories(p2));
     CHECK(fs::is_directory(p));
     CHECK(fs::is_directory(p2));
+    CHECK(!fs::create_directories(p2));
 #ifdef TEST_LWG_2935_BEHAVIOUR
     INFO("This test expects LWG #2935 result conformance.");
     p = t.path() / "testfile";
