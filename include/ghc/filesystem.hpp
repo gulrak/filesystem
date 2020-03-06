@@ -4649,6 +4649,7 @@ GHC_INLINE uintmax_t directory_entry::file_size() const
 GHC_INLINE uintmax_t directory_entry::file_size(std::error_code& ec) const noexcept
 {
     if (_status.type() != file_type::none) {
+        ec.clear();
         return _file_size;
     }
     return filesystem::file_size(path(), ec);
@@ -4668,6 +4669,7 @@ GHC_INLINE uintmax_t directory_entry::hard_link_count(std::error_code& ec) const
 {
 #ifndef GHC_OS_WINDOWS
     if (_status.type() != file_type::none) {
+        ec.clear();
         return _hard_link_count;
     }
 #endif
@@ -4685,6 +4687,7 @@ GHC_INLINE file_time_type directory_entry::last_write_time() const
 GHC_INLINE file_time_type directory_entry::last_write_time(std::error_code& ec) const noexcept
 {
     if (_status.type() != file_type::none) {
+        ec.clear();
         return std::chrono::system_clock::from_time_t(_last_write_time);
     }
     return filesystem::last_write_time(path(), ec);
@@ -4701,6 +4704,7 @@ GHC_INLINE file_status directory_entry::status() const
 GHC_INLINE file_status directory_entry::status(std::error_code& ec) const noexcept
 {
     if (_status.type() != file_type::none) {
+        ec.clear();
         return _status;
     }
     return filesystem::status(path(), ec);
@@ -4717,6 +4721,7 @@ GHC_INLINE file_status directory_entry::symlink_status() const
 GHC_INLINE file_status directory_entry::symlink_status(std::error_code& ec) const noexcept
 {
     if (_symlink_status.type() != file_type::none) {
+        ec.clear();
         return _symlink_status;
     }
     return filesystem::symlink_status(path(), ec);

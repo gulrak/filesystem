@@ -486,6 +486,10 @@ to the expected behavior.
 
 ### v1.3.1 (wip)
 
+* Bugfix for [#55](https://github.com/gulrak/filesystem/issues/55), `fs::create_directories`
+  returned `true` when nothing needed to be created, because the directory already existed.
+* Bugfix for [#54](https://github.com/gulrak/filesystem/issues/54), `error_code`
+  was not reset, if cached result was returned.
 * Pull request [#53](https://github.com/gulrak/filesystem/pull/53), fix for wrong
   handling of leading whitespace when reading `fs::path` from a stream.
 * Pull request [#52](https://github.com/gulrak/filesystem/pull/52), an ARM Linux
