@@ -882,6 +882,7 @@ TEST_CASE("30.10.8.4.11 path generation", "[filesystem][path][fs.path.gen]")
     CHECK(fs::path("a/b/c").lexically_relative("a/b/c/x/y") == "../..");
     CHECK(fs::path("a/b/c").lexically_relative("a/b/c") == ".");
     CHECK(fs::path("a/b").lexically_relative("c/d") == "../../a/b");
+    CHECK(fs::path("a/b").lexically_relative("a/") == "b");
     if (has_host_root_name_support()) {
         CHECK(fs::path("//host1/foo").lexically_relative("//host2.bar") == "");
     }

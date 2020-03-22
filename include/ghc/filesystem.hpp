@@ -2683,7 +2683,7 @@ GHC_INLINE path path::lexically_relative(const path& base) const
     }
     int count = 0;
     for (const auto& element : input_iterator_range<const_iterator>(b, base.end())) {
-        if (element != "." && element != "..") {
+        if (element != "." && element != "" && element != "..") {
             ++count;
         }
         else if (element == "..") {
