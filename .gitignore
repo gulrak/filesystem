@@ -1,2 +1,4 @@
-/build*/
+/*build*/
 .vscode/
+.idea/
+*.swp

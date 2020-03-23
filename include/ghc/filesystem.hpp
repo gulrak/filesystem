@@ -4225,7 +4225,11 @@ GHC_INLINE void resize_file(const path& p, uintmax_t size, std::error_code& ec) 
     LARGE_INTEGER lisize;
     lisize.QuadPart = static_cast<LONGLONG>(size);
     if(lisize.QuadPart < 0) {
+#ifdef ERROR_FILE_TOO_LARGE
         ec = detail::make_system_error(ERROR_FILE_TOO_LARGE);
+#else
+        ec = detail::make_system_error(223);
+#endif
         return;
     }
     std::shared_ptr<void> file(CreateFileW(detail::fromUtf8<std::wstring>(p.u8string()).c_str(), GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL), CloseHandle);
