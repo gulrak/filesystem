@@ -5,14 +5,15 @@
 [![Build Status](https://api.cirrus-ci.com/github/gulrak/filesystem.svg?branch=master)](https://cirrus-ci.com/github/gulrak/filesystem)
 [![Build Status](https://cloud.drone.io/api/badges/gulrak/filesystem/status.svg?ref=refs/heads/master)](https://cloud.drone.io/gulrak/filesystem)
 [![Coverage Status](https://coveralls.io/repos/github/gulrak/filesystem/badge.svg?branch=master)](https://coveralls.io/github/gulrak/filesystem?branch=master)
-[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.3.0)
+[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.3.2)
 
 # Filesystem
 
 This is a header-only single-file std::filesystem compatible helper library,
 based on the C++17 specs, but implemented for C++11, C++14 or C++17 (tightly following
 the C++17 with very few documented exceptions). It is currently tested on
-macOS 10.12/10.14, Windows 10, and Ubuntu 18.04 but should work on other versions too, as long as you have a
+macOS 10.12/10.14, Windows 10, Ubuntu 18.04, FreeBSD 12 and Alpine ARM/ARM64 Linux
+but should work on other systems too, as long as you have at least a 
 C++11 compatible compiler. It is of course in its own namespace `ghc::filesystem`
 to not interfere with a regular `std::filesystem` should you use it in a mixed C++17
 environment.
@@ -68,6 +69,8 @@ Unit tests are currently run with:
 * macOS 10.12: Xcode 9.2 (clang-900.0.39.2), GCC 9.2, Clang 9.0, macOS 10.13: Xcode 10.1, macOS 10.14: Xcode 11.2
 * Windows: Visual Studio 2017, Visual Studio 2015, Visual Studio 2019, MinGW GCC 6.3 (Win32), GCC 7.2 (Win64)
 * Linux (Ubuntu): GCC (5.5, 6.5, 7.4, 8.3, 9.2), Clang (5.0, 6.0, 7.1, 8.0, 9.0)
+* Linux (Alpine ARM/ARM64): GCC 9.2.0
+* FreeBSD: Clang 8.0
 
 
 ## Tests
@@ -103,8 +106,8 @@ in the standard, and there might be issues in these implementations too.
 
 ### Downloads
 
-The latest release version is [v1.3.0](https://github.com/gulrak/filesystem/tree/v1.3.0) and
-source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.3.0).
+The latest release version is [v1.3.2](https://github.com/gulrak/filesystem/tree/v1.3.2) and
+source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.3.2).
 
 ### Using it as Single-File-Header
 
@@ -484,8 +487,14 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.3.1 (wip)
+### [v1.3.2](https://github.com/gulrak/filesystem/releases/tag/v1.3.2)
 
+* Bugfix for [#58](https://github.com/gulrak/filesystem/issues/58), on MinGW the
+  compilation could fail with an error about an undefined `ERROR_FILE_TOO_LARGE`
+  constant.
+* Bugfix for [#56](https://github.com/gulrak/filesystem/issues/58), `fs::lexically_relative`
+  didn't ignore trailing slash on the base parameter, thanks for PR
+  [#57](https://github.com/gulrak/filesystem/pull/57).
 * Bugfix for [#55](https://github.com/gulrak/filesystem/issues/55), `fs::create_directories`
   returned `true` when nothing needed to be created, because the directory already existed.
 * Bugfix for [#54](https://github.com/gulrak/filesystem/issues/54), `error_code`
