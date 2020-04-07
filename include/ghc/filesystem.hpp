@@ -5079,6 +5079,7 @@ public:
             do {
                 if (FindNextFileW(_dirHandle, &_findData)) {
                     _current = _base;
+#ifdef GHC_RAISE_UNICODE_ERRORS
                     try {
                         _current.append_name(detail::toUtf8(_findData.cFileName).c_str());
                     }
@@ -5086,6 +5087,9 @@ public:
                         ec = fe.code();
                         return;
                     }
+#else
+                    _current.append_name(detail::toUtf8(_findData.cFileName).c_str());
+#endif
                     copyToDirEntry(ec);
                 }
                 else {
