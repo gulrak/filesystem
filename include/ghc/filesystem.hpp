@@ -278,10 +278,12 @@ public:
     path(const Source& source, format fmt = auto_format);
     template <class InputIterator>
     path(InputIterator first, InputIterator last, format fmt = auto_format);
+#ifdef __cpp_exceptions
     template <class Source, typename = path_from_string<Source>>
     path(const Source& source, const std::locale& loc, format fmt = auto_format);
     template <class InputIterator>
     path(InputIterator first, InputIterator last, const std::locale& loc, format fmt = auto_format);
+#endif
     ~path();
 
     // 30.10.8.4.2 assignments
@@ -617,7 +619,9 @@ public:
     directory_entry() noexcept = default;
     directory_entry(const directory_entry&) = default;
     directory_entry(directory_entry&&) noexcept = default;
+#ifdef __cpp_exceptions
     explicit directory_entry(const path& p);
+#endif
     directory_entry(const path& p, std::error_code& ec);
     ~directory_entry();
 
@@ -626,45 +630,79 @@ public:
     directory_entry& operator=(directory_entry&&) noexcept = default;
 
     // 30.10.12.2 modifiers
+#ifdef __cpp_exceptions
     void assign(const path& p);
+#endif
     void assign(const path& p, std::error_code& ec);
+#ifdef __cpp_exceptions
     void replace_filename(const path& p);
+#endif
     void replace_filename(const path& p, std::error_code& ec);
+#ifdef __cpp_exceptions
     void refresh();
+#endif
     void refresh(std::error_code& ec) noexcept;
 
     // 30.10.12.3 observers
     const filesystem::path& path() const noexcept;
     operator const filesystem::path&() const noexcept;
+#ifdef __cpp_exceptions
     bool exists() const;
+#endif
     bool exists(std::error_code& ec) const noexcept;
+#ifdef __cpp_exceptions
     bool is_block_file() const;
+#endif
     bool is_block_file(std::error_code& ec) const noexcept;
+#ifdef __cpp_exceptions
     bool is_character_file() const;
+#endif
     bool is_character_file(std::error_code& ec) const noexcept;
+#ifdef __cpp_exceptions
     bool is_directory() const;
+#endif
     bool is_directory(std::error_code& ec) const noexcept;
+#ifdef __cpp_exceptions
     bool is_fifo() const;
+#endif
     bool is_fifo(std::error_code& ec) const noexcept;
+#ifdef __cpp_exceptions
     bool is_other() const;
+#endif
     bool is_other(std::error_code& ec) const noexcept;
+#ifdef __cpp_exceptions
     bool is_regular_file() const;
+#endif
     bool is_regular_file(std::error_code& ec) const noexcept;
+#ifdef __cpp_exceptions
     bool is_socket() const;
+#endif
     bool is_socket(std::error_code& ec) const noexcept;
+#ifdef __cpp_exceptions
     bool is_symlink() const;
+#endif
     bool is_symlink(std::error_code& ec) const noexcept;
+#ifdef __cpp_exceptions
     uintmax_t file_size() const;
+#endif
     uintmax_t file_size(std::error_code& ec) const noexcept;
+#ifdef __cpp_exceptions
     uintmax_t hard_link_count() const;
+#endif
     uintmax_t hard_link_count(std::error_code& ec) const noexcept;
+#ifdef __cpp_exceptions
     file_time_type last_write_time() const;
+#endif
     file_time_type last_write_time(std::error_code& ec) const noexcept;
 
+#ifdef __cpp_exceptions
     file_status status() const;
+#endif
     file_status status(std::error_code& ec) const noexcept;
 
+#ifdef __cpp_exceptions
     file_status symlink_status() const;
+#endif
     file_status symlink_status(std::error_code& ec) const noexcept;
     bool operator<(const directory_entry& rhs) const noexcept;
     bool operator==(const directory_entry& rhs) const noexcept;
@@ -712,8 +750,10 @@ public:
 
     // 30.10.13.1 member functions
     directory_iterator() noexcept;
+#ifdef __cpp_exceptions
     explicit directory_iterator(const path& p);
     directory_iterator(const path& p, directory_options options);
+#endif
     directory_iterator(const path& p, std::error_code& ec) noexcept;
     directory_iterator(const path& p, directory_options options, std::error_code& ec) noexcept;
     directory_iterator(const directory_iterator& rhs);
@@ -723,16 +763,20 @@ public:
     directory_iterator& operator=(directory_iterator&& rhs) noexcept;
     const directory_entry& operator*() const;
     const directory_entry* operator->() const;
+#ifdef __cpp_exceptions
     directory_iterator& operator++();
+#endif
     directory_iterator& increment(std::error_code& ec) noexcept;
 
     // other members as required by 27.2.3, input iterators
+#ifdef __cpp_exceptions
     proxy operator++(int)
     {
         proxy p{**this};
         ++*this;
         return p;
     }
+#endif
     bool operator==(const directory_iterator& rhs) const;
     bool operator!=(const directory_iterator& rhs) const;
 
@@ -758,8 +802,10 @@ public:
 
     // 30.10.14.1 constructors and destructor
     recursive_directory_iterator() noexcept;
+#ifdef __cpp_exceptions
     explicit recursive_directory_iterator(const path& p);
     recursive_directory_iterator(const path& p, directory_options options);
+#endif
     recursive_directory_iterator(const path& p, directory_options options, std::error_code& ec) noexcept;
     recursive_directory_iterator(const path& p, std::error_code& ec) noexcept;
     recursive_directory_iterator(const recursive_directory_iterator& rhs);
@@ -777,20 +823,26 @@ public:
     // 30.10.14.1 modifiers recursive_directory_iterator&
     recursive_directory_iterator& operator=(const recursive_directory_iterator& rhs);
     recursive_directory_iterator& operator=(recursive_directory_iterator&& rhs) noexcept;
+#ifdef __cpp_exceptions
     recursive_directory_iterator& operator++();
+#endif
     recursive_directory_iterator& increment(std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
     void pop();
+#endif
     void pop(std::error_code& ec);
     void disable_recursion_pending();
 
     // other members as required by 27.2.3, input iterators
+#ifdef __cpp_exceptions
     directory_iterator::proxy operator++(int)
     {
         directory_iterator::proxy proxy{**this};
         ++*this;
         return proxy;
     }
+#endif
     bool operator==(const recursive_directory_iterator& rhs) const;
     bool operator!=(const recursive_directory_iterator& rhs) const;
 
@@ -814,135 +866,221 @@ GHC_FS_API recursive_directory_iterator begin(recursive_directory_iterator iter)
 GHC_FS_API recursive_directory_iterator end(const recursive_directory_iterator&) noexcept;
 
 // 30.10.15 filesystem operations
+#ifdef __cpp_exceptions
 GHC_FS_API path absolute(const path& p);
+#endif
 GHC_FS_API path absolute(const path& p, std::error_code& ec);
 
+#ifdef __cpp_exceptions
 GHC_FS_API path canonical(const path& p);
+#endif
 GHC_FS_API path canonical(const path& p, std::error_code& ec);
 
+#ifdef __cpp_exceptions
 GHC_FS_API void copy(const path& from, const path& to);
+#endif
 GHC_FS_API void copy(const path& from, const path& to, std::error_code& ec) noexcept;
+#ifdef __cpp_exceptions
 GHC_FS_API void copy(const path& from, const path& to, copy_options options);
+#endif
 GHC_FS_API void copy(const path& from, const path& to, copy_options options, std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API bool copy_file(const path& from, const path& to);
+#endif
 GHC_FS_API bool copy_file(const path& from, const path& to, std::error_code& ec) noexcept;
+#ifdef __cpp_exceptions
 GHC_FS_API bool copy_file(const path& from, const path& to, copy_options option);
+#endif
 GHC_FS_API bool copy_file(const path& from, const path& to, copy_options option, std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API void copy_symlink(const path& existing_symlink, const path& new_symlink);
+#endif
 GHC_FS_API void copy_symlink(const path& existing_symlink, const path& new_symlink, std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API bool create_directories(const path& p);
+#endif
 GHC_FS_API bool create_directories(const path& p, std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API bool create_directory(const path& p);
+#endif
 GHC_FS_API bool create_directory(const path& p, std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API bool create_directory(const path& p, const path& attributes);
+#endif
 GHC_FS_API bool create_directory(const path& p, const path& attributes, std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API void create_directory_symlink(const path& to, const path& new_symlink);
+#endif
 GHC_FS_API void create_directory_symlink(const path& to, const path& new_symlink, std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API void create_hard_link(const path& to, const path& new_hard_link);
+#endif
 GHC_FS_API void create_hard_link(const path& to, const path& new_hard_link, std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API void create_symlink(const path& to, const path& new_symlink);
+#endif
 GHC_FS_API void create_symlink(const path& to, const path& new_symlink, std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API path current_path();
+#endif
 GHC_FS_API path current_path(std::error_code& ec);
+#ifdef __cpp_exceptions
 GHC_FS_API void current_path(const path& p);
+#endif
 GHC_FS_API void current_path(const path& p, std::error_code& ec) noexcept;
 
 GHC_FS_API bool exists(file_status s) noexcept;
+#ifdef __cpp_exceptions
 GHC_FS_API bool exists(const path& p);
+#endif
 GHC_FS_API bool exists(const path& p, std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API bool equivalent(const path& p1, const path& p2);
+#endif
 GHC_FS_API bool equivalent(const path& p1, const path& p2, std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API uintmax_t file_size(const path& p);
+#endif
 GHC_FS_API uintmax_t file_size(const path& p, std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API uintmax_t hard_link_count(const path& p);
+#endif
 GHC_FS_API uintmax_t hard_link_count(const path& p, std::error_code& ec) noexcept;
 
 GHC_FS_API bool is_block_file(file_status s) noexcept;
+#ifdef __cpp_exceptions
 GHC_FS_API bool is_block_file(const path& p);
+#endif
 GHC_FS_API bool is_block_file(const path& p, std::error_code& ec) noexcept;
 GHC_FS_API bool is_character_file(file_status s) noexcept;
+#ifdef __cpp_exceptions
 GHC_FS_API bool is_character_file(const path& p);
+#endif
 GHC_FS_API bool is_character_file(const path& p, std::error_code& ec) noexcept;
 GHC_FS_API bool is_directory(file_status s) noexcept;
+#ifdef __cpp_exceptions
 GHC_FS_API bool is_directory(const path& p);
+#endif
 GHC_FS_API bool is_directory(const path& p, std::error_code& ec) noexcept;
+#ifdef __cpp_exceptions
 GHC_FS_API bool is_empty(const path& p);
+#endif
 GHC_FS_API bool is_empty(const path& p, std::error_code& ec) noexcept;
 GHC_FS_API bool is_fifo(file_status s) noexcept;
+#ifdef __cpp_exceptions
 GHC_FS_API bool is_fifo(const path& p);
+#endif
 GHC_FS_API bool is_fifo(const path& p, std::error_code& ec) noexcept;
 GHC_FS_API bool is_other(file_status s) noexcept;
+#ifdef __cpp_exceptions
 GHC_FS_API bool is_other(const path& p);
+#endif
 GHC_FS_API bool is_other(const path& p, std::error_code& ec) noexcept;
 GHC_FS_API bool is_regular_file(file_status s) noexcept;
+#ifdef __cpp_exceptions
 GHC_FS_API bool is_regular_file(const path& p);
+#endif
 GHC_FS_API bool is_regular_file(const path& p, std::error_code& ec) noexcept;
 GHC_FS_API bool is_socket(file_status s) noexcept;
+#ifdef __cpp_exceptions
 GHC_FS_API bool is_socket(const path& p);
+#endif
 GHC_FS_API bool is_socket(const path& p, std::error_code& ec) noexcept;
 GHC_FS_API bool is_symlink(file_status s) noexcept;
+#ifdef __cpp_exceptions
 GHC_FS_API bool is_symlink(const path& p);
+#endif
 GHC_FS_API bool is_symlink(const path& p, std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API file_time_type last_write_time(const path& p);
+#endif
 GHC_FS_API file_time_type last_write_time(const path& p, std::error_code& ec) noexcept;
+#ifdef __cpp_exceptions
 GHC_FS_API void last_write_time(const path& p, file_time_type new_time);
+#endif
 GHC_FS_API void last_write_time(const path& p, file_time_type new_time, std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API void permissions(const path& p, perms prms, perm_options opts = perm_options::replace);
+#endif
 GHC_FS_API void permissions(const path& p, perms prms, std::error_code& ec) noexcept;
 GHC_FS_API void permissions(const path& p, perms prms, perm_options opts, std::error_code& ec);
 
+#ifdef __cpp_exceptions
 GHC_FS_API path proximate(const path& p, std::error_code& ec);
 GHC_FS_API path proximate(const path& p, const path& base = current_path());
+#endif
 GHC_FS_API path proximate(const path& p, const path& base, std::error_code& ec);
 
+#ifdef __cpp_exceptions
 GHC_FS_API path read_symlink(const path& p);
+#endif
 GHC_FS_API path read_symlink(const path& p, std::error_code& ec);
 
 GHC_FS_API path relative(const path& p, std::error_code& ec);
+#ifdef __cpp_exceptions
 GHC_FS_API path relative(const path& p, const path& base = current_path());
+#endif
 GHC_FS_API path relative(const path& p, const path& base, std::error_code& ec);
 
+#ifdef __cpp_exceptions
 GHC_FS_API bool remove(const path& p);
+#endif
 GHC_FS_API bool remove(const path& p, std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API uintmax_t remove_all(const path& p);
+#endif
 GHC_FS_API uintmax_t remove_all(const path& p, std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API void rename(const path& from, const path& to);
+#endif
 GHC_FS_API void rename(const path& from, const path& to, std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API void resize_file(const path& p, uintmax_t size);
+#endif
 GHC_FS_API void resize_file(const path& p, uintmax_t size, std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API space_info space(const path& p);
+#endif
 GHC_FS_API space_info space(const path& p, std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API file_status status(const path& p);
+#endif
 GHC_FS_API file_status status(const path& p, std::error_code& ec) noexcept;
 
 GHC_FS_API bool status_known(file_status s) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API file_status symlink_status(const path& p);
+#endif
 GHC_FS_API file_status symlink_status(const path& p, std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API path temp_directory_path();
+#endif
 GHC_FS_API path temp_directory_path(std::error_code& ec) noexcept;
 
+#ifdef __cpp_exceptions
 GHC_FS_API path weakly_canonical(const path& p);
+#endif
 GHC_FS_API path weakly_canonical(const path& p, std::error_code& ec) noexcept;
 
 // Non-C++17 add-on std::fstream wrappers with path
@@ -3177,10 +3315,12 @@ GHC_INLINE path canonical(const path& p, std::error_code& ec)
     return result;
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE void copy(const path& from, const path& to)
 {
     copy(from, to, copy_options::none);
 }
+#endif
 
 GHC_INLINE void copy(const path& from, const path& to, std::error_code& ec) noexcept
 {
@@ -3274,10 +3414,12 @@ GHC_INLINE void copy(const path& from, const path& to, copy_options options, std
     return;
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool copy_file(const path& from, const path& to)
 {
     return copy_file(from, to, copy_options::none);
 }
+#endif
 
 GHC_INLINE bool copy_file(const path& from, const path& to, std::error_code& ec) noexcept
 {
@@ -3628,10 +3770,12 @@ GHC_INLINE bool exists(file_status s) noexcept
     return status_known(s) && s.type() != file_type::not_found;
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool exists(const path& p)
 {
     return exists(status(p));
 }
+#endif
 
 GHC_INLINE bool exists(const path& p, std::error_code& ec) noexcept
 {
@@ -3779,10 +3923,12 @@ GHC_INLINE bool is_block_file(file_status s) noexcept
     return s.type() == file_type::block;
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool is_block_file(const path& p)
 {
     return is_block_file(status(p));
 }
+#endif
 
 GHC_INLINE bool is_block_file(const path& p, std::error_code& ec) noexcept
 {
@@ -3794,10 +3940,12 @@ GHC_INLINE bool is_character_file(file_status s) noexcept
     return s.type() == file_type::character;
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool is_character_file(const path& p)
 {
     return is_character_file(status(p));
 }
+#endif
 
 GHC_INLINE bool is_character_file(const path& p, std::error_code& ec) noexcept
 {
@@ -3809,16 +3957,19 @@ GHC_INLINE bool is_directory(file_status s) noexcept
     return s.type() == file_type::directory;
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool is_directory(const path& p)
 {
     return is_directory(status(p));
 }
+#endif
 
 GHC_INLINE bool is_directory(const path& p, std::error_code& ec) noexcept
 {
     return is_directory(status(p, ec));
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool is_empty(const path& p)
 {
     if (is_directory(p)) {
@@ -3828,6 +3979,7 @@ GHC_INLINE bool is_empty(const path& p)
         return file_size(p) == 0;
     }
 }
+#endif
 
 GHC_INLINE bool is_empty(const path& p, std::error_code& ec) noexcept
 {
@@ -3856,10 +4008,12 @@ GHC_INLINE bool is_fifo(file_status s) noexcept
     return s.type() == file_type::fifo;
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool is_fifo(const path& p)
 {
     return is_fifo(status(p));
 }
+#endif
 
 GHC_INLINE bool is_fifo(const path& p, std::error_code& ec) noexcept
 {
@@ -3871,10 +4025,12 @@ GHC_INLINE bool is_other(file_status s) noexcept
     return exists(s) && !is_regular_file(s) && !is_directory(s) && !is_symlink(s);
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool is_other(const path& p)
 {
     return is_other(status(p));
 }
+#endif
 
 GHC_INLINE bool is_other(const path& p, std::error_code& ec) noexcept
 {
@@ -3886,10 +4042,12 @@ GHC_INLINE bool is_regular_file(file_status s) noexcept
     return s.type() == file_type::regular;
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool is_regular_file(const path& p)
 {
     return is_regular_file(status(p));
 }
+#endif
 
 GHC_INLINE bool is_regular_file(const path& p, std::error_code& ec) noexcept
 {
@@ -3901,10 +4059,12 @@ GHC_INLINE bool is_socket(file_status s) noexcept
     return s.type() == file_type::socket;
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool is_socket(const path& p)
 {
     return is_socket(status(p));
 }
+#endif
 
 GHC_INLINE bool is_socket(const path& p, std::error_code& ec) noexcept
 {
@@ -3916,10 +4076,12 @@ GHC_INLINE bool is_symlink(file_status s) noexcept
     return s.type() == file_type::symlink;
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool is_symlink(const path& p)
 {
     return is_symlink(symlink_status(p));
 }
+#endif
 
 GHC_INLINE bool is_symlink(const path& p, std::error_code& ec) noexcept
 {
@@ -4073,15 +4235,19 @@ GHC_INLINE void permissions(const path& p, perms prms, perm_options opts, std::e
 #endif
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE path proximate(const path& p, std::error_code& ec)
 {
     return proximate(p, current_path(), ec);
 }
+#endif
 
+#ifdef __cpp_exceptions
 GHC_INLINE path proximate(const path& p, const path& base)
 {
     return weakly_canonical(p).lexically_proximate(weakly_canonical(base));
 }
+#endif
 
 GHC_INLINE path proximate(const path& p, const path& base, std::error_code& ec)
 {
@@ -4116,10 +4282,12 @@ GHC_INLINE path relative(const path& p, std::error_code& ec)
     return relative(p, current_path(ec), ec);
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE path relative(const path& p, const path& base)
 {
     return weakly_canonical(p).lexically_relative(weakly_canonical(base));
 }
+#endif
 
 GHC_INLINE path relative(const path& p, const path& base, std::error_code& ec)
 {
@@ -4202,7 +4370,11 @@ GHC_INLINE uintmax_t remove_all(const path& p, std::error_code& ec) noexcept
             if (ec) {
                 break;
             }
-            if (!iter->is_symlink() && iter->is_directory()) {
+            bool is_symlink_result = iter->is_symlink(ec);
+            if (ec) return static_cast<uintmax_t>(-1);
+            bool is_directory_result = iter->is_directory(ec);
+            if (ec) return static_cast<uintmax_t>(-1);
+            if (!is_symlink_result && is_directory_result) {
                 count += remove_all(iter->path(), ec);
                 if (ec) {
                     return static_cast<uintmax_t>(-1);
@@ -4531,6 +4703,7 @@ GHC_INLINE perms file_status::permissions() const noexcept
 // directory_entry::directory_entry() noexcept = default;
 // directory_entry::directory_entry(const directory_entry&) = default;
 // directory_entry::directory_entry(directory_entry&&) noexcept = default;
+#ifdef __cpp_exceptions
 GHC_INLINE directory_entry::directory_entry(const filesystem::path& p)
     : _path(p)
     , _file_size(0)
@@ -4541,6 +4714,7 @@ GHC_INLINE directory_entry::directory_entry(const filesystem::path& p)
 {
     refresh();
 }
+#endif
 
 GHC_INLINE directory_entry::directory_entry(const filesystem::path& p, std::error_code& ec)
     : _path(p)
@@ -4560,11 +4734,13 @@ GHC_INLINE directory_entry::~directory_entry() {}
 // directory_entry& directory_entry::operator=(directory_entry&&) noexcept = default;
 
 // 30.10.12.2 directory_entry modifiers
+#ifdef __cpp_exceptions
 GHC_INLINE void directory_entry::assign(const filesystem::path& p)
 {
     _path = p;
     refresh();
 }
+#endif
 
 GHC_INLINE void directory_entry::assign(const filesystem::path& p, std::error_code& ec)
 {
@@ -4572,11 +4748,13 @@ GHC_INLINE void directory_entry::assign(const filesystem::path& p, std::error_co
     refresh(ec);
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE void directory_entry::replace_filename(const filesystem::path& p)
 {
     _path.replace_filename(p);
     refresh();
 }
+#endif
 
 GHC_INLINE void directory_entry::replace_filename(const filesystem::path& p, std::error_code& ec)
 {
@@ -4615,95 +4793,114 @@ GHC_INLINE directory_entry::operator const filesystem::path&() const noexcept
     return _path;
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool directory_entry::exists() const
 {
     return filesystem::exists(status());
 }
+#endif
 
 GHC_INLINE bool directory_entry::exists(std::error_code& ec) const noexcept
 {
     return filesystem::exists(status(ec));
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool directory_entry::is_block_file() const
 {
     return filesystem::is_block_file(status());
 }
+#endif
 GHC_INLINE bool directory_entry::is_block_file(std::error_code& ec) const noexcept
 {
     return filesystem::is_block_file(status(ec));
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool directory_entry::is_character_file() const
 {
     return filesystem::is_character_file(status());
 }
+#endif
 
 GHC_INLINE bool directory_entry::is_character_file(std::error_code& ec) const noexcept
 {
     return filesystem::is_character_file(status(ec));
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool directory_entry::is_directory() const
 {
     return filesystem::is_directory(status());
 }
+#endif
 
 GHC_INLINE bool directory_entry::is_directory(std::error_code& ec) const noexcept
 {
     return filesystem::is_directory(status(ec));
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool directory_entry::is_fifo() const
 {
     return filesystem::is_fifo(status());
 }
+#endif
 
 GHC_INLINE bool directory_entry::is_fifo(std::error_code& ec) const noexcept
 {
     return filesystem::is_fifo(status(ec));
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool directory_entry::is_other() const
 {
     return filesystem::is_other(status());
 }
+#endif
 
 GHC_INLINE bool directory_entry::is_other(std::error_code& ec) const noexcept
 {
     return filesystem::is_other(status(ec));
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool directory_entry::is_regular_file() const
 {
     return filesystem::is_regular_file(status());
 }
+#endif
 
 GHC_INLINE bool directory_entry::is_regular_file(std::error_code& ec) const noexcept
 {
     return filesystem::is_regular_file(status(ec));
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool directory_entry::is_socket() const
 {
     return filesystem::is_socket(status());
 }
+#endif
 
 GHC_INLINE bool directory_entry::is_socket(std::error_code& ec) const noexcept
 {
     return filesystem::is_socket(status(ec));
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool directory_entry::is_symlink() const
 {
     return filesystem::is_symlink(symlink_status());
 }
+#endif
 
 GHC_INLINE bool directory_entry::is_symlink(std::error_code& ec) const noexcept
 {
     return filesystem::is_symlink(symlink_status(ec));
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE uintmax_t directory_entry::file_size() const
 {
     if (_status.type() != file_type::none) {
@@ -4711,6 +4908,7 @@ GHC_INLINE uintmax_t directory_entry::file_size() const
     }
     return filesystem::file_size(path());
 }
+#endif
 
 GHC_INLINE uintmax_t directory_entry::file_size(std::error_code& ec) const noexcept
 {
@@ -4721,6 +4919,7 @@ GHC_INLINE uintmax_t directory_entry::file_size(std::error_code& ec) const noexc
     return filesystem::file_size(path(), ec);
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE uintmax_t directory_entry::hard_link_count() const
 {
 #ifndef GHC_OS_WINDOWS
@@ -4730,6 +4929,7 @@ GHC_INLINE uintmax_t directory_entry::hard_link_count() const
 #endif
     return filesystem::hard_link_count(path());
 }
+#endif
 
 GHC_INLINE uintmax_t directory_entry::hard_link_count(std::error_code& ec) const noexcept
 {
@@ -4742,6 +4942,7 @@ GHC_INLINE uintmax_t directory_entry::hard_link_count(std::error_code& ec) const
     return filesystem::hard_link_count(path(), ec);
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE file_time_type directory_entry::last_write_time() const
 {
     if (_status.type() != file_type::none) {
@@ -4749,6 +4950,7 @@ GHC_INLINE file_time_type directory_entry::last_write_time() const
     }
     return filesystem::last_write_time(path());
 }
+#endif
 
 GHC_INLINE file_time_type directory_entry::last_write_time(std::error_code& ec) const noexcept
 {
@@ -4759,6 +4961,7 @@ GHC_INLINE file_time_type directory_entry::last_write_time(std::error_code& ec) 
     return filesystem::last_write_time(path(), ec);
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE file_status directory_entry::status() const
 {
     if (_status.type() != file_type::none) {
@@ -4766,6 +4969,7 @@ GHC_INLINE file_status directory_entry::status() const
     }
     return filesystem::status(path());
 }
+#endif
 
 GHC_INLINE file_status directory_entry::status(std::error_code& ec) const noexcept
 {
@@ -4776,6 +4980,7 @@ GHC_INLINE file_status directory_entry::status(std::error_code& ec) const noexce
     return filesystem::status(path(), ec);
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE file_status directory_entry::symlink_status() const
 {
     if (_symlink_status.type() != file_type::none) {
@@ -4783,6 +4988,7 @@ GHC_INLINE file_status directory_entry::symlink_status() const
     }
     return filesystem::symlink_status(path());
 }
+#endif
 
 GHC_INLINE file_status directory_entry::symlink_status(std::error_code& ec) const noexcept
 {
@@ -5113,6 +5319,7 @@ GHC_INLINE recursive_directory_iterator::recursive_directory_iterator() noexcept
     _impl->_dir_iter_stack.push(directory_iterator());
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE recursive_directory_iterator::recursive_directory_iterator(const path& p)
     : _impl(new recursive_directory_iterator_impl(directory_options::none, true))
 {
@@ -5124,6 +5331,7 @@ GHC_INLINE recursive_directory_iterator::recursive_directory_iterator(const path
 {
     _impl->_dir_iter_stack.push(directory_iterator(p, options));
 }
+#endif
 
 GHC_INLINE recursive_directory_iterator::recursive_directory_iterator(const path& p, directory_options options, std::error_code& ec) noexcept
     : _impl(new recursive_directory_iterator_impl(options, true))
@@ -5202,7 +5410,11 @@ GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::operator+
 
 GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::increment(std::error_code& ec) noexcept
 {
-    if (recursion_pending() && is_directory((*this)->status()) && (!is_symlink((*this)->symlink_status()) || (options() & directory_options::follow_directory_symlink) != directory_options::none)) {
+    auto status = (*this)->status(ec);
+    if (ec) return *this;
+    auto symlink_status = (*this)->symlink_status(ec);
+    if (ec) return *this;
+    if (recursion_pending() && is_directory(status) && (!is_symlink(symlink_status) || (options() & directory_options::follow_directory_symlink) != directory_options::none)) {
         _impl->_dir_iter_stack.push(directory_iterator((*this)->path(), _impl->_options, ec));
     }
     else {
