@@ -2033,6 +2033,7 @@ GHC_INLINE path::path(string_type&& source, format fmt)
 
 #endif  // GHC_EXPAND_IMPL
 
+#ifdef __cpp_exceptions
 template <class Source, typename>
 inline path::path(const Source& source, const std::locale& loc, format fmt)
     : path(source, fmt)
@@ -2052,6 +2053,7 @@ inline path::path(InputIterator first, InputIterator last, const std::locale& lo
         throw filesystem_error("This implementation only supports UTF-8 locales!", path(_path), detail::make_error_code(detail::portable_error::not_supported));
     }
 }
+#endif
 
 #ifdef GHC_EXPAND_IMPL
 
@@ -3039,6 +3041,7 @@ GHC_INLINE const char* filesystem_error::what() const noexcept
 
 //-----------------------------------------------------------------------------
 // 30.10.15, filesystem operations
+#ifdef __cpp_exceptions
 GHC_INLINE path absolute(const path& p)
 {
     std::error_code ec;
@@ -3048,6 +3051,7 @@ GHC_INLINE path absolute(const path& p)
     }
     return result;
 }
+#endif
 
 GHC_INLINE path absolute(const path& p, std::error_code& ec)
 {
@@ -3098,6 +3102,7 @@ GHC_INLINE path absolute(const path& p, std::error_code& ec)
 #endif
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE path canonical(const path& p)
 {
     std::error_code ec;
@@ -3107,6 +3112,7 @@ GHC_INLINE path canonical(const path& p)
     }
     return result;
 }
+#endif
 
 GHC_INLINE path canonical(const path& p, std::error_code& ec)
 {
@@ -3181,6 +3187,7 @@ GHC_INLINE void copy(const path& from, const path& to, std::error_code& ec) noex
     copy(from, to, copy_options::none, ec);
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE void copy(const path& from, const path& to, copy_options options)
 {
     std::error_code ec;
@@ -3189,6 +3196,7 @@ GHC_INLINE void copy(const path& from, const path& to, copy_options options)
         throw filesystem_error(detail::systemErrorText(ec.value()), from, to, ec);
     }
 }
+#endif
 
 GHC_INLINE void copy(const path& from, const path& to, copy_options options, std::error_code& ec) noexcept
 {
@@ -3276,6 +3284,7 @@ GHC_INLINE bool copy_file(const path& from, const path& to, std::error_code& ec)
     return copy_file(from, to, copy_options::none, ec);
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool copy_file(const path& from, const path& to, copy_options option)
 {
     std::error_code ec;
@@ -3285,6 +3294,7 @@ GHC_INLINE bool copy_file(const path& from, const path& to, copy_options option)
     }
     return result;
 }
+#endif
 
 GHC_INLINE bool copy_file(const path& from, const path& to, copy_options options, std::error_code& ec) noexcept
 {
@@ -3360,6 +3370,7 @@ GHC_INLINE bool copy_file(const path& from, const path& to, copy_options options
 #endif
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE void copy_symlink(const path& existing_symlink, const path& new_symlink)
 {
     std::error_code ec;
@@ -3368,6 +3379,7 @@ GHC_INLINE void copy_symlink(const path& existing_symlink, const path& new_symli
         throw filesystem_error(detail::systemErrorText(ec.value()), existing_symlink, new_symlink, ec);
     }
 }
+#endif
 
 GHC_INLINE void copy_symlink(const path& existing_symlink, const path& new_symlink, std::error_code& ec) noexcept
 {
@@ -3383,6 +3395,7 @@ GHC_INLINE void copy_symlink(const path& existing_symlink, const path& new_symli
     }
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool create_directories(const path& p)
 {
     std::error_code ec;
@@ -3392,6 +3405,7 @@ GHC_INLINE bool create_directories(const path& p)
     }
     return result;
 }
+#endif
 
 GHC_INLINE bool create_directories(const path& p, std::error_code& ec) noexcept
 {
@@ -3430,6 +3444,7 @@ GHC_INLINE bool create_directories(const path& p, std::error_code& ec) noexcept
     return didCreate;
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool create_directory(const path& p)
 {
     std::error_code ec;
@@ -3439,12 +3454,14 @@ GHC_INLINE bool create_directory(const path& p)
     }
     return result;
 }
+#endif
 
 GHC_INLINE bool create_directory(const path& p, std::error_code& ec) noexcept
 {
     return create_directory(p, path(), ec);
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool create_directory(const path& p, const path& attributes)
 {
     std::error_code ec;
@@ -3454,6 +3471,7 @@ GHC_INLINE bool create_directory(const path& p, const path& attributes)
     }
     return result;
 }
+#endif
 
 GHC_INLINE bool create_directory(const path& p, const path& attributes, std::error_code& ec) noexcept
 {
@@ -3498,6 +3516,7 @@ GHC_INLINE bool create_directory(const path& p, const path& attributes, std::err
     return true;
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE void create_directory_symlink(const path& to, const path& new_symlink)
 {
     std::error_code ec;
@@ -3506,12 +3525,14 @@ GHC_INLINE void create_directory_symlink(const path& to, const path& new_symlink
         throw filesystem_error(detail::systemErrorText(ec.value()), to, new_symlink, ec);
     }
 }
+#endif
 
 GHC_INLINE void create_directory_symlink(const path& to, const path& new_symlink, std::error_code& ec) noexcept
 {
     detail::create_symlink(to, new_symlink, true, ec);
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE void create_hard_link(const path& to, const path& new_hard_link)
 {
     std::error_code ec;
@@ -3520,12 +3541,14 @@ GHC_INLINE void create_hard_link(const path& to, const path& new_hard_link)
         throw filesystem_error(detail::systemErrorText(ec.value()), to, new_hard_link, ec);
     }
 }
+#endif
 
 GHC_INLINE void create_hard_link(const path& to, const path& new_hard_link, std::error_code& ec) noexcept
 {
     detail::create_hardlink(to, new_hard_link, ec);
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE void create_symlink(const path& to, const path& new_symlink)
 {
     std::error_code ec;
@@ -3534,12 +3557,14 @@ GHC_INLINE void create_symlink(const path& to, const path& new_symlink)
         throw filesystem_error(detail::systemErrorText(ec.value()), to, new_symlink, ec);
     }
 }
+#endif
 
 GHC_INLINE void create_symlink(const path& to, const path& new_symlink, std::error_code& ec) noexcept
 {
     detail::create_symlink(to, new_symlink, false, ec);
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE path current_path()
 {
     std::error_code ec;
@@ -3549,6 +3574,7 @@ GHC_INLINE path current_path()
     }
     return result;
 }
+#endif
 
 GHC_INLINE path current_path(std::error_code& ec)
 {
@@ -3572,6 +3598,7 @@ GHC_INLINE path current_path(std::error_code& ec)
 #endif
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE void current_path(const path& p)
 {
     std::error_code ec;
@@ -3580,6 +3607,7 @@ GHC_INLINE void current_path(const path& p)
         throw filesystem_error(detail::systemErrorText(ec.value()), p, ec);
     }
 }
+#endif
 
 GHC_INLINE void current_path(const path& p, std::error_code& ec) noexcept
 {
@@ -3614,6 +3642,7 @@ GHC_INLINE bool exists(const path& p, std::error_code& ec) noexcept
     return exists(s);
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool equivalent(const path& p1, const path& p2)
 {
     std::error_code ec;
@@ -3623,6 +3652,7 @@ GHC_INLINE bool equivalent(const path& p1, const path& p2)
     }
     return result;
 }
+#endif
 
 GHC_INLINE bool equivalent(const path& p1, const path& p2, std::error_code& ec) noexcept
 {
@@ -3671,6 +3701,7 @@ GHC_INLINE bool equivalent(const path& p1, const path& p2, std::error_code& ec) 
 #endif
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE uintmax_t file_size(const path& p)
 {
     std::error_code ec;
@@ -3680,6 +3711,7 @@ GHC_INLINE uintmax_t file_size(const path& p)
     }
     return result;
 }
+#endif
 
 GHC_INLINE uintmax_t file_size(const path& p, std::error_code& ec) noexcept
 {
@@ -3701,6 +3733,7 @@ GHC_INLINE uintmax_t file_size(const path& p, std::error_code& ec) noexcept
 #endif
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE uintmax_t hard_link_count(const path& p)
 {
     std::error_code ec;
@@ -3710,6 +3743,7 @@ GHC_INLINE uintmax_t hard_link_count(const path& p)
     }
     return result;
 }
+#endif
 
 GHC_INLINE uintmax_t hard_link_count(const path& p, std::error_code& ec) noexcept
 {
@@ -3892,6 +3926,7 @@ GHC_INLINE bool is_symlink(const path& p, std::error_code& ec) noexcept
     return is_symlink(symlink_status(p, ec));
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE file_time_type last_write_time(const path& p)
 {
     std::error_code ec;
@@ -3901,6 +3936,7 @@ GHC_INLINE file_time_type last_write_time(const path& p)
     }
     return result;
 }
+#endif
 
 GHC_INLINE file_time_type last_write_time(const path& p, std::error_code& ec) noexcept
 {
@@ -3910,6 +3946,7 @@ GHC_INLINE file_time_type last_write_time(const path& p, std::error_code& ec) no
     return ec ? (file_time_type::min)() : std::chrono::system_clock::from_time_t(result);
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE void last_write_time(const path& p, file_time_type new_time)
 {
     std::error_code ec;
@@ -3918,6 +3955,7 @@ GHC_INLINE void last_write_time(const path& p, file_time_type new_time)
         throw filesystem_error(detail::systemErrorText(ec.value()), p, ec);
     }
 }
+#endif
 
 GHC_INLINE void last_write_time(const path& p, file_time_type new_time, std::error_code& ec) noexcept
 {
@@ -3973,6 +4011,7 @@ GHC_INLINE void last_write_time(const path& p, file_time_type new_time, std::err
 #endif
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE void permissions(const path& p, perms prms, perm_options opts)
 {
     std::error_code ec;
@@ -3981,6 +4020,7 @@ GHC_INLINE void permissions(const path& p, perms prms, perm_options opts)
         throw filesystem_error(detail::systemErrorText(ec.value()), p, ec);
     }
 }
+#endif
 
 GHC_INLINE void permissions(const path& p, perms prms, std::error_code& ec) noexcept
 {
@@ -4048,6 +4088,7 @@ GHC_INLINE path proximate(const path& p, const path& base, std::error_code& ec)
     return weakly_canonical(p, ec).lexically_proximate(weakly_canonical(base, ec));
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE path read_symlink(const path& p)
 {
     std::error_code ec;
@@ -4057,6 +4098,7 @@ GHC_INLINE path read_symlink(const path& p)
     }
     return result;
 }
+#endif
 
 GHC_INLINE path read_symlink(const path& p, std::error_code& ec)
 {
@@ -4084,6 +4126,7 @@ GHC_INLINE path relative(const path& p, const path& base, std::error_code& ec)
     return weakly_canonical(p, ec).lexically_relative(weakly_canonical(base, ec));
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE bool remove(const path& p)
 {
     std::error_code ec;
@@ -4093,6 +4136,7 @@ GHC_INLINE bool remove(const path& p)
     }
     return result;
 }
+#endif
 
 GHC_INLINE bool remove(const path& p, std::error_code& ec) noexcept
 {
@@ -4131,6 +4175,7 @@ GHC_INLINE bool remove(const path& p, std::error_code& ec) noexcept
     return ec ? false : true;
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE uintmax_t remove_all(const path& p)
 {
     std::error_code ec;
@@ -4140,6 +4185,7 @@ GHC_INLINE uintmax_t remove_all(const path& p)
     }
     return result;
 }
+#endif
 
 GHC_INLINE uintmax_t remove_all(const path& p, std::error_code& ec) noexcept
 {
@@ -4182,6 +4228,7 @@ GHC_INLINE uintmax_t remove_all(const path& p, std::error_code& ec) noexcept
     return count;
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE void rename(const path& from, const path& to)
 {
     std::error_code ec;
@@ -4190,6 +4237,7 @@ GHC_INLINE void rename(const path& from, const path& to)
         throw filesystem_error(detail::systemErrorText(ec.value()), from, to, ec);
     }
 }
+#endif
 
 GHC_INLINE void rename(const path& from, const path& to, std::error_code& ec) noexcept
 {
@@ -4209,6 +4257,7 @@ GHC_INLINE void rename(const path& from, const path& to, std::error_code& ec) no
 #endif
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE void resize_file(const path& p, uintmax_t size)
 {
     std::error_code ec;
@@ -4217,6 +4266,7 @@ GHC_INLINE void resize_file(const path& p, uintmax_t size)
         throw filesystem_error(detail::systemErrorText(ec.value()), p, ec);
     }
 }
+#endif
 
 GHC_INLINE void resize_file(const path& p, uintmax_t size, std::error_code& ec) noexcept
 {
@@ -4246,6 +4296,7 @@ GHC_INLINE void resize_file(const path& p, uintmax_t size, std::error_code& ec) 
 #endif
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE space_info space(const path& p)
 {
     std::error_code ec;
@@ -4255,6 +4306,7 @@ GHC_INLINE space_info space(const path& p)
     }
     return result;
 }
+#endif
 
 GHC_INLINE space_info space(const path& p, std::error_code& ec) noexcept
 {
@@ -4282,6 +4334,7 @@ GHC_INLINE space_info space(const path& p, std::error_code& ec) noexcept
 #endif
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE file_status status(const path& p)
 {
     std::error_code ec;
@@ -4291,6 +4344,7 @@ GHC_INLINE file_status status(const path& p)
     }
     return result;
 }
+#endif
 
 GHC_INLINE file_status status(const path& p, std::error_code& ec) noexcept
 {
@@ -4302,6 +4356,7 @@ GHC_INLINE bool status_known(file_status s) noexcept
     return s.type() != file_type::none;
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE file_status symlink_status(const path& p)
 {
     std::error_code ec;
@@ -4311,12 +4366,14 @@ GHC_INLINE file_status symlink_status(const path& p)
     }
     return result;
 }
+#endif
 
 GHC_INLINE file_status symlink_status(const path& p, std::error_code& ec) noexcept
 {
     return detail::symlink_status_ex(p, ec);
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE path temp_directory_path()
 {
     std::error_code ec;
@@ -4326,6 +4383,7 @@ GHC_INLINE path temp_directory_path()
     }
     return result;
 }
+#endif
 
 GHC_INLINE path temp_directory_path(std::error_code& ec) noexcept
 {
@@ -4351,6 +4409,7 @@ GHC_INLINE path temp_directory_path(std::error_code& ec) noexcept
 #endif
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE path weakly_canonical(const path& p)
 {
     std::error_code ec;
@@ -4360,6 +4419,7 @@ GHC_INLINE path weakly_canonical(const path& p)
     }
     return result;
 }
+#endif
 
 GHC_INLINE path weakly_canonical(const path& p, std::error_code& ec) noexcept
 {
@@ -4524,6 +4584,7 @@ GHC_INLINE void directory_entry::replace_filename(const filesystem::path& p, std
     refresh(ec);
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE void directory_entry::refresh()
 {
     std::error_code ec;
@@ -4532,6 +4593,7 @@ GHC_INLINE void directory_entry::refresh()
         throw filesystem_error(detail::systemErrorText(ec.value()), _path, ec);
     }
 }
+#endif
 
 GHC_INLINE void directory_entry::refresh(std::error_code& ec) noexcept
 {
@@ -4933,6 +4995,7 @@ GHC_INLINE directory_iterator::directory_iterator() noexcept
 {
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE directory_iterator::directory_iterator(const path& p)
     : _impl(new impl(p, directory_options::none))
 {
@@ -4949,6 +5012,7 @@ GHC_INLINE directory_iterator::directory_iterator(const path& p, directory_optio
         throw filesystem_error(detail::systemErrorText(_impl->_ec.value()), p, _impl->_ec);
     }
 }
+#endif
 
 GHC_INLINE directory_iterator::directory_iterator(const path& p, std::error_code& ec) noexcept
     : _impl(new impl(p, directory_options::none))
@@ -5000,6 +5064,7 @@ GHC_INLINE const directory_entry* directory_iterator::operator->() const
     return &_impl->_dir_entry;
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE directory_iterator& directory_iterator::operator++()
 {
     std::error_code ec;
@@ -5009,6 +5074,7 @@ GHC_INLINE directory_iterator& directory_iterator::operator++()
     }
     return *this;
 }
+#endif
 
 GHC_INLINE directory_iterator& directory_iterator::increment(std::error_code& ec) noexcept
 {
@@ -5122,6 +5188,7 @@ GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::operator=
     return *this;
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::operator++()
 {
     std::error_code ec;
@@ -5131,6 +5198,7 @@ GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::operator+
     }
     return *this;
 }
+#endif
 
 GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::increment(std::error_code& ec) noexcept
 {
@@ -5153,6 +5221,7 @@ GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::increment
     return *this;
 }
 
+#ifdef __cpp_exceptions
 GHC_INLINE void recursive_directory_iterator::pop()
 {
     std::error_code ec;
@@ -5161,6 +5230,7 @@ GHC_INLINE void recursive_directory_iterator::pop()
         throw filesystem_error(detail::systemErrorText(ec.value()), _impl->_dir_iter_stack.empty() ? path() : _impl->_dir_iter_stack.top()->path(), ec);
     }
 }
+#endif
 
 GHC_INLINE void recursive_directory_iterator::pop(std::error_code& ec)
 {
