@@ -109,16 +109,24 @@
 #else
 #include <dirent.h>
 #include <fcntl.h>
-#include <langinfo.h>
 #include <sys/param.h>
 #include <sys/stat.h>
-#include <sys/statvfs.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <limits.h>
 #ifdef GHC_OS_ANDROID
 #include <android/api-level.h>
+#if __ANDROID_API__ < 12
+#include <sys/syscall.h>
+#endif
+#include <sys/vfs.h>
+#define statvfs statfs
+#else
+#include <sys/statvfs.h>
+#endif
+#if !defined(__ANDROID__) || __ANDROID_API__ >= 26
+#include <langinfo.h>
 #endif
 #endif
 #ifdef GHC_OS_MACOS
@@ -3961,12 +3969,19 @@ GHC_INLINE void last_write_time(const path& p, file_time_type new_time, std::err
 #endif
 #endif
 #else
+#ifndef UTIME_OMIT
+#define UTIME_OMIT ((1l << 30) - 2l)
+#endif
     struct ::timespec times[2];
     times[0].tv_sec = 0;
     times[0].tv_nsec = UTIME_OMIT;
     times[1].tv_sec = static_cast<decltype(times[1].tv_sec)>(std::chrono::duration_cast<std::chrono::seconds>(d).count());
     times[1].tv_nsec = static_cast<decltype(times[1].tv_nsec)>(std::chrono::duration_cast<std::chrono::nanoseconds>(d).count() % 1000000000);
+#if defined(__ANDROID_API__) && __ANDROID_API__ < 12
+    if (syscall(__NR_utimensat, AT_FDCWD, p.c_str(), times, AT_SYMLINK_NOFOLLOW) != 0) {
+#else
     if (::utimensat(AT_FDCWD, p.c_str(), times, AT_SYMLINK_NOFOLLOW) != 0) {
+#endif
         ec = detail::make_system_error();
     }
     return;
@@ -4268,17 +4283,13 @@ GHC_INLINE space_info space(const path& p, std::error_code& ec) noexcept
         return {static_cast<uintmax_t>(-1), static_cast<uintmax_t>(-1), static_cast<uintmax_t>(-1)};
     }
     return {static_cast<uintmax_t>(totalNumberOfBytes.QuadPart), static_cast<uintmax_t>(totalNumberOfFreeBytes.QuadPart), static_cast<uintmax_t>(freeBytesAvailableToCaller.QuadPart)};
-#elif !defined(__ANDROID__) || __ANDROID_API__ >= 19
+#else
     struct ::statvfs sfs;
     if (::statvfs(p.c_str(), &sfs) != 0) {
         ec = detail::make_system_error();
         return {static_cast<uintmax_t>(-1), static_cast<uintmax_t>(-1), static_cast<uintmax_t>(-1)};
     }
     return {static_cast<uintmax_t>(sfs.f_blocks * sfs.f_frsize), static_cast<uintmax_t>(sfs.f_bfree * sfs.f_frsize), static_cast<uintmax_t>(sfs.f_bavail * sfs.f_frsize)};
-#else
-    (void)p;
-    ec = detail::make_error_code(detail::portable_error::not_supported);
-    return {static_cast<uintmax_t>(-1), static_cast<uintmax_t>(-1), static_cast<uintmax_t>(-1)};
 #endif
 }
 
