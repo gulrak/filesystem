@@ -487,6 +487,16 @@ to the expected behavior.
 
 ## Release Notes
 
+### v1.3.3 (wip)
+
+* Pull request [#62](https://github.com/gulrak/filesystem/pull/62), various fixes for
+  better Android support, thanks for the PR
+* Pull request [#61](https://github.com/gulrak/filesystem/pull/61), `ghc::filesystem` now
+  supports use in projects with disabled exceptions. API signatures using exceptions for
+  error handling are not available in this mode, thanks for the PR (this resolves
+  [#60](https://github.com/gulrak/filesystem/issues/60) and
+  [#43](https://github.com/gulrak/filesystem/issues/43))
+  
 ### [v1.3.2](https://github.com/gulrak/filesystem/releases/tag/v1.3.2)
 
 * Bugfix for [#58](https://github.com/gulrak/filesystem/issues/58), on MinGW the

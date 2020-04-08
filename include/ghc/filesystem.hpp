@@ -193,6 +193,9 @@
 #if !defined(GHC_WITH_EXCEPTIONS) && (defined(__EXCEPTIONS) || defined(__cpp_exceptions) || defined(_CPPUNWIND))
 #define GHC_WITH_EXCEPTIONS
 #endif
+#if !defined(GHC_WITH_EXCEPTIONS) && defined(GHC_RAISE_UNICODE_ERRORS)
+#error "Can't raise unicode errors whith exception support disabled"
+#endif
 
 namespace ghc {
 namespace filesystem {
