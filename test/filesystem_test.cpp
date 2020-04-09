@@ -2640,7 +2640,7 @@ TEST_CASE("std::string_view support", "[filesystem][fs.string_view]")
 
 #if defined(IS_WCHAR_PATH) || defined(GHC_USE_WCHAR_T)
     {
-        std::wsting p(L"foo/bar");
+        std::wstring p(L"foo/bar");
         std::wstring_view sv(p);
         CHECK(fs::path(sv, fs::path::format::generic_format).generic_string() == "foo/bar");
         fs::path p2(L"fo");
