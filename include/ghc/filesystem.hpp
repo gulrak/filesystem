@@ -1676,6 +1676,14 @@ inline path::path(const std::string_view& source, format fmt)
     _path = detail::toUtf8(std::string(source));
     postprocess_path_with_format(_path, fmt);
 }
+#ifdef GHC_USE_WCHAR_T
+template <>
+inline path::path(const std::wstring_view& source, format fmt)
+{
+    _path = detail::toUtf8(std::wstring(source).c_str());
+    postprocess_path_with_format(_path, fmt);
+}
+#endif
 #endif
 
 template <class Source, typename>
@@ -4506,9 +4514,9 @@ GHC_INLINE space_info space(const path& p, std::error_code& ec) noexcept
 {
     ec.clear();
 #ifdef GHC_OS_WINDOWS
-    ULARGE_INTEGER freeBytesAvailableToCaller = {0, 0};
-    ULARGE_INTEGER totalNumberOfBytes = {0, 0};
-    ULARGE_INTEGER totalNumberOfFreeBytes = {0, 0};
+    ULARGE_INTEGER freeBytesAvailableToCaller = {{0, 0}};
+    ULARGE_INTEGER totalNumberOfBytes = {{0, 0}};
+    ULARGE_INTEGER totalNumberOfFreeBytes = {{0, 0}};
     if (!GetDiskFreeSpaceExW(detail::fromUtf8<std::wstring>(p.u8string()).c_str(), &freeBytesAvailableToCaller, &totalNumberOfBytes, &totalNumberOfFreeBytes)) {
         ec = detail::make_system_error();
         return {static_cast<uintmax_t>(-1), static_cast<uintmax_t>(-1), static_cast<uintmax_t>(-1)};

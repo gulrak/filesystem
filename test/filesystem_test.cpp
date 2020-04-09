@@ -2628,13 +2628,28 @@ TEST_CASE("30.10.15.39 weakly_canonical", "[filesystem][operations][fs.op.weakly
 TEST_CASE("std::string_view support", "[filesystem][fs.string_view]")
 {
 #if __cpp_lib_string_view
-    std::string p("foo/bar");
-    std::string_view sv(p);
-    CHECK(fs::path(sv, fs::path::format::generic_format).generic_string() == "foo/bar");
-    fs::path p2("fo");
-    p2 += std::string_view("o");
-    CHECK(p2 == "foo");
-    CHECK(p2.compare(std::string_view("foo")) == 0);
+    {
+        std::string p("foo/bar");
+        std::string_view sv(p);
+        CHECK(fs::path(sv, fs::path::format::generic_format).generic_string() == "foo/bar");
+        fs::path p2("fo");
+        p2 += std::string_view("o");
+        CHECK(p2 == "foo");
+        CHECK(p2.compare(std::string_view("foo")) == 0);
+    }
+
+#if defined(IS_WCHAR_PATH) || defined(GHC_USE_WCHAR_T)
+    {
+        std::wsting p(L"foo/bar");
+        std::wstring_view sv(p);
+        CHECK(fs::path(sv, fs::path::format::generic_format).generic_string() == "foo/bar");
+        fs::path p2(L"fo");
+        p2 += std::wstring_view(L"o");
+        CHECK(p2 == "foo");
+        CHECK(p2.compare(std::wstring_view(L"foo")) == 0);
+    }
+#endif
+
 #else
     WARN("std::string_view specific tests are empty without std::string_view.");
 #endif
