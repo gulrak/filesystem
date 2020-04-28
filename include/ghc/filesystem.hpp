@@ -4904,6 +4904,10 @@ public:
                     _current = _base;
                     _current.append_name(_entry->d_name);
                     _dir_entry = directory_entry(_current, ec);
+                    if(ec) {
+                        ec.clear();
+                        continue;
+                    }
                 }
                 else {
                     ::closedir(_dir);
