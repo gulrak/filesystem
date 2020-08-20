@@ -5195,13 +5195,19 @@ public:
     void increment(std::error_code& ec)
     {
         if (_dir) {
+            bool skip;
             do {
+                skip = false;
                 errno = 0;
-                _entry = readdir(_dir);
+                _entry = ::readdir(_dir);
                 if (_entry) {
                     _current = _base;
                     _current.append_name(_entry->d_name);
                     _dir_entry = directory_entry(_current, ec);
+                    if(ec && (ec.value() == EACCES || ec.value() == EPERM) && (_options & directory_options::skip_permission_denied) == directory_options::skip_permission_denied) {
+                        ec.clear();
+                        skip = true;
+                    }
                 }
                 else {
                     ::closedir(_dir);
@@ -5212,7 +5218,7 @@ public:
                     }
                     break;
                 }
-            } while (std::strcmp(_entry->d_name, ".") == 0 || std::strcmp(_entry->d_name, "..") == 0);
+            } while (skip || std::strcmp(_entry->d_name, ".") == 0 || std::strcmp(_entry->d_name, "..") == 0);
         }
     }
     path _base;
