@@ -2518,6 +2518,7 @@ TEST_CASE("30.10.15.34 space", "[filesystem][operations][fs.op.space]")
         CHECK(si.free >= si.available);
         CHECK(!ec);
     }
+#ifdef GHC_OS_WEB // statvfs under emscripten always returns a result, so this tests would fail
     {
         std::error_code ec;
         fs::space_info si;
@@ -2528,6 +2529,7 @@ TEST_CASE("30.10.15.34 space", "[filesystem][operations][fs.op.space]")
         CHECK(ec);
     }
     CHECK_THROWS_AS(fs::space("foobar42"), fs::filesystem_error);
+#endif
 }
 
 TEST_CASE("30.10.15.35 status", "[filesystem][operations][fs.op.status]")
