@@ -492,8 +492,9 @@ to the expected behavior.
 * Pull request [#69](https://github.com/gulrak/filesystem/pull/69), use `wchar_t` versions of
   `std::fstream` from `ghc::filesystem::fstream` wrappers on Windows if using GCC with libc++.
 * Bugfix for [#68](https://github.com/gulrak/filesystem/issues/68), better handling of
-  permission issues for directory iterators when using `fs::directory_options::skip_permission_denied`.
-  * Bugfix for [#63](https://github.com/gulrak/filesystem/issues/63), fixed issues on Windows
+  permission issues for directory iterators when using `fs::directory_options::skip_permission_denied`
+  and initial support for compilation with emscripten.
+* Bugfix for [#63](https://github.com/gulrak/filesystem/issues/63), fixed issues on Windows
   with clang++ and C++17.
 * Pull request [#62](https://github.com/gulrak/filesystem/pull/62), various fixes for
   better Android support, thanks for the PR
