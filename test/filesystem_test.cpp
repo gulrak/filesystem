@@ -1229,9 +1229,11 @@ TEST_CASE("30.10.12 class directory_entry", "[filesystem][directory_entry][fs.di
     ec.clear();
     CHECK(std::abs(std::chrono::duration_cast<std::chrono::seconds>(de.last_write_time(ec) - now).count()) < 3);
     CHECK(!ec);
+#ifndef GHC_OS_WEB
     CHECK(de.hard_link_count() == 1);
     CHECK(de.hard_link_count(ec) == 1);
     CHECK(!ec);
+#endif
     CHECK_THROWS_AS(de.replace_filename("bar"), fs::filesystem_error);
     CHECK_NOTHROW(de.replace_filename("foo"));
     ec.clear();
@@ -1239,9 +1241,11 @@ TEST_CASE("30.10.12 class directory_entry", "[filesystem][directory_entry][fs.di
     CHECK(ec);
     auto de2none = fs::directory_entry();
     ec.clear();
+#ifndef GHC_OS_WEB
     CHECK(de2none.hard_link_count(ec) == static_cast<uintmax_t>(-1));
     CHECK_THROWS_AS(de2none.hard_link_count(), fs::filesystem_error);
     CHECK(ec);
+#endif
     ec.clear();
     CHECK_NOTHROW(de2none.last_write_time(ec));
     CHECK_THROWS_AS(de2none.last_write_time(), fs::filesystem_error);
@@ -1593,6 +1597,7 @@ TEST_CASE("30.10.15.3 copy", "[filesystem][operations][fs.op.copy]")
         CHECK(fs::is_symlink("dir3/dir2/file3"));
 #endif
     }
+#ifndef GHC_OS_WEB
     {
         TemporaryDirectory t(TempOpt::change_path);
         std::error_code ec;
@@ -1613,6 +1618,7 @@ TEST_CASE("30.10.15.3 copy", "[filesystem][operations][fs.op.copy]")
         CHECK(fs::exists("dir3/dir2/file3"));
         CHECK(fs::hard_link_count("dir1/dir2/file3") == f3hl + 1);
     }
+#endif
 }
 
 TEST_CASE("30.10.15.4 copy_file", "[filesystem][operations][fs.op.copy_file]")
@@ -1780,6 +1786,7 @@ TEST_CASE("30.10.15.8 create_directory_symlink", "[filesystem][operations][fs.op
 
 TEST_CASE("30.10.15.9 create_hard_link", "[filesystem][operations][fs.op.create_hard_link]")
 {
+#ifndef GHC_OS_WEB
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
     generateFile("foo", 1234);
@@ -1793,6 +1800,7 @@ TEST_CASE("30.10.15.9 create_hard_link", "[filesystem][operations][fs.op.create_
     CHECK_THROWS_AS(fs::create_hard_link("nofoo", "bar"), fs::filesystem_error);
     CHECK_NOTHROW(fs::create_hard_link("nofoo", "bar", ec));
     CHECK(ec);
+#endif
 }
 
 TEST_CASE("30.10.15.10 create_symlink", "[filesystem][operations][fs.op.create_symlink]")
@@ -1927,6 +1935,7 @@ TEST_CASE("30.10.15.14 file_size", "[filesystem][operations][fs.op.file_size]")
 
 TEST_CASE("30.10.15.15 hard_link_count", "[filesystem][operations][fs.op.hard_link_count]")
 {
+#ifndef GHC_OS_WEB
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
 #ifdef GHC_OS_WINDOWS
@@ -1952,6 +1961,9 @@ TEST_CASE("30.10.15.15 hard_link_count", "[filesystem][operations][fs.op.hard_li
     CHECK_NOTHROW(fs::hard_link_count(t.path() / "bar", ec));
     CHECK(ec);
     ec.clear();
+#else
+    WARN("Test for unsupportet features are disabled on JS/Wasm target.");
+#endif
 }
 
 class FileTypeMixFixture
@@ -1968,7 +1980,7 @@ public:
             fs::create_symlink("regular", "file_symlink");
             fs::create_directory_symlink("directory", "dir_symlink");
         }
-#ifndef GHC_OS_WINDOWS
+#if !defined(GHC_OS_WINDOWS) && !defined(GHC_OS_WEB)
         REQUIRE(::mkfifo("fifo", 0644) == 0);
         _hasFifo = true;
         struct ::sockaddr_un addr;
@@ -2271,6 +2283,7 @@ TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.24 is_symlink", "[filesystem][ope
     CHECK(!fs::is_symlink(fs::file_status(fs::file_type::unknown)));
 }
 
+#ifndef GHC_OS_WEB
 static fs::file_time_type timeFromString(const std::string& str)
 {
     struct ::tm tm;
@@ -2282,6 +2295,7 @@ static fs::file_time_type timeFromString(const std::string& str)
     }
     return from_time_t<fs::file_time_type>(std::mktime(&tm));
 }
+#endif
 
 TEST_CASE("30.10.15.25 last_write_time", "[filesystem][operations][fs.op.last_write_time]")
 {
@@ -2304,16 +2318,21 @@ TEST_CASE("30.10.15.25 last_write_time", "[filesystem][operations][fs.op.last_wr
         // checks that the time of the symlink is fetched
         CHECK(ft == fs::last_write_time("foo2"));
     }
+#ifndef GHC_OS_WEB
     auto nt = timeFromString("2015-10-21T04:30:00");
     CHECK_NOTHROW(fs::last_write_time(t.path() / "foo", nt));
     CHECK(std::abs(std::chrono::duration_cast<std::chrono::seconds>(fs::last_write_time("foo") - nt).count()) < 1);
     nt = timeFromString("2015-10-21T04:29:00");
     CHECK_NOTHROW(fs::last_write_time("foo", nt, ec));
+    std::cout << "about to call last_write_time" << std::endl;
     CHECK(std::abs(std::chrono::duration_cast<std::chrono::seconds>(fs::last_write_time("foo") - nt).count()) < 1);
     CHECK(!ec);
+    std::cout << "about to call last_write_time" << std::endl;
     CHECK_THROWS_AS(fs::last_write_time("bar", nt), fs::filesystem_error);
+    std::cout << "about to call last_write_time" << std::endl;
     CHECK_NOTHROW(fs::last_write_time("bar", nt, ec));
     CHECK(ec);
+#endif
 }
 
 TEST_CASE("30.10.15.26 permissions", "[filesystem][operations][fs.op.permissions]")
@@ -2499,6 +2518,7 @@ TEST_CASE("30.10.15.34 space", "[filesystem][operations][fs.op.space]")
         CHECK(si.free >= si.available);
         CHECK(!ec);
     }
+#ifndef GHC_OS_WEB // statvfs under emscripten always returns a result, so this tests would fail
     {
         std::error_code ec;
         fs::space_info si;
@@ -2509,6 +2529,7 @@ TEST_CASE("30.10.15.34 space", "[filesystem][operations][fs.op.space]")
         CHECK(ec);
     }
     CHECK_THROWS_AS(fs::space("foobar42"), fs::filesystem_error);
+#endif
 }
 
 TEST_CASE("30.10.15.35 status", "[filesystem][operations][fs.op.status]")
