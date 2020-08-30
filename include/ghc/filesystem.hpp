@@ -3524,16 +3524,15 @@ GHC_INLINE bool copy_file(const path& from, const path& to, copy_options options
         ec = detail::make_system_error();
         return false;
     }
-    std::shared_ptr<void> guard_in(nullptr, [in](void*) { ::close(in); });
     int mode = O_CREAT | O_WRONLY | O_TRUNC;
     if (!overwrite) {
         mode |= O_EXCL;
     }
     if ((out = ::open(to.c_str(), mode, static_cast<int>(sf.permissions() & perms::all))) < 0) {
         ec = detail::make_system_error();
+        ::close(in);
         return false;
     }
-    std::shared_ptr<void> guard_out(nullptr, [out](void*) { ::close(out); });
     ssize_t br, bw;
     while ((br = ::read(in, buffer.data(), buffer.size())) > 0) {
         ssize_t offset = 0;
@@ -3544,10 +3543,14 @@ GHC_INLINE bool copy_file(const path& from, const path& to, copy_options options
             }
             else if (bw < 0) {
                 ec = detail::make_system_error();
+                ::close(in);
+                ::close(out);
                 return false;
             }
         } while (br);
     }
+    ::close(in);
+    ::close(out);
     return true;
 #endif
 }
