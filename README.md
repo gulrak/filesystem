@@ -5,7 +5,7 @@
 [![Build Status](https://api.cirrus-ci.com/github/gulrak/filesystem.svg?branch=master)](https://cirrus-ci.com/github/gulrak/filesystem)
 [![Build Status](https://cloud.drone.io/api/badges/gulrak/filesystem/status.svg?ref=refs/heads/master)](https://cloud.drone.io/gulrak/filesystem)
 [![Coverage Status](https://coveralls.io/repos/github/gulrak/filesystem/badge.svg?branch=master)](https://coveralls.io/github/gulrak/filesystem?branch=master)
-[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.3.2)
+[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.3.4)
 
 # Filesystem
 
@@ -106,8 +106,8 @@ in the standard, and there might be issues in these implementations too.
 
 ### Downloads
 
-The latest release version is [v1.3.2](https://github.com/gulrak/filesystem/tree/v1.3.2) and
-source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.3.2).
+The latest release version is [v1.3.4](https://github.com/gulrak/filesystem/tree/v1.3.4) and
+source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.3.4).
 
 ### Using it as Single-File-Header
 
@@ -487,13 +487,15 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.3.3 (wip)
+### [v1.3.4](https://github.com/gulrak/filesystem/releases/tag/v1.3.4)
 
 * Pull request [#69](https://github.com/gulrak/filesystem/pull/69), use `wchar_t` versions of
   `std::fstream` from `ghc::filesystem::fstream` wrappers on Windows if using GCC with libc++.
 * Bugfix for [#68](https://github.com/gulrak/filesystem/issues/68), better handling of
   permission issues for directory iterators when using `fs::directory_options::skip_permission_denied`
   and initial support for compilation with emscripten.
+* Refactoring for [#66](https://github.com/gulrak/filesystem/issues/63), unneeded shared_ptr guards
+  where removed and the file handles closed where needed to avoid unnecessary allocations.
 * Bugfix for [#63](https://github.com/gulrak/filesystem/issues/63), fixed issues on Windows
   with clang++ and C++17.
 * Pull request [#62](https://github.com/gulrak/filesystem/pull/62), various fixes for
