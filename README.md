@@ -12,7 +12,7 @@
 This is a header-only single-file std::filesystem compatible helper library,
 based on the C++17 specs, but implemented for C++11, C++14 or C++17 (tightly following
 the C++17 with very few documented exceptions). It is currently tested on
-macOS 10.12/10.14, Windows 10, Ubuntu 18.04, FreeBSD 12 and Alpine ARM/ARM64 Linux
+macOS 10.12/10.14/10.15, Windows 10, Ubuntu 18.04, FreeBSD 12 and Alpine ARM/ARM64 Linux
 but should work on other systems too, as long as you have at least a 
 C++11 compatible compiler. It is of course in its own namespace `ghc::filesystem`
 to not interfere with a regular `std::filesystem` should you use it in a mixed C++17
@@ -52,13 +52,13 @@ to do with Haskell).
 
 ## Platforms
 
-`ghc::filesystem` is developed on macOS but tested on Windows and Linux.
-It should work on any of these with a C++11-capable compiler. I currently
-don't have a BSD derivate besides macOS, so the preprocessor checks will
-cry out if you try to use it there, but if there is demand, I can try to
-help. Also there are some checks to hopefully better work on Android, but
+`ghc::filesystem` is developed on macOS but CI tested on macOS, Windows,
+Linux and FreeBSD. It should work on any of these with a C++11-capable
+compiler. Also there are some checks to hopefully better work on Android, but
 as I currently don't test with the Android NDK, I wouldn't call it a
-supported platform yet. All in all, I don't see it replacing `std::filesystem`
+supported platform yet, same is valid for using it with Emscripten. It is now
+part of the detected platforms, I fixed the obvious issues and ran some tests with
+it, so it should be fine. All in all, I don't see it replacing `std::filesystem`
 where full C++17 is available, it doesn't try to be a "better"
 `std::filesystem`, just a drop-in if you can't use it (with the exception
 of the UTF-8 preference on Windows).
@@ -66,7 +66,7 @@ of the UTF-8 preference on Windows).
 
 Unit tests are currently run with:
 
-* macOS 10.12: Xcode 9.2 (clang-900.0.39.2), GCC 9.2, Clang 9.0, macOS 10.13: Xcode 10.1, macOS 10.14: Xcode 11.2
+* macOS 10.12: Xcode 9.2 (clang-900.0.39.2), GCC 9.2, Clang 9.0, macOS 10.13: Xcode 10.1, macOS 10.14: Xcode 11.2, macOS 10.15: Xcode 11.6
 * Windows: Visual Studio 2017, Visual Studio 2015, Visual Studio 2019, MinGW GCC 6.3 (Win32), GCC 7.2 (Win64)
 * Linux (Ubuntu): GCC (5.5, 6.5, 7.4, 8.3, 9.2), Clang (5.0, 6.0, 7.1, 8.0, 9.0)
 * Linux (Alpine ARM/ARM64): GCC 9.2.0
