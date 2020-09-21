@@ -276,6 +276,11 @@ public:
     value_type* allocate(std::size_t n) { return static_cast<value_type*>(::operator new(n * sizeof(value_type))); }
 
     void deallocate(value_type* p, std::size_t) noexcept { ::operator delete(p); }
+
+    template<class U>
+    struct rebind {
+        typedef TestAllocator<U> other;
+    };
 };
 
 template <class T, class U>
