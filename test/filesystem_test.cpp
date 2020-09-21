@@ -266,17 +266,19 @@ class TestAllocator
 {
 public:
     using value_type = T;
-
+    using pointer = T*;
+    using const_pointer = const T*;
+    using reference = T&;
+    using const_reference = const T&;
+    using difference_type = ptrdiff_t;
+    using size_type = size_t;
     TestAllocator() noexcept {}
     template <class U>
     TestAllocator(TestAllocator<U> const&) noexcept
     {
     }
-
     value_type* allocate(std::size_t n) { return static_cast<value_type*>(::operator new(n * sizeof(value_type))); }
-
     void deallocate(value_type* p, std::size_t) noexcept { ::operator delete(p); }
-
     template<class U>
     struct rebind {
         typedef TestAllocator<U> other;
