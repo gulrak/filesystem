@@ -21,7 +21,7 @@ centos7_task:
   build_script: |
     source /opt/rh/devtoolset-9/enable && PATH=$PATH:/usr/local/bin .ci/unix-build.sh
   test_script: |
-    source /opt/rh/devtoolset-9/enable && PATH=$PATH:/usr/local/bin .ci/unix-test.sh
+    PATH=$PATH:/usr/local/bin .ci/unix-test.sh
 
 centos8_task:
   container:
