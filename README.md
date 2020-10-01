@@ -487,6 +487,12 @@ to the expected behavior.
 
 ## Release Notes
 
+### v1.3.5 (WIP)
+
+* Refactoring for [#73](https://github.com/gulrak/filesystem/issues/68), enhanced performance
+  in path handling. the changes lead to much fewer path/string creations or copies, speeding
+  up large directory iteration or operations on many path instances.
+
 ### [v1.3.4](https://github.com/gulrak/filesystem/releases/tag/v1.3.4)
 
 * Pull request [#69](https://github.com/gulrak/filesystem/pull/69), use `wchar_t` versions of

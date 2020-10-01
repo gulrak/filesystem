@@ -56,10 +56,6 @@ matrix:
 install:
   - eval "${MATRIX_EVAL}"
   - |
-    if [ "${TRAVIS_OS_NAME}" = "osx" ]; then
-      brew update
-    fi
-  - |
     if [ "${GHC_COVERAGE}" = "1" ]; then
       gem install coveralls-lcov
     fi
