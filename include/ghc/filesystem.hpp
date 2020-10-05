@@ -2695,8 +2695,8 @@ GHC_INLINE int path::compare(const path& p) const noexcept
         ++rnl1;
         ++rnl2;
     }
-    auto iter1 = _path.begin() + rnl1;
-    auto iter2 = p._path.begin() + rnl2;
+    auto iter1 = _path.begin() + static_cast<int>(rnl1);
+    auto iter2 = p._path.begin() + static_cast<int>(rnl2);
     while (iter1 != _path.end() && iter2 != p._path.end() && *iter1 == *iter2) {
         ++iter1;
         ++iter2;
