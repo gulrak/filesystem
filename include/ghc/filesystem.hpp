@@ -177,6 +177,15 @@
 // file with that name, it is superceded by P1164R1, so only activate if really needed
 // #define LWG_2935_BEHAVIOUR
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// LWG #2936 enables new element wise (more expensive) path comparison
+// * if this->root_name().native().compare(p.root_name().native()) != 0 return result
+// * if this->has_root_directory() and !p.has_root_directory() return -1
+// * if !this->has_root_directory() and p.has_root_directory() return -1
+// * else result of element wise comparison of path iteration where first comparison is != 0 or 0
+//   if all comparisons are 0 (on Windows this implementation does case insensitive root_name()
+//   comparison)
+// #define LWG_2936_BEHAVIOUR
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // LWG #2937 enforces that fs::equivalent emits an error, if !fs::exists(p1)||!exists(p2)
 #define LWG_2937_BEHAVIOUR
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1754,6 +1763,21 @@ GHC_INLINE bool equals_simple_insensitive(const char* str1, const char* str2)
 #endif
 }
 
+GHC_INLINE int compare_simple_insensitive(const char* str1, size_t len1, const char* str2, size_t len2)
+{
+    while(len1 > 0 && len2 > 0 && ::tolower((unsigned char)*str1) == ::tolower((unsigned char)*str2)) {
+        --len1; --len2;
+        ++str1; ++str2;
+    }
+    if (len1 && len2) {
+        return *str1 < *str2 ? -1 : 1;
+    }
+    if(len1 == 0 && len2 == 0) {
+        return 0;
+    }
+    return len1 == 0 ? -1 : 1;
+}
+
 GHC_INLINE const char* strerror_adapter(char* gnu, char*)
 {
     return gnu;
@@ -2652,24 +2676,75 @@ GHC_INLINE std::u32string path::generic_u32string() const
 // 30.10.8.4.8, compare
 GHC_INLINE int path::compare(const path& p) const noexcept
 {
-    return native().compare(p.native());
+#ifdef LWG_2936_BEHAVIOUR
+    auto rnl1 = root_name_length();
+    auto rnl2 = p.root_name_length();
+#ifdef GHC_OS_WINDOWS
+    auto rnc = detail::compare_simple_insensitive(_path.c_str(), rnl1, p._path.c_str(), rnl2);
+#else
+    auto rnc = _path.compare(0, rnl1, p._path, 0, (std::min(rnl1, rnl2)));
+#endif
+    if (rnc) {
+        return rnc;
+    }
+    bool hrd1 = has_root_directory(), hrd2 = p.has_root_directory();
+    if (hrd1 != hrd2) {
+        return hrd1 ? 1 : -1;
+    }
+    if (hrd1) {
+        ++rnl1;
+        ++rnl2;
+    }
+    auto iter1 = _path.begin() + rnl1;
+    auto iter2 = p._path.begin() + rnl2;
+    while (iter1 != _path.end() && iter2 != p._path.end() && *iter1 == *iter2) {
+        ++iter1;
+        ++iter2;
+    }
+    if (iter1 == _path.end()) {
+        return iter2 == p._path.end() ? 0 : -1;
+    }
+    if (iter2 == p._path.end()) {
+        return 1;
+    }
+    if (*iter1 == '/') {
+        return -1;
+    }
+    if (*iter2 == '/') {
+        return 1;
+    }
+    return *iter1 < *iter2 ? -1 : 1;
+#else // LWG_2936_BEHAVIOUR
+#ifdef GHC_OS_WINDOWS
+    auto rnl1 = root_name_length();
+    auto rnl2 = p.root_name_length();
+    auto rnc = detail::compare_simple_insensitive(_path.c_str(), rnl1, p._path.c_str(), rnl2);
+    auto p1 = _path;
+    std::replace(p1.begin()+rnl1, p1.end(), '/', '\\');
+    auto p2 = p._path;
+    std::replace(p2.begin()+rnl2, p2.end(), '/', '\\');
+    return p1.compare(rnl1, std::string::npos, p2, rnl2, std::string::npos);
+#else
+    return _path.compare(p._path);
+#endif
+#endif
 }
 
 GHC_INLINE int path::compare(const string_type& s) const
 {
-    return native().compare(path(s).native());
+    return compare(path(s));
 }
 
 #ifdef __cpp_lib_string_view
 GHC_INLINE int path::compare(std::basic_string_view<value_type> s) const
 {
-    return native().compare(path(s).native());
+    return compare(path(s));
 }
 #endif
 
 GHC_INLINE int path::compare(const value_type* s) const
 {
-    return native().compare(path(s).native());
+    return compare(path(s));
 }
 
 //-----------------------------------------------------------------------------
@@ -3116,32 +3191,52 @@ GHC_INLINE size_t hash_value(const path& p) noexcept
 
 GHC_INLINE bool operator==(const path& lhs, const path& rhs) noexcept
 {
+#ifdef LWG_2936_BEHAVIOUR
+    return lhs.compare(rhs) == 0;
+#else
     return lhs.generic_string() == rhs.generic_string();
+#endif
 }
 
 GHC_INLINE bool operator!=(const path& lhs, const path& rhs) noexcept
 {
-    return lhs.generic_string() != rhs.generic_string();
+    return !(lhs == rhs);
 }
 
 GHC_INLINE bool operator<(const path& lhs, const path& rhs) noexcept
 {
+#ifdef LWG_2936_BEHAVIOUR
+    return lhs.compare(rhs) < 0;
+#else
     return lhs.generic_string() < rhs.generic_string();
+#endif
 }
 
 GHC_INLINE bool operator<=(const path& lhs, const path& rhs) noexcept
 {
+#ifdef LWG_2936_BEHAVIOUR
+    return lhs.compare(rhs) <= 0;
+#else
     return lhs.generic_string() <= rhs.generic_string();
+#endif
 }
 
 GHC_INLINE bool operator>(const path& lhs, const path& rhs) noexcept
 {
+#ifdef LWG_2936_BEHAVIOUR
+    return lhs.compare(rhs) > 0;
+#else
     return lhs.generic_string() > rhs.generic_string();
+#endif
 }
 
 GHC_INLINE bool operator>=(const path& lhs, const path& rhs) noexcept
 {
+#ifdef LWG_2936_BEHAVIOUR
+    return lhs.compare(rhs) >= 0;
+#else
     return lhs.generic_string() >= rhs.generic_string();
+#endif
 }
 
 GHC_INLINE path operator/(const path& lhs, const path& rhs)
