@@ -184,7 +184,7 @@
 // * else result of element wise comparison of path iteration where first comparison is != 0 or 0
 //   if all comparisons are 0 (on Windows this implementation does case insensitive root_name()
 //   comparison)
-// #define LWG_2936_BEHAVIOUR
+#define LWG_2936_BEHAVIOUR
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // LWG #2937 enforces that fs::equivalent emits an error, if !fs::exists(p1)||!exists(p2)
 #define LWG_2937_BEHAVIOUR
@@ -2719,10 +2719,13 @@ GHC_INLINE int path::compare(const path& p) const noexcept
     auto rnl1 = root_name_length();
     auto rnl2 = p.root_name_length();
     auto rnc = detail::compare_simple_insensitive(_path.c_str(), rnl1, p._path.c_str(), rnl2);
+    if(rnc) {
+        return rnc;
+    }
     auto p1 = _path;
-    std::replace(p1.begin()+rnl1, p1.end(), '/', '\\');
+    std::replace(p1.begin()+static_cast<int>(rnl1), p1.end(), '/', '\\');
     auto p2 = p._path;
-    std::replace(p2.begin()+rnl2, p2.end(), '/', '\\');
+    std::replace(p2.begin()+static_cast<int>(rnl2), p2.end(), '/', '\\');
     return p1.compare(rnl1, std::string::npos, p2, rnl2, std::string::npos);
 #else
     return _path.compare(p._path);
