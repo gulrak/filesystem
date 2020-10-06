@@ -489,9 +489,18 @@ to the expected behavior.
 
 ### v1.3.5 (WIP)
 
-* Refactoring for [#73](https://github.com/gulrak/filesystem/issues/68), enhanced performance
+* Refactoring for [#73](https://github.com/gulrak/filesystem/issues/73), enhanced performance
   in path handling. the changes lead to much fewer path/string creations or copies, speeding
   up large directory iteration or operations on many path instances.
+* Bugfix for [#72](https://github.com/gulrak/filesystem/issues/72), the `TestAllocator` in
+  `filesystem_test.cpp` was completed to fulfill the requirements to build on CentOS 7 with
+  `devtoolset-9`. CentOS 7 and CentOS 8 are now part of the CI builds.
+* Bugfix for [#70](https://github.com/gulrak/filesystem/issues/70), root names are now case
+  insensitive on Windows. This fix also adds the new behaviour switch `LWG_2936_BEHAVIOUR`
+  that allows to enable post C++17 `fs::path::compare` behaviour, where the comparison is as
+  if it was an element wise path comparison as described in
+  [LWG 2936](https://cplusplus.github.io/LWG/issue2936) and C++20 `[fs.path.compare]`.
+  It is default off in v1.3.6 and will be default starting from v1.4.0 as it changes ordering.
 
 ### [v1.3.4](https://github.com/gulrak/filesystem/releases/tag/v1.3.4)
 

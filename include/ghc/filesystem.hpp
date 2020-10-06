@@ -2719,6 +2719,9 @@ GHC_INLINE int path::compare(const path& p) const noexcept
     auto rnl1 = root_name_length();
     auto rnl2 = p.root_name_length();
     auto rnc = detail::compare_simple_insensitive(_path.c_str(), rnl1, p._path.c_str(), rnl2);
+    if (rnc) {
+        return rnc;
+    }
     auto p1 = _path;
     std::replace(p1.begin()+rnl1, p1.end(), '/', '\\');
     auto p2 = p._path;
@@ -3191,11 +3194,7 @@ GHC_INLINE size_t hash_value(const path& p) noexcept
 
 GHC_INLINE bool operator==(const path& lhs, const path& rhs) noexcept
 {
-#ifdef LWG_2936_BEHAVIOUR
     return lhs.compare(rhs) == 0;
-#else
-    return lhs.generic_string() == rhs.generic_string();
-#endif
 }
 
 GHC_INLINE bool operator!=(const path& lhs, const path& rhs) noexcept
@@ -3205,38 +3204,22 @@ GHC_INLINE bool operator!=(const path& lhs, const path& rhs) noexcept
 
 GHC_INLINE bool operator<(const path& lhs, const path& rhs) noexcept
 {
-#ifdef LWG_2936_BEHAVIOUR
     return lhs.compare(rhs) < 0;
-#else
-    return lhs.generic_string() < rhs.generic_string();
-#endif
 }
 
 GHC_INLINE bool operator<=(const path& lhs, const path& rhs) noexcept
 {
-#ifdef LWG_2936_BEHAVIOUR
     return lhs.compare(rhs) <= 0;
-#else
-    return lhs.generic_string() <= rhs.generic_string();
-#endif
 }
 
 GHC_INLINE bool operator>(const path& lhs, const path& rhs) noexcept
 {
-#ifdef LWG_2936_BEHAVIOUR
     return lhs.compare(rhs) > 0;
-#else
-    return lhs.generic_string() > rhs.generic_string();
-#endif
 }
 
 GHC_INLINE bool operator>=(const path& lhs, const path& rhs) noexcept
 {
-#ifdef LWG_2936_BEHAVIOUR
     return lhs.compare(rhs) >= 0;
-#else
-    return lhs.generic_string() >= rhs.generic_string();
-#endif
 }
 
 GHC_INLINE path operator/(const path& lhs, const path& rhs)

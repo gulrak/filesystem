@@ -907,6 +907,8 @@ TEST_CASE("30.10.8.4.11 path generation", "[filesystem][path][fs.path.gen]")
     CHECK(fs::path("c:/foo").lexically_relative("/bar") == "");
     CHECK(fs::path("c:foo").lexically_relative("c:/bar") == "");
     CHECK(fs::path("foo").lexically_relative("/bar") == "");
+    CHECK(fs::path("c:/foo/bar.txt").lexically_relative("c:/foo/") == "bar.txt");
+    CHECK(fs::path("c:/foo/bar.txt").lexically_relative("C:/foo/") == "bar.txt");
 #else
     CHECK(fs::path("/foo").lexically_relative("bar") == "");
     CHECK(fs::path("foo").lexically_relative("/bar") == "");
@@ -972,7 +974,13 @@ TEST_CASE("30.10.8.5 path iterators", "[filesystem][path][fs.path.itr]")
     CHECK("/,foo," == iterateResult(fs::path("/foo/")));
     CHECK("foo,bar" == iterateResult(fs::path("foo/bar")));
     CHECK("/,foo,bar" == iterateResult(fs::path("/foo/bar")));
+#ifndef USE_STD_FS
+    // ghc::filesystem enforces redundant slashes to be reduced to one
     CHECK("/,foo,bar" == iterateResult(fs::path("///foo/bar")));
+#else
+    // typically std::filesystem keeps them
+    CHECK("///,foo,bar" == iterateResult(fs::path("///foo/bar")));
+#endif
     CHECK("/,foo,bar," == iterateResult(fs::path("/foo/bar///")));
     CHECK("foo,.,bar,..," == iterateResult(fs::path("foo/.///bar/../")));
 #ifdef GHC_OS_WINDOWS
@@ -989,7 +997,13 @@ TEST_CASE("30.10.8.5 path iterators", "[filesystem][path][fs.path.itr]")
     CHECK(",foo,/" == reverseIterateResult(fs::path("/foo/")));
     CHECK("bar,foo" == reverseIterateResult(fs::path("foo/bar")));
     CHECK("bar,foo,/" == reverseIterateResult(fs::path("/foo/bar")));
+#ifndef USE_STD_FS
+    // ghc::filesystem enforces redundant slashes to be reduced to one
     CHECK("bar,foo,/" == reverseIterateResult(fs::path("///foo/bar")));
+#else
+    // typically std::filesystem keeps them
+    CHECK("bar,foo,///" == reverseIterateResult(fs::path("///foo/bar")));
+#endif
     CHECK(",bar,foo,/" == reverseIterateResult(fs::path("/foo/bar///")));
     CHECK(",..,bar,.,foo" == reverseIterateResult(fs::path("foo/.///bar/../")));
 #ifdef GHC_OS_WINDOWS
