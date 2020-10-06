@@ -409,6 +409,14 @@ it's "free" to return that.
 
 ### Differences in Behavior
 
+I created a wiki entry about quite a lot of [behavioral differences](https://github.com/gulrak/filesystem/wiki/Differences-to-Standard-Filesystem-Implementations)
+between different `std::filesystem` implementations that could result in a
+mention here, but this readme only tries to address the design choice
+differences between `ghc::filesystem` and those. I try to update the wiki page
+from time to time.
+
+Any additional observations are welcome!
+  
 #### fs.path ([ref](https://en.cppreference.com/w/cpp/filesystem/path))
 
 As the complete inner mechanics of this implementation `fs::path` are working
