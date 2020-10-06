@@ -615,6 +615,17 @@ TEST_CASE("30.10.8.4.8 path compare", "[filesystem][path][fs.path.compare]")
     CHECK(fs::path("/foo/b").compare(fs::path("/foo/a")) > 0);
     CHECK(fs::path("/foo/b").compare(fs::path("/foo/b")) == 0);
     CHECK(fs::path("/foo/b").compare(fs::path("/foo/c")) < 0);
+
+#ifdef GHC_OS_WINDOWS
+    CHECK(fs::path("c:\\a\\b").compare("C:\\a\\b") == 0);
+    CHECK(fs::path("c:\\a\\b").compare("d:\\a\\b") != 0);
+    CHECK(fs::path("c:\\a\\b").compare("C:\\A\\b") != 0);
+#endif
+
+#ifdef LWG_2936_BEHAVIOUR
+    CHECK(fs::path("/a/b/").compare("/a/b/c") < 0);
+    CHECK(fs::path("/a/b/").compare("a/c") > 0);
+#endif // LWG_2936_BEHAVIOUR
 }
 
 TEST_CASE("30.10.8.4.9 path decomposition", "[filesystem][path][fs.path.decompose]")
@@ -897,6 +908,8 @@ TEST_CASE("30.10.8.4.11 path generation", "[filesystem][path][fs.path.gen]")
     CHECK(fs::path("c:/foo").lexically_relative("/bar") == "");
     CHECK(fs::path("c:foo").lexically_relative("c:/bar") == "");
     CHECK(fs::path("foo").lexically_relative("/bar") == "");
+    CHECK(fs::path("c:/foo/bar.txt").lexically_relative("c:/foo/") == "bar.txt");
+    CHECK(fs::path("c:/foo/bar.txt").lexically_relative("C:/foo/") == "bar.txt");
 #else
     CHECK(fs::path("/foo").lexically_relative("bar") == "");
     CHECK(fs::path("foo").lexically_relative("/bar") == "");
@@ -962,7 +975,13 @@ TEST_CASE("30.10.8.5 path iterators", "[filesystem][path][fs.path.itr]")
     CHECK("/,foo," == iterateResult(fs::path("/foo/")));
     CHECK("foo,bar" == iterateResult(fs::path("foo/bar")));
     CHECK("/,foo,bar" == iterateResult(fs::path("/foo/bar")));
+#ifndef USE_STD_FS
+    // ghc::filesystem enforces redundant slashes to be reduced to one
     CHECK("/,foo,bar" == iterateResult(fs::path("///foo/bar")));
+#else
+    // typically std::filesystem keeps them
+    CHECK("///,foo,bar" == iterateResult(fs::path("///foo/bar")));
+#endif
     CHECK("/,foo,bar," == iterateResult(fs::path("/foo/bar///")));
     CHECK("foo,.,bar,..," == iterateResult(fs::path("foo/.///bar/../")));
 #ifdef GHC_OS_WINDOWS
@@ -979,7 +998,13 @@ TEST_CASE("30.10.8.5 path iterators", "[filesystem][path][fs.path.itr]")
     CHECK(",foo,/" == reverseIterateResult(fs::path("/foo/")));
     CHECK("bar,foo" == reverseIterateResult(fs::path("foo/bar")));
     CHECK("bar,foo,/" == reverseIterateResult(fs::path("/foo/bar")));
+#ifndef USE_STD_FS
+    // ghc::filesystem enforces redundant slashes to be reduced to one
     CHECK("bar,foo,/" == reverseIterateResult(fs::path("///foo/bar")));
+#else
+    // typically std::filesystem keeps them
+    CHECK("bar,foo,///" == reverseIterateResult(fs::path("///foo/bar")));
+#endif
     CHECK(",bar,foo,/" == reverseIterateResult(fs::path("/foo/bar///")));
     CHECK(",..,bar,.,foo" == reverseIterateResult(fs::path("foo/.///bar/../")));
 #ifdef GHC_OS_WINDOWS
@@ -2331,12 +2356,9 @@ TEST_CASE("30.10.15.25 last_write_time", "[filesystem][operations][fs.op.last_wr
     CHECK(std::abs(std::chrono::duration_cast<std::chrono::seconds>(fs::last_write_time("foo") - nt).count()) < 1);
     nt = timeFromString("2015-10-21T04:29:00");
     CHECK_NOTHROW(fs::last_write_time("foo", nt, ec));
-    std::cout << "about to call last_write_time" << std::endl;
     CHECK(std::abs(std::chrono::duration_cast<std::chrono::seconds>(fs::last_write_time("foo") - nt).count()) < 1);
     CHECK(!ec);
-    std::cout << "about to call last_write_time" << std::endl;
     CHECK_THROWS_AS(fs::last_write_time("bar", nt), fs::filesystem_error);
-    std::cout << "about to call last_write_time" << std::endl;
     CHECK_NOTHROW(fs::last_write_time("bar", nt, ec));
     CHECK(ec);
 #endif
