@@ -618,6 +618,7 @@ TEST_CASE("30.10.8.4.8 path compare", "[filesystem][path][fs.path.compare]")
 
 #ifdef GHC_OS_WINDOWS
     CHECK(fs::path("c:\\a\\b").compare("C:\\a\\b") == 0);
+    CHECK(fs::path("c:\\a\\b").compare("d:\\a\\b") != 0);
     CHECK(fs::path("c:\\a\\b").compare("C:\\A\\b") != 0);
 #endif
 

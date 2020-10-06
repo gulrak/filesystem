@@ -2695,8 +2695,8 @@ GHC_INLINE int path::compare(const path& p) const noexcept
         ++rnl1;
         ++rnl2;
     }
-    auto iter1 = _path.begin() + rnl1;
-    auto iter2 = p._path.begin() + rnl2;
+    auto iter1 = _path.begin() + static_cast<int>(rnl1);
+    auto iter2 = p._path.begin() + static_cast<int>(rnl2);
     while (iter1 != _path.end() && iter2 != p._path.end() && *iter1 == *iter2) {
         ++iter1;
         ++iter2;
@@ -2719,13 +2719,13 @@ GHC_INLINE int path::compare(const path& p) const noexcept
     auto rnl1 = root_name_length();
     auto rnl2 = p.root_name_length();
     auto rnc = detail::compare_simple_insensitive(_path.c_str(), rnl1, p._path.c_str(), rnl2);
-    if (rnc) {
+    if(rnc) {
         return rnc;
     }
     auto p1 = _path;
-    std::replace(p1.begin()+rnl1, p1.end(), '/', '\\');
+    std::replace(p1.begin()+static_cast<int>(rnl1), p1.end(), '/', '\\');
     auto p2 = p._path;
-    std::replace(p2.begin()+rnl2, p2.end(), '/', '\\');
+    std::replace(p2.begin()+static_cast<int>(rnl2), p2.end(), '/', '\\');
     return p1.compare(rnl1, std::string::npos, p2, rnl2, std::string::npos);
 #else
     return _path.compare(p._path);
