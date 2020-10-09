@@ -1654,12 +1654,17 @@ GHC_INLINE void path::postprocess_path_with_format(path::impl_string_type& p, pa
 #ifdef GHC_OS_WINDOWS
         case path::auto_format:
         case path::native_format:
-            if (detail::startsWith(p, std::string("\\\\?\\"))) {
-                // remove Windows long filename marker
-                p.erase(0, 4);
-                if (detail::startsWith(p, std::string("UNC\\"))) {
-                    p.erase(0, 2);
-                    p[0] = '\\';
+            if (p.length() > 4 && p[2] == '?') {
+                if (detail::startsWith(p, std::string("\\\\?\\"))) {
+                    // remove Windows long filename marker
+                    p.erase(0, 4);
+                    if (detail::startsWith(p, std::string("UNC\\"))) {
+                        p.erase(0, 2);
+                        p[0] = '\\';
+                    }
+                }
+                else if (detail::startsWith(p, std::string("\\??\\"))) {
+                    p.erase(0, 4);
                 }
             }
             for (auto& c : p) {
