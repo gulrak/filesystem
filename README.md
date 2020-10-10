@@ -5,21 +5,23 @@
 [![Build Status](https://api.cirrus-ci.com/github/gulrak/filesystem.svg?branch=master)](https://cirrus-ci.com/github/gulrak/filesystem)
 [![Build Status](https://cloud.drone.io/api/badges/gulrak/filesystem/status.svg?ref=refs/heads/master)](https://cloud.drone.io/gulrak/filesystem)
 [![Coverage Status](https://coveralls.io/repos/github/gulrak/filesystem/badge.svg?branch=master)](https://coveralls.io/github/gulrak/filesystem?branch=master)
-[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.3.4)
+[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.3.6)
 
 # Filesystem
 
 This is a header-only single-file std::filesystem compatible helper library,
 based on the C++17 specs, but implemented for C++11, C++14 or C++17 (tightly following
 the C++17 with very few documented exceptions). It is currently tested on
-macOS 10.12/10.14/10.15, Windows 10, Ubuntu 18.04, FreeBSD 12 and Alpine ARM/ARM64 Linux
-but should work on other systems too, as long as you have at least a 
-C++11 compatible compiler. It is of course in its own namespace `ghc::filesystem`
-to not interfere with a regular `std::filesystem` should you use it in a mixed C++17
-environment.
+macOS 10.12/10.14/10.15, Windows 10, Ubuntu 18.04, CentOS 7, CentOS 8, FreeBSD 12
+and Alpine ARM/ARM64 Linux but should work on other systems too, as long as you have
+at least a C++11 compatible compiler. It should work with Android NDK, Emscripten and I even
+had reports of it beeing used on iOS (within sandboxing constraints).
+It is of course in its own namespace `ghc::filesystem` to not interfere with a regular `std::filesystem` should you use it in a mixed C++17
+environment (which is possible).
 
-*It could still use some polishing, test coverage is above 90%, I didn't benchmark
-much yet, but I'll try to optimize some parts and refactor others, so I'm striving
+*Test coverage is above 90%, and starting with v1.3.6
+more time was invested in benchmarking and optimizing parts of the library. I'll try
+to continue to optimize some parts and refactor others, striving
 to improve it as long as it doesn't introduce additional C++17 compatibility
 issues. Feedback is always welcome. Simply open an issue if you see something missing
 or wrong or not behaving as expected and I'll comment.*
@@ -45,15 +47,16 @@ interface changes compared to the
 I want to thank the people working on improving C++, I really liked how the language
 evolved with C++11 and the following standards. Keep on the good work!
 
-Oh, and if you ask yourself, what `ghc` is standing for, it is simply
+## Why the namespace GHC?
+If you ask yourself, what `ghc` is standing for, it is simply
 `gulraks helper classes`, yeah, I know, not very imaginative, but I wanted a
-short namespace and I use it in some of my private classes (so it has nothing
-to do with Haskell).
+short namespace and I use it in some of my private classes (so **it has nothing
+to do with Haskell**, sorry for the name clash).
 
 ## Platforms
 
 `ghc::filesystem` is developed on macOS but CI tested on macOS, Windows,
-Linux and FreeBSD. It should work on any of these with a C++11-capable
+various Linux Distributions and FreeBSD. It should work on any of these with a C++11-capable
 compiler. Also there are some checks to hopefully better work on Android, but
 as I currently don't test with the Android NDK, I wouldn't call it a
 supported platform yet, same is valid for using it with Emscripten. It is now
@@ -106,8 +109,8 @@ in the standard, and there might be issues in these implementations too.
 
 ### Downloads
 
-The latest release version is [v1.3.4](https://github.com/gulrak/filesystem/tree/v1.3.4) and
-source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.3.4).
+The latest release version is [v1.3.6](https://github.com/gulrak/filesystem/tree/v1.3.6) and
+source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.3.6).
 
 ### Using it as Single-File-Header
 
@@ -495,8 +498,11 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.3.5 (WIP)
+### [v1.3.6](https://github.com/gulrak/filesystem/releases/tag/v1.3.6)
 
+* Pull request [#74](https://github.com/gulrak/filesystem/pull/74), on Windows symlink
+  evaluation used the wrong reparse struct information and was not handling the case
+  of relative paths well, thanks for the contribution.
 * Refactoring for [#73](https://github.com/gulrak/filesystem/issues/73), enhanced performance
   in path handling. the changes lead to much fewer path/string creations or copies, speeding
   up large directory iteration or operations on many path instances.
