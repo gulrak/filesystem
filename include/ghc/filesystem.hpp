@@ -5328,12 +5328,10 @@ public:
     {
         if (!path.empty()) {
             _dir = ::opendir(path.native().c_str());
-        }
-        if (!path.empty()) {
             if (!_dir) {
                 auto error = errno;
                 _base = filesystem::path();
-                if (error != EACCES || (options & directory_options::skip_permission_denied) == directory_options::none) {
+                if ((error != EACCES && error != EPERM) || (options & directory_options::skip_permission_denied) == directory_options::none) {
                     _ec = detail::make_system_error();
                 }
             }
