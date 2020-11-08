@@ -2734,7 +2734,7 @@ TEST_CASE("Windows: Long filename support", "[filesystem][path][fs.path.win.long
 #endif
 }
 
-TEST_CASE("Windows: path namespace support", "[filesystem][path][fs.path.win.namespaces]")
+TEST_CASE("Windows: path namespace handling", "[filesystem][path][fs.path.win.namespaces]")
 {
 #ifdef GHC_OS_WINDOWS
     std::error_code ec;
@@ -2745,22 +2745,41 @@ TEST_CASE("Windows: path namespace support", "[filesystem][path][fs.path.win.nam
     CHECK(!ec);
     CHECK(p2 == p);
 
-    std::vector<fs::path> variants = {
-        R"(C:\Windows\notepad.exe)",
-        R"(\\.\C:\Windows\notepad.exe)",
-        R"(\\?\C:\Windows\notepad.exe)",
-        R"(\??\C:\Windows\notepad.exe)",
-        R"(\\?\HarddiskVolume1\Windows\notepad.exe)",
-        R"(\\?\Harddisk0Partition1\Windows\notepad.exe)",
-        R"(\\.\GLOBALROOT\Device\HarddiskVolume1\Windows\notepad.exe)",
-        R"(\\?\GLOBALROOT\Device\Harddisk0\Partition1\Windows\notepad.exe)",
-        R"(\\?\Volume{e8a4a89d-0000-0000-0000-100000000000}\Windows\notepad.exe)",
-        R"(\\LOCALHOST\C$\Windows\notepad.exe)",
-        R"(\\?\UNC\C$\Windows\notepad.exe)",
-        R"(\\?\GLOBALROOT\Device\Mup\C$\Windows\notepad.exe)",
+      struct TestInfo
+    {
+        std::string _path;
+        std::string _string;
+        std::string _rootName;
+        std::string _rootPath;
+        std::string _iterateResult;
     };
-    for (auto pt : variants) {
-        std::cerr << pt.string() << " - " << pt.root_name() << ", " << pt.root_path() << ": " << iterateResult(pt) << std::endl;
+    std::vector<TestInfo> variants = {
+        {R"(C:\Windows\notepad.exe)", R"(C:\Windows\notepad.exe)", "C:", "C:\\", "C:,/,Windows,notepad.exe"},
+#ifdef USE_STD_FS
+        {R"(\\?\C:\Windows\notepad.exe)", R"(\\?\C:\Windows\notepad.exe)", "\\\\?", "\\\\?\\", "//?,/,C:,Windows,notepad.exe"},
+        {R"(\??\C:\Windows\notepad.exe)", R"(\??\C:\Windows\notepad.exe)", "\\??", "\\??\\", "/??,/,C:,Windows,notepad.exe"},
+#else
+        {R"(\\?\C:\Windows\notepad.exe)", R"(C:\Windows\notepad.exe)", "C:", "C:\\", "C:,/,Windows,notepad.exe"},
+        {R"(\??\C:\Windows\notepad.exe)", R"(C:\Windows\notepad.exe)", "C:", "C:\\", "C:,/,Windows,notepad.exe"},
+#endif
+        {R"(\\.\C:\Windows\notepad.exe)", R"(\\.\C:\Windows\notepad.exe)", "\\\\.", "\\\\.\\", "//.,/,C:,Windows,notepad.exe"},
+        {R"(\\?\HarddiskVolume1\Windows\notepad.exe)", R"(\\?\HarddiskVolume1\Windows\notepad.exe)", "\\\\?", "\\\\?\\", "//?,/,HarddiskVolume1,Windows,notepad.exe"},
+        {R"(\\?\Harddisk0Partition1\Windows\notepad.exe)", R"(\\?\Harddisk0Partition1\Windows\notepad.exe)", "\\\\?", "\\\\?\\", "//?,/,Harddisk0Partition1,Windows,notepad.exe"},
+        {R"(\\.\GLOBALROOT\Device\HarddiskVolume1\Windows\notepad.exe)", R"(\\.\GLOBALROOT\Device\HarddiskVolume1\Windows\notepad.exe)", "\\\\.", "\\\\.\\", "//.,/,GLOBALROOT,Device,HarddiskVolume1,Windows,notepad.exe"},
+        {R"(\\?\GLOBALROOT\Device\Harddisk0\Partition1\Windows\notepad.exe)", R"(\\?\GLOBALROOT\Device\Harddisk0\Partition1\Windows\notepad.exe)", "\\\\?", "\\\\?\\", "//?,/,GLOBALROOT,Device,Harddisk0,Partition1,Windows,notepad.exe"},
+        {R"(\\?\Volume{e8a4a89d-0000-0000-0000-100000000000}\Windows\notepad.exe)", R"(\\?\Volume{e8a4a89d-0000-0000-0000-100000000000}\Windows\notepad.exe)", "\\\\?", "\\\\?\\", "//?,/,Volume{e8a4a89d-0000-0000-0000-100000000000},Windows,notepad.exe"},
+        {R"(\\LOCALHOST\C$\Windows\notepad.exe)", R"(\\LOCALHOST\C$\Windows\notepad.exe)", "\\\\LOCALHOST", "\\\\LOCALHOST\\", "//LOCALHOST,/,C$,Windows,notepad.exe"},
+        {R"(\\?\UNC\C$\Windows\notepad.exe)", R"(\\?\UNC\C$\Windows\notepad.exe)", "\\\\?", "\\\\?\\", "//?,/,UNC,C$,Windows,notepad.exe"},
+        {R"(\\?\GLOBALROOT\Device\Mup\C$\Windows\notepad.exe)", R"(\\?\GLOBALROOT\Device\Mup\C$\Windows\notepad.exe)", "\\\\?", "\\\\?\\", "//?,/,GLOBALROOT,Device,Mup,C$,Windows,notepad.exe"},
+    };
+
+    for (auto ti : variants) {
+        INFO("Used path: " + ti._path);
+        auto p = fs::path(ti._path);
+        CHECK(p.string() == ti._string);
+        CHECK(p.root_name().string() == ti._rootName);
+        CHECK(p.root_path().string() == ti._rootPath);
+        CHECK(iterateResult(p) == ti._iterateResult);
     }
 #else
     WARN("Windows specific tests are empty on non-Windows systems.");
