@@ -1941,6 +1941,11 @@ TEST_CASE("30.10.15.13 exists", "[filesystem][operations][fs.op.exists]")
     ec = std::error_code(42, std::system_category());
     CHECK(fs::exists(t.path(), ec));
     CHECK(!ec);
+#if defined(GHC_OS_WINDOWS) && !defined(GHC_FILESYSTEM_FWD)
+    if (::GetFileAttributesW(L"C:\\fs-test") != INVALID_FILE_ATTRIBUTES) {
+        CHECK(fs::exists("C:\\fs-test"));    
+    }
+#endif
 }
 
 TEST_CASE("30.10.15.14 file_size", "[filesystem][operations][fs.op.file_size]")
@@ -2729,7 +2734,7 @@ TEST_CASE("Windows: Long filename support", "[filesystem][path][fs.path.win.long
 #endif
 }
 
-TEST_CASE("Windows: UNC path support", "[filesystem][path][fs.path.win.unc]")
+TEST_CASE("Windows: path namespace support", "[filesystem][path][fs.path.win.namespaces]")
 {
 #ifdef GHC_OS_WINDOWS
     std::error_code ec;

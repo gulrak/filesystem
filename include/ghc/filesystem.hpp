@@ -1257,7 +1257,6 @@ private:
 //-------------------------------------------------------------------------------------------------
 
 namespace detail {
-// GHC_FS_API void postprocess_path_with_format(path::impl_string_type& p, path::format fmt);
 enum utf8_states_t { S_STRT = 0, S_RJCT = 8 };
 GHC_FS_API void appendUTF8(std::string& str, uint32_t unicode);
 GHC_FS_API bool is_surrogate(uint32_t c);
@@ -1654,17 +1653,15 @@ GHC_INLINE void path::postprocess_path_with_format(path::impl_string_type& p, pa
 #ifdef GHC_OS_WINDOWS
         case path::auto_format:
         case path::native_format:
-            if (p.length() > 4 && p[2] == '?') {
-                if (detail::startsWith(p, std::string("\\\\?\\"))) {
-                    // remove Windows long filename marker
-                    p.erase(0, 4);
-                    if (detail::startsWith(p, std::string("UNC\\"))) {
-                        p.erase(0, 2);
-                        p[0] = '\\';
+            if (p.length() >= 4 && p[2] == '?') {
+                if (p.length() == 4 || (p.length() >= 6 && p[5] == ':')) {
+                    if (detail::startsWith(p, std::string("\\\\?\\"))) {
+                        // remove Windows long filename marker for simple paths
+                        p.erase(0, 4);
                     }
-                }
-                else if (detail::startsWith(p, std::string("\\??\\"))) {
-                    p.erase(0, 4);
+                    else if (detail::startsWith(p, std::string("\\??\\"))) {
+                        p.erase(0, 4);
+                    }
                 }
             }
             for (auto& c : p) {
@@ -2554,7 +2551,7 @@ GHC_INLINE path::impl_string_type path::native_impl() const
     if (is_absolute() && _path.length() > MAX_PATH - 10) {
         // expand long Windows filenames with marker
         if (has_root_name() && _path[0] == '/') {
-            result = "\\\\?\\UNC" + _path.substr(1);
+            result = "\\\\?\\" + _path.substr(1);
         }
         else {
             result = "\\\\?\\" + _path;
