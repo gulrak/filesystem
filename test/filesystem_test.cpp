@@ -2737,15 +2737,17 @@ TEST_CASE("Windows: Long filename support", "[filesystem][path][fs.path.win.long
 TEST_CASE("Windows: path namespace handling", "[filesystem][path][fs.path.win.namespaces]")
 {
 #ifdef GHC_OS_WINDOWS
-    std::error_code ec;
-    fs::path p(R"(\\localhost\c$\Windows)");
-    auto symstat = fs::symlink_status(p, ec);
-    CHECK(!ec);
-    auto p2 = fs::canonical(p, ec);
-    CHECK(!ec);
-    CHECK(p2 == p);
-
-      struct TestInfo
+    {
+        std::error_code ec;
+        fs::path p(R"(\\localhost\c$\Windows)");
+        auto symstat = fs::symlink_status(p, ec);
+        CHECK(!ec);
+        auto p2 = fs::canonical(p, ec);
+        CHECK(!ec);
+        CHECK(p2 == p);
+    }
+    
+    struct TestInfo
     {
         std::string _path;
         std::string _string;
