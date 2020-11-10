@@ -2549,8 +2549,8 @@ GHC_INLINE path::impl_string_type path::native_impl() const
 {
     impl_string_type result;
     if (is_absolute() && _path.length() > MAX_PATH - 10) {
-        // expand long Windows filenames with marker
-        if (has_root_name() && _path[0] == '/') {
+        // expand absolute non namespaced long Windows filenames with marker
+        if (has_root_name() && _path[0] == '/' && _path[1] != '/') {
             result = "\\\\?\\" + _path.substr(1);
         }
         else {
