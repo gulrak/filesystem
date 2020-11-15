@@ -5,7 +5,7 @@
 [![Build Status](https://api.cirrus-ci.com/github/gulrak/filesystem.svg?branch=master)](https://cirrus-ci.com/github/gulrak/filesystem)
 [![Build Status](https://cloud.drone.io/api/badges/gulrak/filesystem/status.svg?ref=refs/heads/master)](https://cloud.drone.io/gulrak/filesystem)
 [![Coverage Status](https://coveralls.io/repos/github/gulrak/filesystem/badge.svg?branch=master)](https://coveralls.io/github/gulrak/filesystem?branch=master)
-[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.3.6)
+[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.3.8)
 
 # Filesystem
 
@@ -109,8 +109,8 @@ in the standard, and there might be issues in these implementations too.
 
 ### Downloads
 
-The latest release version is [v1.3.6](https://github.com/gulrak/filesystem/tree/v1.3.6) and
-source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.3.6).
+The latest release version is [v1.3.8](https://github.com/gulrak/filesystem/tree/v1.3.8) and
+source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.3.8).
 
 ### Using it as Single-File-Header
 
