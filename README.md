@@ -122,8 +122,8 @@ Everything is in the namespace `ghc::filesystem`, so one way to use it only as
 a fallback could be:
 
 ```cpp
-#if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include)
-#if __has_include(<filesystem>)
+#if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || (defined(__cplusplus) && __cplusplus >= 201703L)) && defined(__has_include)
+#if __has_include(<filesystem>) && (!defined(__MAC_OS_X_VERSION_MIN_REQUIRED) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 101500)
 #define GHC_USE_STD_FS
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -136,18 +136,22 @@ namespace fs = ghc::filesystem;
 ```
 
 **Note that this code uses a two-stage preprocessor condition because Visual Studio 2015
-doesn't like the `(<...>)` syntax, even if it could cut evaluation early before.**
+doesn't like the `(<...>)` syntax, even if it could cut evaluation early before. This code also
+used the minimum deployment target to detect if std::filesystem really is available on macOS
+compilation.**
 
-**Note also, that on MSVC this detection only works starting from version 15.7 on and when setting
-the `/Zc:__cplusplus` compile switch, as the compiler allways reports `199711L`
-without that switch ([see](https://blogs.msdn.microsoft.com/vcblog/2018/04/09/msvc-now-correctly-reports-__cplusplus/)).**
+**Note also, this detection now works on MSVC versions prior to 15.7 on, or without setting
+the `/Zc:__cplusplus` compile switch that would fix `__cplusplus` on MSVC. (Without the switch
+the compiler allways reports `199711L`
+([see](https://blogs.msdn.microsoft.com/vcblog/2018/04/09/msvc-now-correctly-reports-__cplusplus/)),
+but `_MSVC_LANG` works without it.**
 
 If you want to also use the `fstream` wrapper with `path` support as fallback,
 you might use:
 
 ```cpp
-#if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include)
-#if __has_include(<filesystem>)
+#if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || (defined(__cplusplus) && __cplusplus >= 201703L)) && defined(__has_include)
+#if __has_include(<filesystem>) && (!defined(__MAC_OS_X_VERSION_MIN_REQUIRED) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 101500)
 #define GHC_USE_STD_FS
 #include <filesystem>
 namespace fs {
@@ -201,8 +205,8 @@ If you use the forwarding/implementation approach, you can still use the dynamic
 switching like this:
 
 ```cpp
-#if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include)
-#if __has_include(<filesystem>)
+#if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || (defined(__cplusplus) && __cplusplus >= 201703L)) && defined(__has_include)
+#if __has_include(<filesystem>) && (!defined(__MAC_OS_X_VERSION_MIN_REQUIRED) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 101500)
 #define GHC_USE_STD_FS
 #include <filesystem>
 namespace fs {
@@ -228,10 +232,14 @@ and in the implementation hiding cpp, you might use (before any include that inc
 to take precedence:
 
 ```cpp
-#if !(defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include)
-#if __has_include(<filesystem>))
-#include <ghc/fs_impl.hpp>
+#if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || (defined(__cplusplus) && __cplusplus >= 201703L)) && defined(__has_include)
+#if __has_include(<filesystem>) && (!defined(__MAC_OS_X_VERSION_MIN_REQUIRED) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 101500)
+#define GHC_USE_STD_FS
 #endif
+#endif
+#ifndef GHC_USE_STD_FS
+#define GHC_FILESYSTEM_IMPLEMENTATION
+#include <ghc/filesystem.hpp>
 #endif
 ```
 
@@ -497,6 +505,22 @@ to the expected behavior.
 
 
 ## Release Notes
+
+### [v1.3.8](https://github.com/gulrak/filesystem/releases/tag/v1.3.8)
+
+* Refactoring for [#78](https://github.com/gulrak/filesystem/issues/78), the dynamic
+  switching helper includes are now using `__MAC_OS_X_VERSION_MIN_REQUIRED` to
+  ensure that `std::filesystem` is only selected on macOS if the deployment target is
+  at least Catalina. 
+* Bugfix for [#77](https://github.com/gulrak/filesystem/issues/77), the `directory_iterator`
+  and the `recursive_directory_iterator` had an issue with the `skip_permission_denied`
+  option, that leads to the inability to skip SIP protected folders on macOS.
+* Enhancement for [#76](https://github.com/gulrak/filesystem/issues/76), `_MSVC_LANG` is
+  now used when available, additionally to `__cplusplus`, in the helping headers to
+  allow them to work even when `/Zc:__cplusplus` is not used.  
+* Bugfix for [#75](https://github.com/gulrak/filesystem/issues/75), NTFS reparse points
+  to mapped volumes where handled incorrect, leading to `false` on `fs::exists` or
+  not-found-errors on `fs::status`. Namespaced paths are not filtered anymore.
 
 ### [v1.3.6](https://github.com/gulrak/filesystem/releases/tag/v1.3.6)
 
