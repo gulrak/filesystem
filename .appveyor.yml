@@ -1,5 +1,11 @@
 environment:
   matrix:
+    - platform: x64
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+      generator: "Visual Studio 12 2013 Win64"
+      compiler: msvc
+      configuration: Release
+
     - platform: x86
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       generator: "Visual Studio 14 2015"
