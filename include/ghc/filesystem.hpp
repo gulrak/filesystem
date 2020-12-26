@@ -1490,21 +1490,21 @@ GHC_INLINE bool validUtf8(const std::string& utf8String)
     
 namespace detail {
 
-template <class StringType, typename std::enable_if<(sizeof(typename StringType::value_type) == 1)>::type* = nullptr>
-inline StringType fromUtf8(const std::string& utf8String, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
+template <class StringType, class Utf8String, typename std::enable_if<path::_is_basic_string<Utf8String>::value && (sizeof(typename Utf8String::value_type) == 1) && (sizeof(typename StringType::value_type) == 1)>::type* = nullptr>
+inline StringType fromUtf8(const Utf8String& utf8String, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
 {
     return StringType(utf8String.begin(), utf8String.end(), alloc);
 }
 
-template <class StringType, typename std::enable_if<(sizeof(typename StringType::value_type) == 2)>::type* = nullptr>
-inline StringType fromUtf8(const std::string& utf8String, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
+template <class StringType, class Utf8String, typename std::enable_if<path::_is_basic_string<Utf8String>::value && (sizeof(typename Utf8String::value_type) == 1) && (sizeof(typename StringType::value_type) == 2)>::type* = nullptr>
+inline StringType fromUtf8(const Utf8String& utf8String, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
 {
     StringType result(alloc);
     result.reserve(utf8String.length());
-    std::string::const_iterator iter = utf8String.begin();
+    auto iter = utf8String.cbegin();
     unsigned utf8_state = S_STRT;
     std::uint32_t codepoint = 0;
-    while (iter < utf8String.end()) {
+    while (iter < utf8String.cend()) {
         if ((utf8_state = consumeUtf8Fragment(utf8_state, static_cast<uint8_t>(*iter++), codepoint)) == S_STRT) {
             if (codepoint <= 0xffff) {
                 result += static_cast<typename StringType::value_type>(codepoint);
@@ -1536,15 +1536,15 @@ inline StringType fromUtf8(const std::string& utf8String, const typename StringT
     return result;
 }
 
-template <class StringType, typename std::enable_if<(sizeof(typename StringType::value_type) == 4)>::type* = nullptr>
-inline StringType fromUtf8(const std::string& utf8String, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
+template <class StringType, class Utf8String, typename std::enable_if<path::_is_basic_string<Utf8String>::value && (sizeof(typename Utf8String::value_type) == 1) && (sizeof(typename StringType::value_type) == 4)>::type* = nullptr>
+inline StringType fromUtf8(const Utf8String& utf8String, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
 {
     StringType result(alloc);
     result.reserve(utf8String.length());
-    std::string::const_iterator iter = utf8String.begin();
+    auto iter = utf8String.cbegin();
     unsigned utf8_state = S_STRT;
     std::uint32_t codepoint = 0;
-    while (iter < utf8String.end()) {
+    while (iter < utf8String.cend()) {
         if ((utf8_state = consumeUtf8Fragment(utf8_state, static_cast<uint8_t>(*iter++), codepoint)) == S_STRT) {
             result += static_cast<typename StringType::value_type>(codepoint);
             codepoint = 0;
@@ -1567,6 +1567,16 @@ inline StringType fromUtf8(const std::string& utf8String, const typename StringT
 #endif
     }
     return result;
+}
+
+template<class StringType, typename charT, std::size_t N>
+inline StringType fromUtf8(const charT (&utf8String)[N])
+{
+#ifdef __cpp_lib_string_view
+    return fromUtf8<StringType>(std::basic_string_view<charT>(utf8String, N-1));
+#else
+    return fromUtf8<StringType>(std::basic_string<charT>(utf8String, N-1));
+#endif
 }
 
 template <typename strT, typename std::enable_if<path::_is_basic_string<strT>::value && (sizeof(typename strT::value_type) == 1), int>::type size = 1>
