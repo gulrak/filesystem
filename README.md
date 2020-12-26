@@ -519,6 +519,11 @@ to the expected behavior.
 
 ## Release Notes
 
+### v1.3.9 (WIP)
+
+* Fix for [#79](https://github.com/gulrak/filesystem/issues/79), the bit operations
+  for filesystem bitmasks that should be are now `constexpr`.
+  
 ### [v1.3.8](https://github.com/gulrak/filesystem/releases/tag/v1.3.8)
 
 * Refactoring for [#78](https://github.com/gulrak/filesystem/issues/78), the dynamic
