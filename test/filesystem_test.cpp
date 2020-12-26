@@ -2701,7 +2701,7 @@ TEST_CASE("std::string_view support", "[filesystem][fs.string_view]")
     }
     {
         auto p = fs::path{"XYZ"};
-        p /= "Appendix"sv;
+        p /= std::string_view("Appendix");
         CHECK(p == "XYZ/Appendix");
     }
 #if defined(IS_WCHAR_PATH) || defined(GHC_USE_WCHAR_T)
