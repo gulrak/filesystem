@@ -521,6 +521,8 @@ to the expected behavior.
 
 ### v1.3.9 (WIP)
 
+* Fix for [#81](https://github.com/gulrak/filesystem/issues/79), fixed issues with
+  handling `Source` parameters that are string views.
 * Fix for [#79](https://github.com/gulrak/filesystem/issues/79), the bit operations
   for filesystem bitmasks that should be are now `constexpr`.
   
