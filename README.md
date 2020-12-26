@@ -66,6 +66,9 @@ where full C++17 is available, it doesn't try to be a "better"
 `std::filesystem`, just a drop-in if you can't use it (with the exception
 of the UTF-8 preference on Windows).
 
+This implementation is following the ["UTF-8 Everywhere" philosophy](https://utf8everywhere.org/) in that all
+`std::string` instances will be interpreted the same as `std::u8string` encoding
+wise and as being in UTF-8. The `std::u16string` will be seen as UTF-16 and
 
 Unit tests are currently run with:
 
@@ -194,7 +197,7 @@ including one of two additional wrapper headers. These allow to include
 a forwarded version in most places (`ghc/fs_fwd.hpp`) while hiding the
 implementation details in a single cpp that includes `ghc/fs_impl.hpp` to
 implement the needed code. That way system includes are only visible from
-inside the cpp, all other places are clean. 
+inside the cpp, all other places are clean.
 
 Be aware, that it is currently not supported to hide the implementation
 into a Windows-DLL, as a DLL interface with C++ standard templates in interfaces
@@ -360,7 +363,7 @@ error is also advocated by the newer paper
 [WG21 P1164R0](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1164r0.pdf), the revison
 P1161R1 was agreed upon on Kona 2019 meeting [see merge](https://github.com/cplusplus/draft/issues/2703)
 and GCC by now switched to following its proposal
-([GCC #86910](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86910)). 
+([GCC #86910](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86910)).
 
 ### Not Implemented on C++ before C++17
 
@@ -378,6 +381,16 @@ ghc::filesystem under C++17.
 
 
 ### Differences in API
+
+To not depend on any external third party libraries and still stay portable and
+compact, this implementation is following the ["UTF-8 Everywhere" philosophy](https://utf8everywhere.org/) in that all
+`std::string` instances will be interpreted the same as `std::u8string` encoding
+wise and as being in UTF-8. The `std::u16string` will be seen as UTF-16 and `std::u32string` will be
+seen as unicode codepoints. Depending on the size of `std::wstring` characters, it will handle
+`std::wstring` as being UTF-16 (e.g. Windows) or `char32_t` unicode codepoints
+(currently all other platforms).
+
+#### Differences of Specific Interfaces
 
 ```cpp
 filesystem::path::string_type
@@ -427,7 +440,7 @@ differences between `ghc::filesystem` and those. I try to update the wiki page
 from time to time.
 
 Any additional observations are welcome!
-  
+
 #### fs.path ([ref](https://en.cppreference.com/w/cpp/filesystem/path))
 
 As the complete inner mechanics of this implementation `fs::path` are working
@@ -511,13 +524,13 @@ to the expected behavior.
 * Refactoring for [#78](https://github.com/gulrak/filesystem/issues/78), the dynamic
   switching helper includes are now using `__MAC_OS_X_VERSION_MIN_REQUIRED` to
   ensure that `std::filesystem` is only selected on macOS if the deployment target is
-  at least Catalina. 
+  at least Catalina.
 * Bugfix for [#77](https://github.com/gulrak/filesystem/issues/77), the `directory_iterator`
   and the `recursive_directory_iterator` had an issue with the `skip_permission_denied`
   option, that leads to the inability to skip SIP protected folders on macOS.
 * Enhancement for [#76](https://github.com/gulrak/filesystem/issues/76), `_MSVC_LANG` is
   now used when available, additionally to `__cplusplus`, in the helping headers to
-  allow them to work even when `/Zc:__cplusplus` is not used.  
+  allow them to work even when `/Zc:__cplusplus` is not used.
 * Bugfix for [#75](https://github.com/gulrak/filesystem/issues/75), NTFS reparse points
   to mapped volumes where handled incorrect, leading to `false` on `fs::exists` or
   not-found-errors on `fs::status`. Namespaced paths are not filtered anymore.
@@ -558,7 +571,7 @@ to the expected behavior.
   error handling are not available in this mode, thanks for the PR (this resolves
   [#60](https://github.com/gulrak/filesystem/issues/60) and
   [#43](https://github.com/gulrak/filesystem/issues/43))
-  
+
 ### [v1.3.2](https://github.com/gulrak/filesystem/releases/tag/v1.3.2)
 
 * Bugfix for [#58](https://github.com/gulrak/filesystem/issues/58), on MinGW the
@@ -579,7 +592,7 @@ to the expected behavior.
   part of the CI infrastucture with the service of Cirrus CI.
 * Pull request [#50](https://github.com/gulrak/filesystem/pull/50), adaptive cast to
   `timespec` fields to avoid warnings.
-  
+
 ### [v1.3.0](https://github.com/gulrak/filesystem/releases/tag/v1.3.0)
 
 * **Important: `ghc::filesystem` is re-licensed from BSD-3-Clause to MIT license.** (see
@@ -737,7 +750,7 @@ to the expected behavior.
   `ghc::filesystem` declarations (`fs_fwd.hpp`) and to wrap the
   implementation into a single cpp (`fs_impl.hpp`)
 * The `std::basic_string_view` variants of the `fs::path` api are
-  now supported when compiling with C++17. 
+  now supported when compiling with C++17.
 * Added CI integration for Travis-CI and Appveyor.
 * Fixed MinGW compilation issues.
 * Added long filename support for Windows.
