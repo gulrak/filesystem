@@ -2689,6 +2689,7 @@ TEST_CASE("30.10.15.39 weakly_canonical", "[filesystem][operations][fs.op.weakly
 TEST_CASE("std::string_view support", "[filesystem][fs.string_view]")
 {
 #if __cpp_lib_string_view
+    using namespace std::literals;
     {
         std::string p("foo/bar");
         std::string_view sv(p);
@@ -2698,7 +2699,11 @@ TEST_CASE("std::string_view support", "[filesystem][fs.string_view]")
         CHECK(p2 == "foo");
         CHECK(p2.compare(std::string_view("foo")) == 0);
     }
-
+    {
+        auto p = fs::path{"XYZ"};
+        p /= "Appendix"sv;
+        CHECK(p == "XYZ/Appendix");
+    }
 #if defined(IS_WCHAR_PATH) || defined(GHC_USE_WCHAR_T)
     {
         std::wstring p(L"foo/bar");
