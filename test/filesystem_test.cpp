@@ -1145,8 +1145,14 @@ TEST_CASE("30.10.9 class filesystem_error", "[filesystem][filesystem_error][fs.c
     CHECK(fse.path2() == "some/other");
 }
 
+constexpr fs::perms constExprOwnerAll()
+{
+    return fs::perms::owner_read | fs::perms::owner_write | fs::perms::owner_exec;
+}
+
 TEST_CASE("30.10.10.4 enum class perms", "[filesystem][enum][fs.enum]")
 {
+    static_assert(constExprOwnerAll() == fs::perms::owner_all, "constexpr didn't result in owner_all");
     CHECK((fs::perms::owner_read | fs::perms::owner_write | fs::perms::owner_exec) == fs::perms::owner_all);
     CHECK((fs::perms::group_read | fs::perms::group_write | fs::perms::group_exec) == fs::perms::group_all);
     CHECK((fs::perms::others_read | fs::perms::others_write | fs::perms::others_exec) == fs::perms::others_all);

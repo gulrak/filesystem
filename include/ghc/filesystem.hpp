@@ -1352,28 +1352,28 @@ using EnableBitmask = typename std::enable_if<std::is_same<Enum, perms>::value |
 }  // namespace detail
 
 template <typename Enum>
-detail::EnableBitmask<Enum> operator&(Enum X, Enum Y)
+constexpr detail::EnableBitmask<Enum> operator&(Enum X, Enum Y)
 {
     using underlying = typename std::underlying_type<Enum>::type;
     return static_cast<Enum>(static_cast<underlying>(X) & static_cast<underlying>(Y));
 }
 
 template <typename Enum>
-detail::EnableBitmask<Enum> operator|(Enum X, Enum Y)
+constexpr detail::EnableBitmask<Enum> operator|(Enum X, Enum Y)
 {
     using underlying = typename std::underlying_type<Enum>::type;
     return static_cast<Enum>(static_cast<underlying>(X) | static_cast<underlying>(Y));
 }
 
 template <typename Enum>
-detail::EnableBitmask<Enum> operator^(Enum X, Enum Y)
+constexpr detail::EnableBitmask<Enum> operator^(Enum X, Enum Y)
 {
     using underlying = typename std::underlying_type<Enum>::type;
     return static_cast<Enum>(static_cast<underlying>(X) ^ static_cast<underlying>(Y));
 }
 
 template <typename Enum>
-detail::EnableBitmask<Enum> operator~(Enum X)
+constexpr detail::EnableBitmask<Enum> operator~(Enum X)
 {
     using underlying = typename std::underlying_type<Enum>::type;
     return static_cast<Enum>(~static_cast<underlying>(X));
