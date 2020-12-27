@@ -10,19 +10,19 @@
 # Filesystem
 
 This is a header-only single-file std::filesystem compatible helper library,
-based on the C++17 specs, but implemented for C++11, C++14 or C++17 (tightly following
-the C++17 with very few documented exceptions). It is currently tested on
+based on the C++17 and C++20 specs, but implemented for C++11, C++14, C++17 or C++20
+(tightly following  the C++17 standard with very few documented exceptions). It is currently tested on
 macOS 10.12/10.14/10.15, Windows 10, Ubuntu 18.04, CentOS 7, CentOS 8, FreeBSD 12
 and Alpine ARM/ARM64 Linux but should work on other systems too, as long as you have
 at least a C++11 compatible compiler. It should work with Android NDK, Emscripten and I even
-had reports of it beeing used on iOS (within sandboxing constraints).
+had reports of it being used on iOS (within sandboxing constraints).
 It is of course in its own namespace `ghc::filesystem` to not interfere with a regular `std::filesystem` should you use it in a mixed C++17
 environment (which is possible).
 
-*Test coverage is above 90%, and starting with v1.3.6
+*Test coverage is well above 90%, and starting with v1.3.6
 more time was invested in benchmarking and optimizing parts of the library. I'll try
 to continue to optimize some parts and refactor others, striving
-to improve it as long as it doesn't introduce additional C++17 compatibility
+to improve it as long as it doesn't introduce additional C++17/C++20 compatibility
 issues. Feedback is always welcome. Simply open an issue if you see something missing
 or wrong or not behaving as expected and I'll comment.*
 
@@ -43,6 +43,8 @@ and a draft close to that version is
 It is from after the standardization of C++17 but it contains the latest filesystem
 interface changes compared to the
 [Working Draft N4659](https://github.com/cplusplus/draft/raw/master/papers/n4659.pdf).
+Staring with v1.4.0, when compiled using C++20, it adapts to the changes according to path sorting order
+and `std::u8string` handling from [Working Draft N4680](https://isocpp.org/files/papers/N4860.pdf).
 
 I want to thank the people working on improving C++, I really liked how the language
 evolved with C++11 and the following standards. Keep on the good work!
@@ -62,9 +64,9 @@ as I currently don't test with the Android NDK, I wouldn't call it a
 supported platform yet, same is valid for using it with Emscripten. It is now
 part of the detected platforms, I fixed the obvious issues and ran some tests with
 it, so it should be fine. All in all, I don't see it replacing `std::filesystem`
-where full C++17 is available, it doesn't try to be a "better"
-`std::filesystem`, just a drop-in if you can't use it (with the exception
-of the UTF-8 preference on Windows).
+where full C++17 or C++20 is available, it doesn't try to be a "better"
+`std::filesystem`, just an almost drop-in if you can't use it (with the exception
+of the UTF-8 preference).
 
 This implementation is following the ["UTF-8 Everywhere" philosophy](https://utf8everywhere.org/) in that all
 `std::string` instances will be interpreted the same as `std::u8string` encoding
@@ -343,17 +345,18 @@ change anything. I still need to investigate this.
 
 As this implementation is based on existing code from my private helper
 classes, it derived some constraints of it, leading to some differences
-between this and the standard C++17 API.
+between this and the standard C++17/C++20 API.
 
 
 ### LWG Defects
 
 This implementation has switchable behavior for the LWG defects
 [#2682](https://wg21.cmeerw.net/lwg/issue2682),
-[#2935](http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2935) and
+[#2935](http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2935),
+[#2936](http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2936) and
 [#2937](http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2937).
-The currently selected behavior is following
-[#2682](https://wg21.cmeerw.net/lwg/issue2682),
+The currently selected behavior (starting from v1.4.0) is following
+[#2682](https://wg21.cmeerw.net/lwg/issue2682), [#2936](http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2936),
 [#2937](http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2937) but
 not following [#2935](http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2935),
 as I feel it is a bug to report no error on a `create_directory()` or `create_directories()`
@@ -519,6 +522,19 @@ to the expected behavior.
 
 
 ## Release Notes
+
+### v1.4.0 (WIP)
+
+* Enhancements for [#71](https://github.com/gulrak/filesystem/issues/71), when compiled with C++20:
+    * `char8_t` and `std::u8string` are supported where `Source` is the parameter type
+    * `fs::path::u8string()` and `fs::path::generic_u8string()` now return a `std::u8string`
+    * The _spaceship operator_ `<=>` is now supported for `fs::path`
+    * With the define `GHC_FILESYSTEM_ENFORCE_CPP17_API` `ghc::filesystem` will fall back
+      to the old `fs::path::u8string()` and `fs::path::generic_u8string()` API if preferred
+* Bugfix for `fs::proximate(p, ec)` where the internal call to `fs::current_path()` was not
+  using the `error_code` variant, throwing possible exceptions instead of setting `ec`.
+* Some cleanup work to reduce preprocessor directives for better readability and remove unneeded
+  template specializations. 
 
 ### [v1.3.10](https://github.com/gulrak/filesystem/releases/tag/v1.3.10)
 

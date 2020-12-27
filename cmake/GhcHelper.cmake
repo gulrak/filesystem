@@ -48,8 +48,8 @@ macro(AddTestExecutableWithStdCpp cppStd)
     target_link_libraries(filesystem_test_cpp${cppStd} ghc_filesystem)
     target_compile_options(filesystem_test_cpp${cppStd} PRIVATE
             $<$<BOOL:${EMSCRIPTEN}>:-s DISABLE_EXCEPTION_CATCHING=0>
-            $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wpedantic -Werror>
-            $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wpedantic -Wno-psabi -Werror>
+            $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wpedantic -Werror -Wno-error=deprecated-declarations>
+            $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wpedantic -Wno-psabi -Werror -Wno-error=deprecated-declarations>
             $<$<CXX_COMPILER_ID:MSVC>:/WX>)
     if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
         target_compile_definitions(filesystem_test_cpp${cppStd} PRIVATE _CRT_SECURE_NO_WARNINGS)
