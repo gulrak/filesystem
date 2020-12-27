@@ -5,7 +5,7 @@
 [![Build Status](https://api.cirrus-ci.com/github/gulrak/filesystem.svg?branch=master)](https://cirrus-ci.com/github/gulrak/filesystem)
 [![Build Status](https://cloud.drone.io/api/badges/gulrak/filesystem/status.svg?ref=refs/heads/master)](https://cloud.drone.io/gulrak/filesystem)
 [![Coverage Status](https://coveralls.io/repos/github/gulrak/filesystem/badge.svg?branch=master)](https://coveralls.io/github/gulrak/filesystem?branch=master)
-[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.3.8)
+[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.3.10)
 
 # Filesystem
 
@@ -68,7 +68,8 @@ of the UTF-8 preference on Windows).
 
 This implementation is following the ["UTF-8 Everywhere" philosophy](https://utf8everywhere.org/) in that all
 `std::string` instances will be interpreted the same as `std::u8string` encoding
-wise and as being in UTF-8. The `std::u16string` will be seen as UTF-16 and
+wise and as being in UTF-8. The `std::u16string` will be seen as UTF-16. See *Differences in API*
+for more information. 
 
 Unit tests are currently run with:
 
@@ -112,8 +113,8 @@ in the standard, and there might be issues in these implementations too.
 
 ### Downloads
 
-The latest release version is [v1.3.8](https://github.com/gulrak/filesystem/tree/v1.3.8) and
-source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.3.8).
+The latest release version is [v1.3.10](https://github.com/gulrak/filesystem/tree/v1.3.10) and
+source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.3.10).
 
 ### Using it as Single-File-Header
 
@@ -519,9 +520,9 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.3.9 (WIP)
+### [v1.3.10](https://github.com/gulrak/filesystem/releases/tag/v1.3.10)
 
-* Fix for [#81](https://github.com/gulrak/filesystem/issues/79), fixed issues with
+* Fix for [#81](https://github.com/gulrak/filesystem/issues/81), fixed issues with
   handling `Source` parameters that are string views.
 * Fix for [#79](https://github.com/gulrak/filesystem/issues/79), the bit operations
   for filesystem bitmasks that should be are now `constexpr`.
