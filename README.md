@@ -68,7 +68,8 @@ of the UTF-8 preference on Windows).
 
 This implementation is following the ["UTF-8 Everywhere" philosophy](https://utf8everywhere.org/) in that all
 `std::string` instances will be interpreted the same as `std::u8string` encoding
-wise and as being in UTF-8. The `std::u16string` will be seen as UTF-16 and
+wise and as being in UTF-8. The `std::u16string` will be seen as UTF-16. See *Differences in API*
+for more information. 
 
 Unit tests are currently run with:
 
@@ -521,7 +522,7 @@ to the expected behavior.
 
 ### [v1.3.10](https://github.com/gulrak/filesystem/releases/tag/v1.3.10)
 
-* Fix for [#81](https://github.com/gulrak/filesystem/issues/79), fixed issues with
+* Fix for [#81](https://github.com/gulrak/filesystem/issues/81), fixed issues with
   handling `Source` parameters that are string views.
 * Fix for [#79](https://github.com/gulrak/filesystem/issues/79), the bit operations
   for filesystem bitmasks that should be are now `constexpr`.
