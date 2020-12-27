@@ -141,6 +141,13 @@
 #include <Availability.h>
 #endif
 
+#if defined(__cpp_impl_three_way_comparison) && defined(__has_include)
+#if __has_include(<compare>)
+#define GHC_HAS_THREEWAY_COMP
+#include <compare>
+#endif
+#endif
+
 #include <algorithm>
 #include <cctype>
 #include <chrono>
@@ -159,6 +166,13 @@
 #include <vector>
 
 #else  // GHC_EXPAND_IMPL
+
+#if defined(__cpp_impl_three_way_comparison) && defined(__has_include)
+#if __has_include(<compare>)
+#define GHC_HAS_THREEWAY_COMP
+#include <compare>
+#endif
+#endif
 #include <chrono>
 #include <fstream>
 #include <memory>
@@ -202,6 +216,10 @@
 // Raise errors/exceptions when invalid unicode codepoints or UTF-8 sequences are found,
 // instead of replacing them with the unicode replacement character (U+FFFD).
 // #define GHC_RAISE_UNICODE_ERRORS
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Enforce C++17 API where possible when compiling for C++20, handles the following cases:
+// * fs::path::u8string() returns std::string instead of std::u8string
+// #define GHC_FILESYSTEM_ENFORCE_CPP17_API
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 // ghc::filesystem version in decimal (major * 10000 + minor * 100 + patch)
@@ -381,7 +399,11 @@ public:
     std::basic_string<EcharT, traits, Allocator> string(const Allocator& a = Allocator()) const;
     std::string string() const;
     std::wstring wstring() const;
+#if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
+    std::u8string u8string() const;
+#else
     std::string u8string() const;
+#endif
     std::u16string u16string() const;
     std::u32string u32string() const;
 
@@ -390,7 +412,11 @@ public:
     std::basic_string<EcharT, traits, Allocator> generic_string(const Allocator& a = Allocator()) const;
     const std::string& generic_string() const;  // this is different from the standard, that returns by value
     std::wstring generic_wstring() const;
+#if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
+    std::u8string generic_u8string() const;
+#else
     std::string generic_u8string() const;
+#endif
     std::u16string generic_u16string() const;
     std::u32string generic_u32string() const;
 
@@ -480,13 +506,15 @@ private:
 // 30.10.8.6 path non-member functions
 GHC_FS_API void swap(path& lhs, path& rhs) noexcept;
 GHC_FS_API size_t hash_value(const path& p) noexcept;
+#ifdef GHC_HAS_THREEWAY_COMP
+GHC_FS_API std::strong_ordering operator<=>( const path& lhs, const path& rhs ) noexcept;
+#endif
 GHC_FS_API bool operator==(const path& lhs, const path& rhs) noexcept;
 GHC_FS_API bool operator!=(const path& lhs, const path& rhs) noexcept;
 GHC_FS_API bool operator<(const path& lhs, const path& rhs) noexcept;
 GHC_FS_API bool operator<=(const path& lhs, const path& rhs) noexcept;
 GHC_FS_API bool operator>(const path& lhs, const path& rhs) noexcept;
 GHC_FS_API bool operator>=(const path& lhs, const path& rhs) noexcept;
-
 GHC_FS_API path operator/(const path& lhs, const path& rhs);
 
 // 30.10.8.6.1 path inserter and extractor
@@ -497,8 +525,14 @@ std::basic_istream<charT, traits>& operator>>(std::basic_istream<charT, traits>&
 
 // 30.10.8.6.2 path factory functions
 template <class Source, typename = path::path_from_string<Source>>
+#if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
+[[deprecated("use ghc::filesystem::path::path() with std::u8string instead")]]
+#endif
 path u8path(const Source& source);
 template <class InputIterator>
+#if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
+[[deprecated("use ghc::filesystem::path::path() with std::u8string instead")]]
+#endif
 path u8path(InputIterator first, InputIterator last);
 
 // 30.10.9 class filesystem_error
@@ -2370,7 +2404,7 @@ GHC_INLINE path& path::operator/=(const path& p)
         }
         return *this;
     }
-    if ((p.is_absolute() && (_path != root_name() || p._path != "/")) || (p.has_root_name() && p.root_name() != root_name())) {
+    if ((p.is_absolute() && (_path != root_name()._path || p._path != "/")) || (p.has_root_name() && p.root_name() != root_name())) {
         assign(p);
         return *this;
     }
@@ -2640,10 +2674,17 @@ GHC_INLINE std::wstring path::wstring() const
 #endif
 }
 
+#if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
+GHC_INLINE std::u8string path::u8string() const
+{
+    return std::u8string(reinterpret_cast<const char8_t*>(native_impl().c_str()));
+}
+#else
 GHC_INLINE std::string path::u8string() const
 {
     return native_impl();
 }
+#endif
 
 GHC_INLINE std::u16string path::u16string() const
 {
@@ -2677,10 +2718,17 @@ GHC_INLINE std::wstring path::generic_wstring() const
     return detail::fromUtf8<std::wstring>(_path);
 }
 
+#if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
+GHC_INLINE std::u8string path::generic_u8string() const
+{
+    return std::u8string(reinterpret_cast<const char8_t*>(_path.c_str()));
+}
+#else
 GHC_INLINE std::string path::generic_u8string() const
 {
     return _path;
 }
+#endif
 
 GHC_INLINE std::u16string path::generic_u16string() const
 {
@@ -3212,6 +3260,13 @@ GHC_INLINE size_t hash_value(const path& p) noexcept
     return std::hash<std::string>()(p.generic_string());
 }
 
+#ifdef GHC_HAS_THREEWAY_COMP
+GHC_INLINE std::strong_ordering operator<=>( const path& lhs, const path& rhs ) noexcept
+{
+    return lhs.compare(rhs) <=> 0;
+}
+#endif
+
 GHC_INLINE bool operator==(const path& lhs, const path& rhs) noexcept
 {
     return lhs.compare(rhs) == 0;
@@ -3241,6 +3296,7 @@ GHC_INLINE bool operator>=(const path& lhs, const path& rhs) noexcept
 {
     return lhs.compare(rhs) >= 0;
 }
+
 
 GHC_INLINE path operator/(const path& lhs, const path& rhs)
 {
@@ -3324,7 +3380,7 @@ GHC_INLINE filesystem_error::filesystem_error(const std::string& what_arg, const
     , _p1(p1)
 {
     if (!_p1.empty()) {
-        _what_arg += ": '" + _p1.u8string() + "'";
+        _what_arg += ": '" + _p1.string() + "'";
     }
 }
 
@@ -3336,10 +3392,10 @@ GHC_INLINE filesystem_error::filesystem_error(const std::string& what_arg, const
     , _p2(p2)
 {
     if (!_p1.empty()) {
-        _what_arg += ": '" + _p1.u8string() + "'";
+        _what_arg += ": '" + _p1.string() + "'";
     }
     if (!_p2.empty()) {
-        _what_arg += ", '" + _p2.u8string() + "'";
+        _what_arg += ", '" + _p2.string() + "'";
     }
 }
 
