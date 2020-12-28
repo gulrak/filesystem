@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.7.2)
 project(ghcfilesystem)
 
+if(POLICY CMP0110)
+    cmake_policy(PUSH)
+    cmake_policy(SET CMP0110 OLD)
+endif()
+
 include(CMakeDependentOption)
 
 cmake_dependent_option(GHC_FILESYSTEM_BUILD_TESTING
@@ -54,3 +59,6 @@ if(GHC_FILESYSTEM_WITH_INSTALL)
     install(EXPORT ghcFilesystemConfig NAMESPACE ghcFilesystem:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ghcFilesystem)
 endif()
 
+if(POLICY CMP0110)
+    cmake_policy(POP)
+endif()

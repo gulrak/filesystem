@@ -2742,7 +2742,8 @@ TEST_CASE("Windows: Long filename support", "[filesystem][path][fs.path.win.long
 #ifdef GHC_OS_WINDOWS
     TemporaryDirectory t(TempOpt::change_path);
     char c = 'A';
-    fs::path dir = "\\\\?\\" + fs::current_path().u8string();
+    fs::path dir{"\\\\?\\"};
+    dir += fs::current_path().u8string();
     for (; c <= 'Z'; ++c) {
         std::string part = std::string(16, c);
         dir /= part;
@@ -2750,8 +2751,8 @@ TEST_CASE("Windows: Long filename support", "[filesystem][path][fs.path.win.long
         CHECK(fs::exists(dir));
         generateFile(dir / "f0");
         CHECK(fs::exists(dir / "f0"));
-        std::string native = dir.u8string();
-        if (native.substr(0, 4) == "\\\\?\\") {
+        auto native = dir.u8string();
+        if (native.substr(0, 4) == u8"\\\\?\\") {
             break;
         }
     }
