@@ -770,6 +770,9 @@ public:
     uintmax_t hard_link_count(std::error_code& ec) const noexcept;
 #endif
 
+#ifdef GHC_HAS_THREEWAY_COMP
+    std::strong_ordering operator<=>(const directory_entry& rhs) const noexcept;
+#endif
     bool operator<(const directory_entry& rhs) const noexcept;
     bool operator==(const directory_entry& rhs) const noexcept;
     bool operator!=(const directory_entry& rhs) const noexcept;
@@ -5083,6 +5086,13 @@ GHC_INLINE file_status directory_entry::symlink_status(std::error_code& ec) cons
     }
     return filesystem::symlink_status(path(), ec);
 }
+
+#ifdef GHC_HAS_THREEWAY_COMP
+GHC_INLINE std::strong_ordering directory_entry::operator<=>(const directory_entry& rhs) const noexcept
+{
+    return _path <=> rhs._path;
+}
+#endif
 
 GHC_INLINE bool directory_entry::operator<(const directory_entry& rhs) const noexcept
 {
