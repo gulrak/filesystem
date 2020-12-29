@@ -50,7 +50,7 @@ macro(AddTestExecutableWithStdCpp cppStd)
             $<$<BOOL:${EMSCRIPTEN}>:-s DISABLE_EXCEPTION_CATCHING=0>
             $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wpedantic -Werror -Wno-error=deprecated-declarations>
             $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wpedantic -Wno-psabi -Werror -Wno-error=deprecated-declarations>
-            $<$<CXX_COMPILER_ID:MSVC>:/WX /WD4996>)
+            $<$<CXX_COMPILER_ID:MSVC>:/WX /wd"4996">)
     if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
         target_compile_definitions(filesystem_test_cpp${cppStd} PRIVATE _CRT_SECURE_NO_WARNINGS)
     endif()
