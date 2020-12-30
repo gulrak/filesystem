@@ -127,6 +127,14 @@ struct StringMaker<fs::perms>
     static std::string convert(fs::perms const& value) { return std::to_string(static_cast<unsigned int>(value)); }
 };
 
+#ifdef __cpp_lib_char8_t
+template <>
+struct StringMaker<char8_t>
+{
+    static std::string convert(char8_t const& value) { return std::to_string(static_cast<unsigned int>(value)); }
+};
+#endif
+
 template <>
 struct StringMaker<fs::file_time_type>
 {
@@ -559,7 +567,7 @@ TEST_CASE("30.10.8.4.6 path native format observers", "[filesystem][path][fs.pat
 #endif
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").wstring() == std::wstring(L"\u00E4\\\u20AC"));
 #if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
-    CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").u8string() == std::u8string(u8"\xc3\xa4\\\xe2\x82\xac"));
+    CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").u8string() == std::u8string(u8"\u00E4\\\u20AC"));
 #else
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").u8string() == std::string("\xc3\xa4\\\xe2\x82\xac"));
 #endif
@@ -595,7 +603,7 @@ TEST_CASE("30.10.8.4.7 path generic format observers", "[filesystem][path][fs.pa
 #endif
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_wstring() == std::wstring(L"\U000000E4/\U000020AC"));
 #if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
-    CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_u8string() == std::u8string(u8"\xc3\xa4/\xe2\x82\xac"));
+    CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_u8string() == std::u8string(u8"\u00E4/\u20AC"));
 #else
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_u8string() == std::string("\xc3\xa4/\xe2\x82\xac"));
 #endif
