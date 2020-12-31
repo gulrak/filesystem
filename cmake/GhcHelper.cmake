@@ -41,3 +41,21 @@ if(CMAKE_CXX_COMPILER_ID MATCHES MSVC AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQ
 endif()
 
 endmacro()
+
+macro(AddTestExecutableWithStdCpp cppStd)
+    add_executable(filesystem_test_cpp${cppStd} ${ARGN})
+    set_property(TARGET filesystem_test_cpp${cppStd} PROPERTY CXX_STANDARD ${cppStd})
+    target_link_libraries(filesystem_test_cpp${cppStd} ghc_filesystem)
+    target_compile_options(filesystem_test_cpp${cppStd} PRIVATE
+            $<$<BOOL:${EMSCRIPTEN}>:-s DISABLE_EXCEPTION_CATCHING=0>
+            $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wpedantic -Werror -Wno-error=deprecated-declarations>
+            $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wpedantic -Wno-psabi -Werror -Wno-error=deprecated-declarations>
+            $<$<CXX_COMPILER_ID:MSVC>:/WX /wd"4996">)
+    if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
+        target_compile_definitions(filesystem_test_cpp${cppStd} PRIVATE _CRT_SECURE_NO_WARNINGS)
+    endif()
+    if(EMSCRIPTEN)
+        set_target_properties(filesystem_test_cpp${cppStd} PROPERTIES LINK_FLAGS "-g4 -s DISABLE_EXCEPTION_CATCHING=0 -s ALLOW_MEMORY_GROWTH=1")
+    endif()
+    ParseAndAddCatchTests(filesystem_test_cpp${cppStd})
+endmacro()

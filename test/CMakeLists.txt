@@ -45,21 +45,10 @@ else()
         ParseAndAddCatchTests(filesystem_test_wchar)
     endif()
     if("cxx_std_17" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
-        add_executable(filesystem_test_cpp17 filesystem_test.cpp catch.hpp)
-        set_property(TARGET filesystem_test_cpp17 PROPERTY CXX_STANDARD 17)
-        target_link_libraries(filesystem_test_cpp17 ghc_filesystem)
-        target_compile_options(filesystem_test_cpp17 PRIVATE
-                $<$<BOOL:${EMSCRIPTEN}>:-s DISABLE_EXCEPTION_CATCHING=0>
-                $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wpedantic -Werror>
-                $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wpedantic -Wno-psabi -Werror>
-                $<$<CXX_COMPILER_ID:MSVC>:/WX>)
-        if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
-            target_compile_definitions(filesystem_test_cpp17 PRIVATE _CRT_SECURE_NO_WARNINGS)
-        endif()
-        if(EMSCRIPTEN)
-            set_target_properties(filesystem_test_cpp17 PROPERTIES LINK_FLAGS "-g4 -s DISABLE_EXCEPTION_CATCHING=0 -s ALLOW_MEMORY_GROWTH=1")
-        endif()
-        ParseAndAddCatchTests(filesystem_test_cpp17)
+        AddTestExecutableWithStdCpp(17 filesystem_test.cpp catch.hpp)
+    endif()
+    if("cxx_std_20" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+        AddTestExecutableWithStdCpp(20 filesystem_test.cpp catch.hpp)
     endif()
 endif()
 
