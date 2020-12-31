@@ -5,7 +5,7 @@
 [![Build Status](https://api.cirrus-ci.com/github/gulrak/filesystem.svg?branch=master)](https://cirrus-ci.com/github/gulrak/filesystem)
 [![Build Status](https://cloud.drone.io/api/badges/gulrak/filesystem/status.svg?ref=refs/heads/master)](https://cloud.drone.io/gulrak/filesystem)
 [![Coverage Status](https://coveralls.io/repos/github/gulrak/filesystem/badge.svg?branch=master)](https://coveralls.io/github/gulrak/filesystem?branch=master)
-[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.3.10)
+[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.4.0)
 
 # Filesystem
 
@@ -115,8 +115,12 @@ in the standard, and there might be issues in these implementations too.
 
 ### Downloads
 
-The latest release version is [v1.3.10](https://github.com/gulrak/filesystem/tree/v1.3.10) and
+The latest release version is [v1.4.0](https://github.com/gulrak/filesystem/tree/v1.4.0) and
+source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.4.0).
+
+The latest pre-C++20 release version is [v1.3.10](https://github.com/gulrak/filesystem/tree/v1.3.10) and
 source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.3.10).
+
 
 ### Using it as Single-File-Header
 
@@ -292,6 +296,19 @@ documentation would work, besides the few differences explained in the next
 section. So you might head over to https://en.cppreference.com/w/cpp/filesystem
 for a description of the components of this library.
 
+When compiling with C++11, C++14 or C++17, the API is following the C++17
+standard, where possible, with the exception that `std::string_view` parameters
+are only supported on C++17. When Compiling with C++20, `ghc::filesysytem`
+defaults to the C++20 API, with the `char8_t` and `std::u8string` interfaces
+and the deprecated `fs::u8path` factory method.
+
+**Note:** If the C++17 API should  be enforced even in C++20 mode, use the define
+`GHC_FILESYSTEM_ENFORCE_CPP17_API`.
+Even then it is possible to create `fws::path` from `std::u8string` but
+`fs::path::u8string()` and `fs::path::generic_u8string()` return normal
+UTF-8 encoded `std::string` instances, so code written for C++17 could
+still work with `ghc::filesystem` when compiled with C++20.
+
 The only additions to the standard are documented here:
 
 
@@ -434,6 +451,18 @@ This returns a const reference, instead of a value, because it can. This
 implementation uses the generic representation for internal workings, so
 it's "free" to return that.
 
+```cpp
+std::string path::u8string() const;
+std::string path::generic_u8string() const;
+vs.
+std::u8string path::u8string() const;
+std::u8string path::generic_u8string() const;
+```
+
+The return type of these two methods is depending on the used C++ standard
+and if `GHC_FILESYSTEM_ENFORCE_CPP17_API` is defined. On C++11, C++14 and
+C++17 or when `GHC_FILESYSTEM_ENFORCE_CPP17_API` is defined, the return
+type is `std::string`, and on C++20 without the define it is `std::u8string`. 
 
 ### Differences in Behavior
 
@@ -523,7 +552,7 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.4.0 (WIP)
+### [v1.4.0](https://github.com/gulrak/filesystem/releases/tag/v1.4.0)
 
 * Enhancements for [#71](https://github.com/gulrak/filesystem/issues/71), when compiled with C++20:
     * `char8_t` and `std::u8string` are supported where `Source` is the parameter type
@@ -533,6 +562,7 @@ to the expected behavior.
       to the old `fs::path::u8string()` and `fs::path::generic_u8string()` API if preferred
 * Bugfix for `fs::proximate(p, ec)` where the internal call to `fs::current_path()` was not
   using the `error_code` variant, throwing possible exceptions instead of setting `ec`.
+* Enhancement `LWG_2936_BEHAVIOUR` is now on by default.
 * Some cleanup work to reduce preprocessor directives for better readability and remove unneeded
   template specializations. 
 
