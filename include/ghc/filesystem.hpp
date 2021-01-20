@@ -2711,7 +2711,7 @@ GHC_INLINE path path::parent_path() const
         else {
             auto piter = end();
             auto iter = piter.decrement(_path.end());
-            if(iter > _path.begin() + rootPathLen && *iter != '/') {
+            if(iter > _path.begin() + static_cast<long>(rootPathLen) && *iter != '/') {
                 --iter;
             }
             return path(_path.begin(), iter, format::generic_format);
