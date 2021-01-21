@@ -1219,6 +1219,15 @@ TEST_CASE("30.10.11 class file_status", "[filesystem][file_status][fs.class.file
         CHECK(fs.type() == fs::file_type::regular);
         CHECK(fs.permissions() == fs::perms::unknown);
     }
+    {
+        fs::file_status fs1{fs::file_type::regular, fs::perms::owner_read | fs::perms::owner_write | fs::perms::owner_exec};
+        fs::file_status fs2{fs::file_type::regular, fs::perms::owner_read | fs::perms::owner_write | fs::perms::owner_exec};
+        fs::file_status fs3{fs::file_type::directory, fs::perms::owner_read | fs::perms::owner_write | fs::perms::owner_exec};
+        fs::file_status fs4{fs::file_type::regular, fs::perms::owner_read | fs::perms::owner_write};
+        CHECK(fs1 == fs2);
+        CHECK_FALSE(fs1 == fs3);
+        CHECK_FALSE(fs1 == fs4);
+    }
 }
 
 TEST_CASE("30.10.12 class directory_entry", "[filesystem][directory_entry][fs.dir.entry]")

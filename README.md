@@ -44,7 +44,7 @@ It is from after the standardization of C++17 but it contains the latest filesys
 interface changes compared to the
 [Working Draft N4659](https://github.com/cplusplus/draft/raw/master/papers/n4659.pdf).
 Staring with v1.4.0, when compiled using C++20, it adapts to the changes according to path sorting order
-and `std::u8string` handling from [Working Draft N4680](https://isocpp.org/files/papers/N4860.pdf).
+and `std::u8string` handling from [Working Draft N4860](https://isocpp.org/files/papers/N4860.pdf).
 
 I want to thank the people working on improving C++, I really liked how the language
 evolved with C++11 and the following standards. Keep on the good work!
@@ -554,6 +554,8 @@ to the expected behavior.
 
 ### v1.4.2 (WIP)
 
+* Enhancement for [#89](https://github.com/gulrak/filesystem/issues/89), `fs::file_status`
+  now supports `operator==` introduced in `std::filesystem` with C++20.
 * Refactoring for [#88](https://github.com/gulrak/filesystem/issues/88), `fs::path::parent_path()`
   had a performance issue, as it was still using a loop based approach to recreate
   the parent from elements. This created lots of temporaries and was too slow

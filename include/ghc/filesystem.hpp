@@ -696,7 +696,7 @@ public:
     // 30.10.11.2 observers
     file_type type() const noexcept;
     perms permissions() const noexcept;
-
+    friend bool operator==(const file_status& lhs, const file_status& rhs) noexcept { return lhs.type() == rhs.type() && lhs.permissions() == rhs.permissions(); }
 private:
     file_type _type;
     perms _perms;
