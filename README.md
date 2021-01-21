@@ -552,6 +552,13 @@ to the expected behavior.
 
 ## Release Notes
 
+### v1.4.2 (WIP)
+
+* Refactoring for [#88](https://github.com/gulrak/filesystem/issues/88), `fs::path::parent_path()`
+  had a performance issue, as it was still using a loop based approach to recreate
+  the parent from elements. This created lots of temporaries and was too slow
+  especially on long paths.
+
 ### [v1.4.0](https://github.com/gulrak/filesystem/releases/tag/v1.4.0)
 
 * Enhancements for [#71](https://github.com/gulrak/filesystem/issues/71), when compiled with C++20:
