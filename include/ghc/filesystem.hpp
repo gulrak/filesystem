@@ -586,6 +586,7 @@ public:
     pointer operator->() const;
 
 private:
+    friend class path;
     impl_string_type::const_iterator increment(const std::string::const_iterator& pos) const;
     impl_string_type::const_iterator decrement(const std::string::const_iterator& pos) const;
     void updateCurrent();
@@ -2702,22 +2703,18 @@ GHC_INLINE path path::relative_path() const
 
 GHC_INLINE path path::parent_path() const
 {
-    if (has_relative_path()) {
+    auto rootPathLen = root_name_length() + (has_root_directory() ? 1 : 0);
+    if(rootPathLen < _path.length()) {
         if (empty() || begin() == --end()) {
             return path();
         }
         else {
-            path pp;
-            for (string_type s : input_iterator_range<iterator>(begin(), --end())) {
-                if (s == "/") {
-                    // don't use append to join a path-
-                    pp += s;
-                }
-                else {
-                    pp /= s;
-                }
+            auto piter = end();
+            auto iter = piter.decrement(_path.end());
+            if(iter > _path.begin() + static_cast<long>(rootPathLen) && *iter != '/') {
+                --iter;
             }
-            return pp;
+            return path(_path.begin(), iter, format::generic_format);
         }
     }
     else {
@@ -3008,8 +3005,8 @@ GHC_INLINE path::impl_string_type::const_iterator path::iterator::decrement(cons
 
 GHC_INLINE void path::iterator::updateCurrent()
 {
-    if (_iter != _first && _iter != _last && (*_iter == '/' && _iter != _root) && (_iter + 1 == _last)) {
-        _current = "";
+    if ((_iter == _last) || (_iter != _first && _iter != _last && (*_iter == '/' && _iter != _root) && (_iter + 1 == _last))) {
+        _current.clear();
     }
     else {
         _current.assign(_iter, increment(_iter));
