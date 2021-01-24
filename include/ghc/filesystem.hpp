@@ -405,8 +405,8 @@ public:
     void swap(path& rhs) noexcept;
 
     // 30.10.8.4.6 native format observers
-    const string_type& native() const;  // this implementation doesn't support noexcept for native()
-    const value_type* c_str() const;    // this implementation doesn't support noexcept for c_str()
+    const string_type& native() const noexcept;
+    const value_type* c_str() const noexcept;
     operator string_type() const;
     template <class EcharT, class traits = std::char_traits<EcharT>, class Allocator = std::allocator<EcharT>>
     std::basic_string<EcharT, traits, Allocator> string(const Allocator& a = Allocator()) const;
@@ -423,7 +423,7 @@ public:
     // 30.10.8.4.7 generic format observers
     template <class EcharT, class traits = std::char_traits<EcharT>, class Allocator = std::allocator<EcharT>>
     std::basic_string<EcharT, traits, Allocator> generic_string(const Allocator& a = Allocator()) const;
-    const std::string& generic_string() const;  // this is different from the standard, that returns by value
+    std::string generic_string() const;
     std::wstring generic_wstring() const;
 #if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
     std::u8string generic_u8string() const;
@@ -481,7 +481,7 @@ private:
     friend class directory_iterator;
     void append_name(const char* name);
     static constexpr impl_value_type generic_separator = '/';
-    static constexpr impl_value_type internal_separator = '/';
+    static constexpr impl_value_type internal_separator = preferred_separator;
     template <typename InputIterator>
     class input_iterator_range
     {
@@ -1544,6 +1544,7 @@ inline std::string toUtf8(const charT* unicodeString)
 
 namespace detail {
 
+//template <typename strT, typename std::enable_if < path::_is_basic_string<strT>::value >>
 GHC_INLINE bool startsWith(const std::string& what, const std::string& with)
 {
     return with.length() <= what.length() && equal(with.begin(), with.end(), what.begin());
@@ -1566,16 +1567,15 @@ GHC_INLINE void path::postprocess_path_with_format(path::impl_string_type& p, pa
     }
 #endif
     switch (fmt) {
-#ifndef GHC_OS_WINDOWS
-        case path::auto_format:
-        case path::native_format:
-#endif
-        case path::generic_format:
-            // nothing to do
-            break;
 #ifdef GHC_OS_WINDOWS
-        case path::auto_format:
         case path::native_format:
+        case path::auto_format:
+        case path::generic_format:
+            for (auto& c : p) {
+                if (c == generic_separator) {
+                    c = internal_separator;
+                }
+            }
             if (p.length() >= 4 && p[2] == '?') {
                 if (p.length() == 4 || (p.length() >= 6 && p[5] == ':')) {
                     if (detail::startsWith(p, std::string("\\\\?\\"))) {
@@ -1587,20 +1587,21 @@ GHC_INLINE void path::postprocess_path_with_format(path::impl_string_type& p, pa
                     }
                 }
             }
-            for (auto& c : p) {
-                if (c == '\\') {
-                    c = '/';
-                }
-            }
+            break;
+#else
+        case path::auto_format:
+        case path::native_format:
+        case path::generic_format:
+            // nothing to do
             break;
 #endif
     }
-    if (p.length() > 2 && p[0] == '/' && p[1] == '/' && p[2] != '/') {
-        std::string::iterator new_end = std::unique(p.begin() + 2, p.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == '/'; });
+    if (p.length() > 2 && p[0] == internal_separator && p[1] == internal_separator && p[2] != internal_separator) {
+        std::string::iterator new_end = std::unique(p.begin() + 2, p.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == internal_separator; });
         p.erase(new_end, p.end());
     }
     else {
-        std::string::iterator new_end = std::unique(p.begin(), p.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == '/'; });
+        std::string::iterator new_end = std::unique(p.begin(), p.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == internal_separator; });
         p.erase(new_end, p.end());
     }
 }
@@ -2263,7 +2264,7 @@ GHC_INLINE path& path::operator/=(const path& p)
             _path += internal_separator;
         }
         first = false;
-        _path += (*iter++).generic_string();
+        _path += (*iter++).string();
     }
     return *this;
 }
@@ -2274,8 +2275,8 @@ GHC_INLINE void path::append_name(const char* name)
         this->operator/=(path(name));
     }
     else {
-        if (_path.back() != path::generic_separator) {
-            _path.push_back(path::generic_separator);
+        if (_path.back() != path::internal_separator) {
+            _path.push_back(path::internal_separator);
         }
         _path += name;
     }
@@ -2338,11 +2339,11 @@ GHC_INLINE path& path::operator+=(const value_type* x)
 GHC_INLINE path& path::operator+=(value_type x)
 {
 #ifdef GHC_OS_WINDOWS
-    if (x == '\\') {
-        x = generic_separator;
+    if (x == generic_separator) {
+        x = internal_separator;
     }
 #endif
-    if (_path.empty() || _path.back() != generic_separator) {
+    if (_path.empty() || _path.back() != internal_separator) {
 #ifdef GHC_USE_WCHAR_T
         _path += detail::toUtf8(string_type(1, x));
 #else
@@ -2372,8 +2373,8 @@ template <class Source>
 inline path& path::concat(const Source& x)
 {
     path p(x);
-    postprocess_path_with_format(p._path, native_format);
     _path += p._path;
+    postprocess_path_with_format(p._path, native_format);
     return *this;
 }
 template <class InputIterator>
@@ -2435,6 +2436,8 @@ GHC_INLINE void path::swap(path& rhs) noexcept
 #ifdef GHC_OS_WINDOWS
 GHC_INLINE path::impl_string_type path::native_impl() const
 {
+    return _path;
+#if 0
     impl_string_type result;
     if (is_absolute() && _path.length() > MAX_PATH - 10) {
         // expand absolute non namespaced long Windows filenames with marker
@@ -2457,6 +2460,7 @@ GHC_INLINE path::impl_string_type path::native_impl() const
         }
     }
     return result;
+#endif
 }
 #else
 GHC_INLINE const path::impl_string_type& path::native_impl() const
@@ -2465,21 +2469,12 @@ GHC_INLINE const path::impl_string_type& path::native_impl() const
 }
 #endif
 
-GHC_INLINE const path::string_type& path::native() const
+GHC_INLINE const path::string_type& path::native() const noexcept
 {
-#ifdef GHC_OS_WINDOWS
-#ifdef GHC_USE_WCHAR_T
-    _native_cache = detail::fromUtf8<string_type>(native_impl());
-#else
-    _native_cache = native_impl();
-#endif
-    return _native_cache;
-#else
     return _path;
-#endif
 }
 
-GHC_INLINE const path::value_type* path::c_str() const
+GHC_INLINE const path::value_type* path::c_str() const noexcept
 {
     return native().c_str();
 }
@@ -2494,14 +2489,18 @@ GHC_INLINE path::operator path::string_type() const
 template <class EcharT, class traits, class Allocator>
 inline std::basic_string<EcharT, traits, Allocator> path::string(const Allocator& a) const
 {
-    return detail::fromUtf8<std::basic_string<EcharT, traits, Allocator>>(native_impl(), a);
+    return detail::fromUtf8<std::basic_string<EcharT, traits, Allocator>>(_path, a);
 }
 
 #ifdef GHC_EXPAND_IMPL
 
 GHC_INLINE std::string path::string() const
 {
-    return native_impl();
+#ifdef GHC_USE_WCHAR_T
+    return detail::toUtf8(native());
+#else
+    return native();
+#endif
 }
 
 GHC_INLINE std::wstring path::wstring() const
@@ -2516,23 +2515,33 @@ GHC_INLINE std::wstring path::wstring() const
 #if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
 GHC_INLINE std::u8string path::u8string() const
 {
-    return std::u8string(reinterpret_cast<const char8_t*>(native_impl().c_str()));
+#ifdef GHC_USE_WCHAR_T
+    return std::u8string(reinterpret_cast<const char8_t*>(detail::toUtf8(native()).c_str()));
+#else
+    return std::u8string(reinterpret_cast<const char8_t*>(c_str()));
+#endif
 }
 #else
 GHC_INLINE std::string path::u8string() const
 {
-    return native_impl();
+#ifdef GHC_USE_WCHAR_T
+    return detail::toUtf8(native());
+#else
+    return native();
+#endif
 }
 #endif
 
 GHC_INLINE std::u16string path::u16string() const
 {
-    return detail::fromUtf8<std::u16string>(native_impl());
+    // TODO: optimize
+    return detail::fromUtf8<std::u16string>(string());
 }
 
 GHC_INLINE std::u32string path::u32string() const
 {
-    return detail::fromUtf8<std::u32string>(native_impl());
+    // TODO: optimize
+    return detail::fromUtf8<std::u32string>(string());
 }
 
 #endif  // GHC_EXPAND_IMPL
@@ -2542,41 +2551,75 @@ GHC_INLINE std::u32string path::u32string() const
 template <class EcharT, class traits, class Allocator>
 inline std::basic_string<EcharT, traits, Allocator> path::generic_string(const Allocator& a) const
 {
-    return detail::fromUtf8<std::basic_string<EcharT, traits, Allocator>>(_path, a);
+#ifdef GHC_OS_WINDOWS
+    auto result = detail::fromUtf8<std::basic_string<EcharT, traits, Allocator>>(_path, a);
+    for (auto& c : result) {
+        if (c == internal_separator) {
+            c = generic_separator;
+        }
+    }
+    return result;
+#else
+    return _path:
+#endif
 }
 
 #ifdef GHC_EXPAND_IMPL
 
-GHC_INLINE const std::string& path::generic_string() const
+GHC_INLINE std::string path::generic_string() const
 {
-    return _path;
+#ifdef GHC_OS_WINDOWS
+    return generic_string<std::string::value_type, std::string::traits_type, std::string::allocator_type>();
+#else
+    return _path:
+#endif
 }
 
 GHC_INLINE std::wstring path::generic_wstring() const
 {
+#ifdef GHC_OS_WINDOWS
+    return generic_string<std::wstring::value_type, std::wstring::traits_type, std::wstring::allocator_type>();
+#else
     return detail::fromUtf8<std::wstring>(_path);
-}
+#endif
+}  // namespace filesystem
 
 #if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
 GHC_INLINE std::u8string path::generic_u8string() const
 {
+#ifdef GHC_OS_WINDOWS
+    return generic_string<std::u8string::value_type, std::u8string::traits_type, std::u8string::allocator_type>();
+#else
     return std::u8string(reinterpret_cast<const char8_t*>(_path.c_str()));
+#endif
 }
 #else
 GHC_INLINE std::string path::generic_u8string() const
 {
-    return _path;
+#ifdef GHC_OS_WINDOWS
+    return generic_string<std::string::value_type, std::string::traits_type, std::string::allocator_type>();
+#else
+    return _path:
+#endif
 }
 #endif
 
 GHC_INLINE std::u16string path::generic_u16string() const
 {
+#ifdef GHC_OS_WINDOWS
+    return generic_string<std::u16string::value_type, std::u16string::traits_type, std::u16string::allocator_type>();
+#else
     return detail::fromUtf8<std::u16string>(_path);
+#endif
 }
 
 GHC_INLINE std::u32string path::generic_u32string() const
 {
+#ifdef GHC_OS_WINDOWS
+    return generic_string<std::u32string::value_type, std::u32string::traits_type, std::u32string::allocator_type>();
+#else
     return detail::fromUtf8<std::u32string>(_path);
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2629,11 +2672,7 @@ GHC_INLINE int path::compare(const path& p) const noexcept
     if(rnc) {
         return rnc;
     }
-    auto p1 = _path;
-    std::replace(p1.begin()+static_cast<int>(rnl1), p1.end(), '/', '\\');
-    auto p2 = p._path;
-    std::replace(p2.begin()+static_cast<int>(rnl2), p2.end(), '/', '\\');
-    return p1.compare(rnl1, std::string::npos, p2, rnl2, std::string::npos);
+    return _path.compare(rnl1, std::string::npos, p._path, rnl2, std::string::npos);
 #else
     return _path.compare(p._path);
 #endif
@@ -2686,7 +2725,8 @@ GHC_INLINE path path::root_name() const
 GHC_INLINE path path::root_directory() const
 {
     if(has_root_directory()) {
-        return path("/", generic_format);
+        static const path _root_dir(std::string(1, internal_separator), generic_format);
+        return _root_dir;
     }
     return path();
 }
@@ -2854,7 +2894,7 @@ GHC_INLINE path path::lexically_normal() const
                 continue;
             }
             else if (*(--dest.end()) != "..") {
-                if (dest._path.back() == generic_separator) {
+                if (dest._path.back() == internal_separator) {
                     dest._path.pop_back();
                 }
                 dest.remove_filename();
@@ -2987,7 +3027,7 @@ GHC_INLINE path::impl_string_type::const_iterator path::iterator::decrement(cons
         // else check for network name
         if (i != _root && (pos != _last || *i != internal_separator)) {
 #ifdef GHC_OS_WINDOWS
-            static const std::string seps = "/:";
+            static const std::string seps = "\\:";
             i = std::find_first_of(std::reverse_iterator<path::impl_string_type::const_iterator>(i), std::reverse_iterator<path::impl_string_type::const_iterator>(_first), seps.begin(), seps.end()).base();
             if (i > _first && *i == ':') {
                 i++;
