@@ -3008,9 +3008,9 @@ GHC_INLINE path::iterator::iterator() {}
 GHC_INLINE path::iterator::iterator(const path& p, const impl_string_type::const_iterator& pos)
     : _first(p._path.begin())
     , _last(p._path.end())
-    , _iter(pos)
     , _prefix(_first + p._prefixLength)
-    , _root(p.has_root_directory() ? _first + p._prefixLength + p.root_name_length() : _last)
+    , _root(p.has_root_directory() ? _first + static_cast<difference_type>(p._prefixLength + p.root_name_length()) : _last)
+    , _iter(pos)
 {
     updateCurrent();
 }

@@ -2798,7 +2798,7 @@ TEST_CASE("Windows: path namespace handling", "[filesystem][path][fs.path.win.na
         {R"(\??\C:\Windows\notepad.exe)", R"(\??\C:\Windows\notepad.exe)", "\\??", "\\??\\", "/??,/,C:,Windows,notepad.exe"},
 #else
         {R"(\\?\C:\Windows\notepad.exe)", R"(\\?\C:\Windows\notepad.exe)", "C:", "C:\\", "//?/,C:,/,Windows,notepad.exe"},
-        {R"(\??\C:\Windows\notepad.exe)", R"(\??\C:\Windows\notepad.exe)", "C:", "C:\\", "/??/,C:,/,Windows,notepad.exe"},
+        {R"(\??\C:\Windows\notepad.exe)", R"(\??\C:\Windows\notepad.exe)", "C:", "C:\\", "/?\?/,C:,/,Windows,notepad.exe"},
 #endif
         {R"(\\.\C:\Windows\notepad.exe)", R"(\\.\C:\Windows\notepad.exe)", "\\\\.", "\\\\.\\", "//.,/,C:,Windows,notepad.exe"},
         {R"(\\?\HarddiskVolume1\Windows\notepad.exe)", R"(\\?\HarddiskVolume1\Windows\notepad.exe)", "\\\\?", "\\\\?\\", "//?,/,HarddiskVolume1,Windows,notepad.exe"},
