@@ -234,9 +234,15 @@
 // instead of replacing them with the unicode replacement character (U+FFFD).
 // #define GHC_RAISE_UNICODE_ERRORS
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Automatic prefix windows path with "\\?\" if they would break the MAX_PATH length.
+// instead of replacing them with the unicode replacement character (U+FFFD).
+#ifndef GHC_WIN_DISABLE_AUTO_PREFIXES
+#define GHC_WIN_AUTO_PREFIX_LONG_PATH
+#endif // GHC_WIN_DISABLE_AUTO_PREFIXES
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 // ghc::filesystem version in decimal (major * 10000 + minor * 100 + patch)
-#define GHC_FILESYSTEM_VERSION 10401L
+#define GHC_FILESYSTEM_VERSION 10499L
 
 #if !defined(GHC_WITH_EXCEPTIONS) && (defined(__EXCEPTIONS) || defined(__cpp_exceptions) || defined(_CPPUNWIND))
 #define GHC_WITH_EXCEPTIONS
@@ -317,6 +323,10 @@ public:
     };
     template <class CharT, class Traits, class Alloc>
     struct _is_basic_string<std::basic_string<CharT, Traits, Alloc>> : std::true_type
+    {
+    };
+    template <class CharT>
+    struct _is_basic_string<std::basic_string<CharT, std::char_traits<CharT>, std::allocator<CharT>>> : std::true_type
     {
     };
 #ifdef __cpp_lib_string_view
@@ -505,15 +515,21 @@ private:
     };
     friend void swap(path& lhs, path& rhs) noexcept;
     friend size_t hash_value(const path& p) noexcept;
+    friend path canonical(const path& p, std::error_code& ec);
     string_type::size_type root_name_length() const noexcept;
-    static void postprocess_path_with_format(impl_string_type& p, format fmt);
+    void postprocess_path_with_format(format fmt);
     impl_string_type _path;
 #ifdef GHC_OS_WINDOWS
+    void handle_prefixes();
+    void check_long_path();
     friend bool detail::has_executable_extension(const path& p);
-    impl_string_type native_impl() const;
-    mutable string_type _native_cache;
+#ifdef GHC_WIN_AUTO_PREFIX_LONG_PATH
+    string_type::size_type _prefixLength{0 };
+#else // GHC_WIN_AUTO_PREFIX_LONG_PATH
+    static const string_type::size_type _prefixLength{0};
+#endif  // GHC_WIN_AUTO_PREFIX_LONG_PATH
 #else
-    const impl_string_type& native_impl() const;
+    static const string_type::size_type _prefixLength{0};
 #endif
 };
 
@@ -576,7 +592,7 @@ public:
     using iterator_category = std::bidirectional_iterator_tag;
 
     iterator();
-    iterator(const impl_string_type::const_iterator& first, const impl_string_type::const_iterator& last, const impl_string_type::const_iterator& pos);
+    iterator(const path& p, const impl_string_type::const_iterator& pos);
     iterator& operator++();
     iterator operator++(int);
     iterator& operator--();
@@ -593,6 +609,7 @@ private:
     void updateCurrent();
     impl_string_type::const_iterator _first;
     impl_string_type::const_iterator _last;
+    impl_string_type::const_iterator _prefix;
     impl_string_type::const_iterator _root;
     impl_string_type::const_iterator _iter;
     path _current;
@@ -1544,25 +1561,35 @@ inline std::string toUtf8(const charT* unicodeString)
 
 namespace detail {
 
-//template <typename strT, typename std::enable_if < path::_is_basic_string<strT>::value >>
-GHC_INLINE bool startsWith(const std::string& what, const std::string& with)
+template <typename strT, typename std::enable_if<path::_is_basic_string<strT>::value, bool>::type = true>
+GHC_INLINE bool startsWith(const strT& what, const strT& with)
 {
     return with.length() <= what.length() && equal(with.begin(), with.end(), what.begin());
 }
 
-GHC_INLINE bool endsWith(const std::string& what, const std::string& with)
+template <typename strT, typename std::enable_if<path::_is_basic_string<strT>::value, bool>::type = true>
+GHC_INLINE bool endsWith(const strT& what, const strT& with)
 {
-    return with.length() <= what.length() && what.compare(what.length() - with.length(), with.size(), with);
+    return with.length() <= what.length() && what.compare(what.length() - with.length(), with.size(), with) == 0;
 }
 
 }  // namespace detail
 
-GHC_INLINE void path::postprocess_path_with_format(path::impl_string_type& p, path::format fmt)
+GHC_INLINE void path::check_long_path()
+{
+#ifdef GHC_WIN_AUTO_PREFIX_LONG_PATH
+    if (is_absolute() && _path.length() >= MAX_PATH - 12 && !detail::startsWith(_path, impl_string_type("\\\\?\\"))) {
+        postprocess_path_with_format(native_format);
+    }
+#endif
+}
+
+GHC_INLINE void path::postprocess_path_with_format(path::format fmt)
 {
 #ifdef GHC_RAISE_UNICODE_ERRORS
-    if(!detail::validUtf8(p)) {
+    if(!detail::validUtf8(_path)) {
         path t;
-        t._path = p;
+        t._path = _path;
         throw filesystem_error("Illegal byte sequence for unicode character.", t, std::make_error_code(std::errc::illegal_byte_sequence));
     }
 #endif
@@ -1571,22 +1598,17 @@ GHC_INLINE void path::postprocess_path_with_format(path::impl_string_type& p, pa
         case path::native_format:
         case path::auto_format:
         case path::generic_format:
-            for (auto& c : p) {
+            for (auto& c : _path) {
                 if (c == generic_separator) {
                     c = internal_separator;
                 }
             }
-            if (p.length() >= 4 && p[2] == '?') {
-                if (p.length() == 4 || (p.length() >= 6 && p[5] == ':')) {
-                    if (detail::startsWith(p, std::string("\\\\?\\"))) {
-                        // remove Windows long filename marker for simple paths
-                        p.erase(0, 4);
-                    }
-                    else if (detail::startsWith(p, std::string("\\??\\"))) {
-                        p.erase(0, 4);
-                    }
-                }
+#ifdef GHC_WIN_AUTO_PREFIX_LONG_PATH
+            if (is_absolute() && _path.length() >= MAX_PATH - 12 && !detail::startsWith(_path, impl_string_type("\\\\?\\"))) {
+                _path = "\\\\?\\" + _path;
             }
+#endif
+            handle_prefixes();
             break;
 #else
         case path::auto_format:
@@ -1596,13 +1618,13 @@ GHC_INLINE void path::postprocess_path_with_format(path::impl_string_type& p, pa
             break;
 #endif
     }
-    if (p.length() > 2 && p[0] == internal_separator && p[1] == internal_separator && p[2] != internal_separator) {
-        std::string::iterator new_end = std::unique(p.begin() + 2, p.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == internal_separator; });
-        p.erase(new_end, p.end());
+    if (_path.length() > _prefixLength + 2 && _path[_prefixLength] == internal_separator && _path[_prefixLength + 1] == internal_separator && _path[_prefixLength + 2] != internal_separator) {
+        std::string::iterator new_end = std::unique(_path.begin() + _prefixLength + 2, _path.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == internal_separator; });
+        _path.erase(new_end, _path.end());
     }
     else {
-        std::string::iterator new_end = std::unique(p.begin(), p.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == internal_separator; });
-        p.erase(new_end, p.end());
+        std::string::iterator new_end = std::unique(_path.begin() + _prefixLength, _path.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == internal_separator; });
+        _path.erase(new_end, _path.end());
     }
 }
 
@@ -1612,7 +1634,7 @@ template <class Source, typename>
 inline path::path(const Source& source, format fmt)
     : _path(detail::toUtf8(source))
 {
-    postprocess_path_with_format(_path, fmt);
+    postprocess_path_with_format(fmt);
 }
 
 template <class Source, typename>
@@ -1751,6 +1773,21 @@ GHC_INLINE void create_hardlink(const path& target_name, const path& new_hardlin
         ec = detail::make_system_error(ERROR_NOT_SUPPORTED);
     }
 }
+
+GHC_INLINE path getFullPathName(const wchar_t* p, std::error_code& ec)
+{
+    ULONG size = ::GetFullPathNameW(p, 0, 0, 0);
+    if (size) {
+        std::vector<wchar_t> buf(size, 0);
+        ULONG s2 = GetFullPathNameW(p, size, buf.data(), nullptr);
+        if (s2 && s2 < size) {
+            return path(std::wstring(buf.data(), s2));
+        }
+    }
+    ec = detail::make_system_error();
+    return path();
+}
+
 #else
 GHC_INLINE void create_symlink(const path& target_name, const path& new_symlink, bool, std::error_code& ec)
 {
@@ -1864,12 +1901,20 @@ GHC_INLINE path resolveSymlink(const path& p, std::error_code& ec)
     if (DeviceIoControl(file.get(), FSCTL_GET_REPARSE_POINT, 0, 0, reparseData.get(), MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &bufferUsed, 0)) {
         if (IsReparseTagMicrosoft(reparseData->ReparseTag)) {
             switch (reparseData->ReparseTag) {
-                case IO_REPARSE_TAG_SYMLINK:
-                    result = std::wstring(&reparseData->SymbolicLinkReparseBuffer.PathBuffer[reparseData->SymbolicLinkReparseBuffer.SubstituteNameOffset / sizeof(WCHAR)], reparseData->SymbolicLinkReparseBuffer.SubstituteNameLength / sizeof(WCHAR));
+                case IO_REPARSE_TAG_SYMLINK: {
+                    auto printName = std::wstring(&reparseData->SymbolicLinkReparseBuffer.PathBuffer[reparseData->SymbolicLinkReparseBuffer.PrintNameOffset / sizeof(WCHAR)], reparseData->SymbolicLinkReparseBuffer.PrintNameLength / sizeof(WCHAR));
+                    auto substituteName = std::wstring(&reparseData->SymbolicLinkReparseBuffer.PathBuffer[reparseData->SymbolicLinkReparseBuffer.SubstituteNameOffset / sizeof(WCHAR)], reparseData->SymbolicLinkReparseBuffer.SubstituteNameLength / sizeof(WCHAR));
+                    if (detail::endsWith(substituteName, printName) && detail::startsWith(substituteName, std::wstring(L"\\??\\"))) {
+                        result = printName;
+                    }
+                    else {
+                        result = substituteName;
+                    }
                     if (reparseData->SymbolicLinkReparseBuffer.Flags & 0x1 /*SYMLINK_FLAG_RELATIVE*/) {
                         result = p.parent_path() / result;
                     }
                     break;
+                }
                 case IO_REPARSE_TAG_MOUNT_POINT:
                     result = std::wstring(&reparseData->MountPointReparseBuffer.PathBuffer[reparseData->MountPointReparseBuffer.SubstituteNameOffset / sizeof(WCHAR)], reparseData->MountPointReparseBuffer.SubstituteNameLength / sizeof(WCHAR));
                     break;
@@ -2122,11 +2167,13 @@ GHC_INLINE path::path() noexcept {}
 
 GHC_INLINE path::path(const path& p)
     : _path(p._path)
+    , _prefixLength(p._prefixLength)
 {
 }
 
 GHC_INLINE path::path(path&& p) noexcept
     : _path(std::move(p._path))
+    , _prefixLength(p._prefixLength)
 {
 }
 
@@ -2137,7 +2184,7 @@ GHC_INLINE path::path(string_type&& source, format fmt)
     : _path(std::move(source))
 #endif
 {
-    postprocess_path_with_format(_path, fmt);
+    postprocess_path_with_format(fmt);
 }
 
 #endif  // GHC_EXPAND_IMPL
@@ -2174,12 +2221,14 @@ GHC_INLINE path::~path() {}
 GHC_INLINE path& path::operator=(const path& p)
 {
     _path = p._path;
+    _prefixLength = p._prefixLength;
     return *this;
 }
 
 GHC_INLINE path& path::operator=(path&& p) noexcept
 {
     _path = std::move(p._path);
+    _prefixLength = p._prefixLength;
     return *this;
 }
 
@@ -2195,7 +2244,7 @@ GHC_INLINE path& path::assign(path::string_type&& source)
 #else
     _path = std::move(source);
 #endif
-    postprocess_path_with_format(_path, native_format);
+    postprocess_path_with_format(native_format);
     return *this;
 }
 
@@ -2211,7 +2260,7 @@ template <class Source>
 inline path& path::assign(const Source& source)
 {
     _path.assign(detail::toUtf8(source));
-    postprocess_path_with_format(_path, native_format);
+    postprocess_path_with_format(native_format);
     return *this;
 }
 
@@ -2219,6 +2268,7 @@ template <>
 inline path& path::assign<path>(const path& source)
 {
     _path = source._path;
+    _prefixLength = source._prefixLength;
     return *this;
 }
 
@@ -2226,7 +2276,7 @@ template <class InputIterator>
 inline path& path::assign(InputIterator first, InputIterator last)
 {
     _path.assign(first, last);
-    postprocess_path_with_format(_path, native_format);
+    postprocess_path_with_format(native_format);
     return *this;
 }
 
@@ -2266,6 +2316,7 @@ GHC_INLINE path& path::operator/=(const path& p)
         first = false;
         _path += (*iter++).string();
     }
+    check_long_path();
     return *this;
 }
 
@@ -2279,6 +2330,7 @@ GHC_INLINE void path::append_name(const char* name)
             _path.push_back(path::internal_separator);
         }
         _path += name;
+        check_long_path();
     }
 }
 
@@ -2350,6 +2402,7 @@ GHC_INLINE path& path::operator+=(value_type x)
         _path += x;
 #endif
     }
+    check_long_path();
     return *this;
 }
 
@@ -2374,14 +2427,14 @@ inline path& path::concat(const Source& x)
 {
     path p(x);
     _path += p._path;
-    postprocess_path_with_format(p._path, native_format);
+    postprocess_path_with_format(native_format);
     return *this;
 }
 template <class InputIterator>
 inline path& path::concat(InputIterator first, InputIterator last)
 {
     _path.append(first, last);
-    postprocess_path_with_format(_path, native_format);
+    postprocess_path_with_format(native_format);
     return *this;
 }
 
@@ -2392,6 +2445,7 @@ inline path& path::concat(InputIterator first, InputIterator last)
 GHC_INLINE void path::clear() noexcept
 {
     _path.clear();
+    _prefixLength = 0;
 }
 
 GHC_INLINE path& path::make_preferred()
@@ -2429,46 +2483,11 @@ GHC_INLINE path& path::replace_extension(const path& replacement)
 GHC_INLINE void path::swap(path& rhs) noexcept
 {
     _path.swap(rhs._path);
+    std::swap(_prefixLength, rhs._prefixLength);
 }
 
 //-----------------------------------------------------------------------------
 // 30.10.8.4.6, native format observers
-#ifdef GHC_OS_WINDOWS
-GHC_INLINE path::impl_string_type path::native_impl() const
-{
-    return _path;
-#if 0
-    impl_string_type result;
-    if (is_absolute() && _path.length() > MAX_PATH - 10) {
-        // expand absolute non namespaced long Windows filenames with marker
-        if (has_root_name() && _path[0] == '/' && _path[1] != '/') {
-            result = "\\\\?\\" + _path.substr(1);
-        }
-        else {
-            result = "\\\\?\\" + _path;
-        }
-    }
-    else {
-        result = _path;
-    }
-    /*if (has_root_name() && root_name()._path[0] == '/') {
-        return _path;
-    }*/
-    for (auto& c : result) {
-        if (c == '/') {
-            c = '\\';
-        }
-    }
-    return result;
-#endif
-}
-#else
-GHC_INLINE const path::impl_string_type& path::native_impl() const
-{
-    return _path;
-}
-#endif
-
 GHC_INLINE const path::string_type& path::native() const noexcept
 {
     return _path;
@@ -2698,15 +2717,27 @@ GHC_INLINE int path::compare(const value_type* s) const
 
 //-----------------------------------------------------------------------------
 // 30.10.8.4.9, decomposition
+GHC_INLINE void path::handle_prefixes()
+{
+#if defined(GHC_OS_WINDOWS) && defined(GHC_WIN_AUTO_PREFIX_LONG_PATH)
+    _prefixLength = 0;
+    if (_path.length() >= 6 && _path[2] == '?' && std::toupper(static_cast<unsigned char>(_path[4])) >= 'A' && std::toupper(static_cast<unsigned char>(_path[4])) <= 'Z' && _path[5] == ':') {
+        if(detail::startsWith(_path, impl_string_type("\\\\?\\")) || detail::startsWith(_path, impl_string_type("\\??\\"))) {
+            _prefixLength = 4;
+        }
+    }
+#endif  // GHC_OS_WINDOWS
+}
+
 GHC_INLINE path::string_type::size_type path::root_name_length() const noexcept
 {
 #ifdef GHC_OS_WINDOWS
-    if (_path.length() >= 2 && std::toupper(static_cast<unsigned char>(_path[0])) >= 'A' && std::toupper(static_cast<unsigned char>(_path[0])) <= 'Z' && _path[1] == ':') {
+    if (_path.length() >= _prefixLength + 2 && std::toupper(static_cast<unsigned char>(_path[_prefixLength])) >= 'A' && std::toupper(static_cast<unsigned char>(_path[_prefixLength])) <= 'Z' && _path[_prefixLength + 1] == ':') {
         return 2;
     }
 #endif
-    if (_path.length() > 2 && _path[0] == internal_separator && _path[1] == internal_separator && _path[2] != internal_separator && std::isprint(_path[2])) {
-        impl_string_type::size_type pos = _path.find(internal_separator, 3);
+    if (_path.length() > _prefixLength + 2 && _path[_prefixLength] == internal_separator && _path[_prefixLength + 1] == internal_separator && _path[_prefixLength + 2] != internal_separator && std::isprint(_path[_prefixLength + 2])) {
+        impl_string_type::size_type pos = _path.find(internal_separator, _prefixLength + 3);
         if (pos == impl_string_type::npos) {
             return _path.length();
         }
@@ -2719,13 +2750,13 @@ GHC_INLINE path::string_type::size_type path::root_name_length() const noexcept
 
 GHC_INLINE path path::root_name() const
 {
-    return path(_path.substr(0, root_name_length()), generic_format);
+    return path(_path.substr(_prefixLength, root_name_length()), native_format);
 }
 
 GHC_INLINE path path::root_directory() const
 {
     if(has_root_directory()) {
-        static const path _root_dir(std::string(1, internal_separator), generic_format);
+        static const path _root_dir(std::string(1, internal_separator), native_format);
         return _root_dir;
     }
     return path();
@@ -2733,18 +2764,18 @@ GHC_INLINE path path::root_directory() const
 
 GHC_INLINE path path::root_path() const
 {
-    return path(root_name().generic_string() + root_directory().generic_string(), generic_format);
+    return path(root_name().string() + root_directory().string(), native_format);
 }
 
 GHC_INLINE path path::relative_path() const
 {
-    auto rootPathLen = root_name_length() + (has_root_directory() ? 1 : 0);
+    auto rootPathLen = _prefixLength + root_name_length() + (has_root_directory() ? 1 : 0);
     return path(_path.substr((std::min)(rootPathLen, _path.length())), generic_format);
 }
 
 GHC_INLINE path path::parent_path() const
 {
-    auto rootPathLen = root_name_length() + (has_root_directory() ? 1 : 0);
+    auto rootPathLen = _prefixLength + root_name_length() + (has_root_directory() ? 1 : 0);
     if(rootPathLen < _path.length()) {
         if (empty() || begin() == --end()) {
             return path();
@@ -2755,7 +2786,7 @@ GHC_INLINE path path::parent_path() const
             if (iter > _path.begin() + static_cast<long>(rootPathLen) && *iter != internal_separator) {
                 --iter;
             }
-            return path(_path.begin(), iter, format::generic_format);
+            return path(_path.begin(), iter, native_format);
         }
     }
     else {
@@ -2765,7 +2796,7 @@ GHC_INLINE path path::parent_path() const
 
 GHC_INLINE path path::filename() const
 {
-    return relative_path().empty() ? path() : path(*--end());
+    return !has_relative_path() ? path() : path(*--end());
 }
 
 GHC_INLINE path path::stem() const
@@ -2774,10 +2805,10 @@ GHC_INLINE path path::stem() const
     if (fn != "." && fn != "..") {
         impl_string_type::size_type pos = fn.rfind('.');
         if (pos != impl_string_type::npos && pos > 0) {
-            return path{fn.substr(0, pos), generic_format};
+            return path{fn.substr(0, pos), native_format};
         }
     }
-    return path{fn, generic_format};
+    return path{fn, native_format};
 }
 
 GHC_INLINE path path::extension() const
@@ -2787,7 +2818,7 @@ GHC_INLINE path path::extension() const
         const auto& fn = *--iter;
         impl_string_type::size_type pos = fn._path.rfind('.');
         if (pos != std::string::npos && pos > 0) {
-             return path(fn._path.substr(pos), generic_format);
+             return path(fn._path.substr(pos), native_format);
         }
     }
     return path();
@@ -2828,7 +2859,7 @@ GHC_INLINE bool path::has_root_name() const
 
 GHC_INLINE bool path::has_root_directory() const
 {
-    auto rootLen = root_name_length();
+    auto rootLen = _prefixLength + root_name_length();
     return (_path.length() > rootLen && _path[rootLen] == internal_separator);
 }
 
@@ -2839,7 +2870,7 @@ GHC_INLINE bool path::has_root_path() const
 
 GHC_INLINE bool path::has_relative_path() const
 {
-    auto rootPathLen = root_name_length() + (has_root_directory() ? 1 : 0);
+    auto rootPathLen = _prefixLength + root_name_length() + (has_root_directory() ? 1 : 0);
     return rootPathLen < _path.length();
 }
 
@@ -2957,41 +2988,25 @@ GHC_INLINE path path::lexically_proximate(const path& base) const
 // 30.10.8.5, iterators
 GHC_INLINE path::iterator::iterator() {}
 
-GHC_INLINE path::iterator::iterator(const path::impl_string_type::const_iterator& first, const path::impl_string_type::const_iterator& last, const path::impl_string_type::const_iterator& pos)
-    : _first(first)
-    , _last(last)
+GHC_INLINE path::iterator::iterator(const path& p, const impl_string_type::const_iterator& pos)
+    : _first(p._path.begin())
+    , _last(p._path.end())
     , _iter(pos)
+    , _prefix(_first + p._prefixLength)
+    , _root(p.has_root_directory() ? _first + p._prefixLength + p.root_name_length() : _last)
 {
     updateCurrent();
-    // find the position of a potential root directory slash
-#ifdef GHC_OS_WINDOWS
-    if (_last - _first >= 3 && std::toupper(static_cast<unsigned char>(*first)) >= 'A' && std::toupper(static_cast<unsigned char>(*first)) <= 'Z' && *(first + 1) == ':' && *(first + 2) == internal_separator) {
-        _root = _first + 2;
-    }
-    else
-#endif
-    {
-        if (_first != _last && *_first == internal_separator) {
-            if (_last - _first >= 2 && *(_first + 1) == internal_separator && !(_last - _first >= 3 && *(_first + 2) == internal_separator)) {
-                _root = increment(_first);
-            }
-            else {
-                _root = _first;
-            }
-        }
-        else {
-            _root = _last;
-        }
-    }
 }
 
 GHC_INLINE path::impl_string_type::const_iterator path::iterator::increment(const path::impl_string_type::const_iterator& pos) const
 {
     path::impl_string_type::const_iterator i = pos;
-    bool fromStart = i == _first;
+    bool fromStart = i == _first || i == _prefix;
     if (i != _last) {
-        // we can only sit on a slash if it is a network name or a root
-        if (*i++ == internal_separator) {
+        if (fromStart && i == _first && _prefix > _first) {
+            i = _prefix;
+        } else if (*i++ == internal_separator) {
+            // we can only sit on a slash if it is a network name or a root
             if (i != _last && *i == internal_separator) {
                 if (fromStart && !(i + 1 != _last && *(i + 1) == internal_separator)) {
                     // leadind double slashes detected, treat this and the
@@ -3115,12 +3130,12 @@ GHC_INLINE path::iterator::pointer path::iterator::operator->() const
 
 GHC_INLINE path::iterator path::begin() const
 {
-    return iterator(_path.begin(), _path.end(), _path.begin());
+    return iterator(*this, _path.begin());
 }
 
 GHC_INLINE path::iterator path::end() const
 {
-    return iterator(_path.begin(), _path.end(), _path.end());
+    return iterator(*this, _path.end());
 }
 
 //-----------------------------------------------------------------------------
@@ -3371,7 +3386,6 @@ GHC_INLINE path canonical(const path& p, std::error_code& ec)
         return path();
     }
     path work = p.is_absolute() ? p : absolute(p, ec);
-    path root = work.root_path();
     path result;
 
     auto fs = status(work, ec);
@@ -3384,6 +3398,7 @@ GHC_INLINE path canonical(const path& p, std::error_code& ec)
     }
     bool redo;
     do {
+        auto rootPathLen = work._prefixLength + work.root_name_length() + (work.has_root_directory() ? 1 : 0);
         redo = false;
         result.clear();
         for (auto pe : work) {
@@ -3394,7 +3409,7 @@ GHC_INLINE path canonical(const path& p, std::error_code& ec)
                 result = result.parent_path();
                 continue;
             }
-            else if ((result / pe).string().length() <= root.string().length()) {
+            else if ((result / pe).string().length() <= rootPathLen) {
                 result /= pe;
                 continue;
             }
@@ -3416,6 +3431,7 @@ GHC_INLINE path canonical(const path& p, std::error_code& ec)
                     result /= target;
                     continue;
                 }
+                
             }
             else {
                 result /= pe;
