@@ -292,11 +292,13 @@ bool has_executable_extension(const path& p);
 class GHC_FS_API_CLASS path
 #if defined(GHC_OS_WINDOWS) && defined(GHC_WIN_WSTRING_STRING_TYPE)
 #define GHC_USE_WCHAR_T
+#define GHC_PLATFORM_LITERAL(str) L##str
     : private path_helper_base<std::wstring::value_type>
 {
 public:
     using path_helper_base<std::wstring::value_type>::value_type;
 #else
+#define GHC_PLATFORM_LITERAL(str) str
     : private path_helper_base<std::string::value_type>
 {
 public:
@@ -484,10 +486,10 @@ public:
     iterator end() const;
 
 private:
-    using impl_value_type = value_type;  // std::string::value_type;
+    using impl_value_type = value_type;
     using impl_string_type = std::basic_string<impl_value_type>;
     friend class directory_iterator;
-    void append_name(const char* name);
+    void append_name(const value_type* name);
     static constexpr impl_value_type generic_separator = '/';
     template <typename InputIterator>
     class input_iterator_range
@@ -601,8 +603,8 @@ public:
 
 private:
     friend class path;
-    impl_string_type::const_iterator increment(const std::string::const_iterator& pos) const;
-    impl_string_type::const_iterator decrement(const std::string::const_iterator& pos) const;
+    impl_string_type::const_iterator increment(const impl_string_type::const_iterator& pos) const;
+    impl_string_type::const_iterator decrement(const impl_string_type::const_iterator& pos) const;
     void updateCurrent();
     impl_string_type::const_iterator _first;
     impl_string_type::const_iterator _last;
@@ -1552,6 +1554,53 @@ inline std::string toUtf8(const charT* unicodeString)
     return toUtf8(std::basic_string<charT, std::char_traits<charT>>(unicodeString));
 }
 
+#ifdef GHC_USE_WCHAR_T
+template <class StringType, class WString, typename std::enable_if<path::_is_basic_string<WString>::value && (sizeof(typename WString::value_type) == 2) && (sizeof(typename StringType::value_type) == 1), bool>::type = false>
+inline StringType fromWChar(const WString& wString, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
+{
+    auto temp = toUtf8(wString);
+    return StringType(temp.begin(), temp.end(), alloc);
+}
+
+template <class StringType, class WString, typename std::enable_if<path::_is_basic_string<WString>::value && (sizeof(typename WString::value_type) == 2) && (sizeof(typename StringType::value_type) == 2), bool>::type = false>
+inline StringType fromWChar(const WString& wString, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
+{
+    return StringType(wString.begin(), wString.end(), alloc);
+}
+
+template <class StringType, class WString, typename std::enable_if<path::_is_basic_string<WString>::value && (sizeof(typename WString::value_type) == 2) && (sizeof(typename StringType::value_type) == 4), bool>::type = false>
+inline StringType fromWChar(const WString& wString, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
+{
+    auto temp = toUtf8(wString);
+    return fromUtf8<StringType>(temp);
+}
+
+template <typename strT, typename std::enable_if<path::_is_basic_string<strT>::value && (sizeof(typename strT::value_type) == 1), bool>::type = false>
+inline std::wstring toWChar(const strT& unicodeString)
+{
+    return fromUtf8<std::wstring>(unicodeString);
+}
+
+template <typename strT, typename std::enable_if<path::_is_basic_string<strT>::value && (sizeof(typename strT::value_type) == 2), bool>::type = false>
+inline std::wstring toWChar(const strT& unicodeString)
+{
+    return std::wstring(unicodeString.begin(), unicodeString.end());
+}
+
+template <typename strT, typename std::enable_if<path::_is_basic_string<strT>::value && (sizeof(typename strT::value_type) == 4), bool>::type = false>
+inline std::wstring toWChar(const strT& unicodeString)
+{
+    auto temp = toUtf8(unicodeString);
+    return fromUtf8<std::wstring>(temp);
+}
+
+template <typename charT>
+inline std::wstring toWChar(const charT* unicodeString)
+{
+    return toWChar(std::basic_string<charT, std::char_traits<charT>>(unicodeString));
+}
+#endif // GHC_USE_WCHAR_T
+
 }  // namespace detail
 
 #ifdef GHC_EXPAND_IMPL
@@ -1575,7 +1624,7 @@ GHC_INLINE bool endsWith(const strT& what, const strT& with)
 GHC_INLINE void path::check_long_path()
 {
 #if defined(GHC_OS_WINDOWS) && defined(GHC_WIN_AUTO_PREFIX_LONG_PATH)
-    if (is_absolute() && _path.length() >= MAX_PATH - 12 && !detail::startsWith(_path, impl_string_type("\\\\?\\"))) {
+    if (is_absolute() && _path.length() >= MAX_PATH - 12 && !detail::startsWith(_path, impl_string_type(GHC_PLATFORM_LITERAL("\\\\?\\")))) {
         postprocess_path_with_format(native_format);
     }
 #endif
@@ -1601,8 +1650,8 @@ GHC_INLINE void path::postprocess_path_with_format(path::format fmt)
                 }
             }
 #ifdef GHC_WIN_AUTO_PREFIX_LONG_PATH
-            if (is_absolute() && _path.length() >= MAX_PATH - 12 && !detail::startsWith(_path, impl_string_type("\\\\?\\"))) {
-                _path = "\\\\?\\" + _path;
+            if (is_absolute() && _path.length() >= MAX_PATH - 12 && !detail::startsWith(_path, impl_string_type(GHC_PLATFORM_LITERAL("\\\\?\\")))) {
+                _path = GHC_PLATFORM_LITERAL("\\\\?\\") + _path;
             }
 #endif
             handle_prefixes();
@@ -1616,11 +1665,11 @@ GHC_INLINE void path::postprocess_path_with_format(path::format fmt)
 #endif
     }
     if (_path.length() > _prefixLength + 2 && _path[_prefixLength] == preferred_separator && _path[_prefixLength + 1] == preferred_separator && _path[_prefixLength + 2] != preferred_separator) {
-        std::string::iterator new_end = std::unique(_path.begin() + _prefixLength + 2, _path.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == preferred_separator; });
+        impl_string_type::iterator new_end = std::unique(_path.begin() + _prefixLength + 2, _path.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == preferred_separator; });
         _path.erase(new_end, _path.end());
     }
     else {
-        std::string::iterator new_end = std::unique(_path.begin() + _prefixLength, _path.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == preferred_separator; });
+        impl_string_type::iterator new_end = std::unique(_path.begin() + _prefixLength, _path.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == preferred_separator; });
         _path.erase(new_end, _path.end());
     }
 }
@@ -1629,7 +1678,11 @@ GHC_INLINE void path::postprocess_path_with_format(path::format fmt)
 
 template <class Source, typename>
 inline path::path(const Source& source, format fmt)
+#ifdef GHC_USE_WCHAR_T
+    : _path(detail::toWChar(source))
+#else
     : _path(detail::toUtf8(source))
+#endif
 {
     postprocess_path_with_format(fmt);
 }
@@ -1656,7 +1709,7 @@ inline path::path(InputIterator first, InputIterator last, format fmt)
 
 namespace detail {
 
-GHC_INLINE bool equals_simple_insensitive(const char* str1, const char* str2)
+GHC_INLINE bool equals_simple_insensitive(const path::value_type* str1, const path::value_type* str2)
 {
 #ifdef GHC_OS_WINDOWS
 #ifdef __GNUC__
@@ -1665,15 +1718,19 @@ GHC_INLINE bool equals_simple_insensitive(const char* str1, const char* str2)
             return true;
     }
     return false;
-#else
+#else // __GNUC__
+#ifdef GHC_USE_WCHAR_T
+    return 0 == ::_wcsicmp(str1, str2);
+#else // GHC_USE_WCHAR_T
     return 0 == ::_stricmp(str1, str2);
-#endif
-#else
+#endif // GHC_USE_WCHAR_T
+#endif // __GNUC__
+#else // GHC_OS_WINDOWS
     return 0 == ::strcasecmp(str1, str2);
-#endif
+#endif // GHC_OS_WINDOWS
 }
 
-GHC_INLINE int compare_simple_insensitive(const char* str1, size_t len1, const char* str2, size_t len2)
+GHC_INLINE int compare_simple_insensitive(const path::value_type* str1, size_t len1, const path::value_type* str2, size_t len2)
 {
     while (len1 > 0 && len2 > 0 && ::tolower((unsigned char)*str1) == ::tolower((unsigned char)*str2)) {
         --len1;
@@ -2182,11 +2239,7 @@ GHC_INLINE path::path(path&& p) noexcept
 }
 
 GHC_INLINE path::path(string_type&& source, format fmt)
-#ifdef GHC_USE_WCHAR_T
-    : _path(detail::toUtf8(source))
-#else
     : _path(std::move(source))
-#endif
 {
     postprocess_path_with_format(fmt);
 }
@@ -2247,11 +2300,7 @@ GHC_INLINE path& path::operator=(path::string_type&& source)
 
 GHC_INLINE path& path::assign(path::string_type&& source)
 {
-#ifdef GHC_USE_WCHAR_T
-    _path = detail::toUtf8(source);
-#else
     _path = std::move(source);
-#endif
     postprocess_path_with_format(native_format);
     return *this;
 }
@@ -2267,7 +2316,11 @@ inline path& path::operator=(const Source& source)
 template <class Source>
 inline path& path::assign(const Source& source)
 {
+#ifdef GHC_USE_WCHAR_T
+    _path.assign(detail::toWChar(source));
+#else
     _path.assign(detail::toUtf8(source));
+#endif
     postprocess_path_with_format(native_format);
     return *this;
 }
@@ -2324,13 +2377,13 @@ GHC_INLINE path& path::operator/=(const path& p)
             _path += preferred_separator;
         }
         first = false;
-        _path += (*iter++).string();
+        _path += (*iter++).native();
     }
     check_long_path();
     return *this;
 }
 
-GHC_INLINE void path::append_name(const char* name)
+GHC_INLINE void path::append_name(const value_type* name)
 {
     if (_path.empty()) {
         this->operator/=(path(name));
@@ -2406,11 +2459,7 @@ GHC_INLINE path& path::operator+=(value_type x)
     }
 #endif
     if (_path.empty() || _path.back() != preferred_separator) {
-#ifdef GHC_USE_WCHAR_T
-        _path += detail::toUtf8(string_type(1, x));
-#else
         _path += x;
-#endif
     }
     check_long_path();
     return *this;
@@ -2522,7 +2571,11 @@ GHC_INLINE path::operator path::string_type() const
 template <class EcharT, class traits, class Allocator>
 inline std::basic_string<EcharT, traits, Allocator> path::string(const Allocator& a) const
 {
+#ifdef GHC_USE_WCHAR_T
+    return detail::fromWChar<std::basic_string<EcharT, traits, Allocator>>(_path, a);
+#else
     return detail::fromUtf8<std::basic_string<EcharT, traits, Allocator>>(_path, a);
+#endif
 }
 
 #ifdef GHC_EXPAND_IMPL
@@ -2585,7 +2638,11 @@ template <class EcharT, class traits, class Allocator>
 inline std::basic_string<EcharT, traits, Allocator> path::generic_string(const Allocator& a) const
 {
 #ifdef GHC_OS_WINDOWS
+#ifdef GHC_USE_WCHAR_T
+    auto result = detail::fromWChar<std::basic_string<EcharT, traits, Allocator>, path::string_type>(_path, a);
+#else
     auto result = detail::fromUtf8<std::basic_string<EcharT, traits, Allocator>>(_path, a);
+#endif
     for (auto& c : result) {
         if (c == preferred_separator) {
             c = generic_separator;
@@ -2737,7 +2794,7 @@ GHC_INLINE void path::handle_prefixes()
 #if defined(GHC_WIN_AUTO_PREFIX_LONG_PATH)
     _prefixLength = 0;
     if (_path.length() >= 6 && _path[2] == '?' && std::toupper(static_cast<unsigned char>(_path[4])) >= 'A' && std::toupper(static_cast<unsigned char>(_path[4])) <= 'Z' && _path[5] == ':') {
-        if (detail::startsWith(_path, impl_string_type("\\\\?\\")) || detail::startsWith(_path, impl_string_type("\\??\\"))) {
+        if (detail::startsWith(_path, impl_string_type(GHC_PLATFORM_LITERAL("\\\\?\\"))) || detail::startsWith(_path, impl_string_type(GHC_PLATFORM_LITERAL("\\??\\")))) {
             _prefixLength = 4;
         }
     }
@@ -2817,7 +2874,7 @@ GHC_INLINE path path::filename() const
 
 GHC_INLINE path path::stem() const
 {
-    impl_string_type fn = filename().string();
+    impl_string_type fn = filename().native();
     if (fn != "." && fn != "..") {
         impl_string_type::size_type pos = fn.rfind('.');
         if (pos != impl_string_type::npos && pos > 0) {
@@ -2851,8 +2908,8 @@ GHC_INLINE bool has_executable_extension(const path& p)
         if (pos == std::string::npos || pos == 0 || fn._path.length() - pos != 3) {
             return false;
         }
-        const char* ext = fn._path.c_str() + pos + 1;
-        if (detail::equals_simple_insensitive(ext, "exe") || detail::equals_simple_insensitive(ext, "cmd") || detail::equals_simple_insensitive(ext, "bat") || detail::equals_simple_insensitive(ext, "com")) {
+        const path::value_type* ext = fn._path.c_str() + pos + 1;
+        if (detail::equals_simple_insensitive(ext, GHC_PLATFORM_LITERAL("exe")) || detail::equals_simple_insensitive(ext, GHC_PLATFORM_LITERAL("cmd")) || detail::equals_simple_insensitive(ext, GHC_PLATFORM_LITERAL("bat")) || detail::equals_simple_insensitive(ext, GHC_PLATFORM_LITERAL("com"))) {
             return true;
         }
     }
@@ -3059,7 +3116,7 @@ GHC_INLINE path::impl_string_type::const_iterator path::iterator::decrement(cons
         // else check for network name
         if (i != _root && (pos != _last || *i != preferred_separator)) {
 #ifdef GHC_OS_WINDOWS
-            static const std::string seps = "\\:";
+            static const impl_string_type seps = GHC_PLATFORM_LITERAL("\\:");
             i = std::find_first_of(std::reverse_iterator<path::impl_string_type::const_iterator>(i), std::reverse_iterator<path::impl_string_type::const_iterator>(_first), seps.begin(), seps.end()).base();
             if (i > _first && *i == ':') {
                 i++;
@@ -3083,10 +3140,6 @@ GHC_INLINE void path::iterator::updateCurrent()
     }
     else {
         _current.assign(_iter, increment(_iter));
-        if (_current.generic_string().size() > 1 && _current.generic_string()[0] == preferred_separator && _current.generic_string()[_current.generic_string().size() - 1] == preferred_separator) {
-            // shrink successive slashes to one
-            _current._path = preferred_separator;
-        }
     }
 }
 
@@ -5242,6 +5295,9 @@ public:
             do {
                 if (FindNextFileW(_dirHandle, &_findData)) {
                     _current = _base;
+#ifdef GHC_USE_WCHAR_T
+                    _current.append_name(_findData.cFileName);
+#else
 #ifdef GHC_RAISE_UNICODE_ERRORS
                     try {
                         _current.append_name(detail::toUtf8(_findData.cFileName).c_str());
@@ -5252,6 +5308,7 @@ public:
                     }
 #else
                     _current.append_name(detail::toUtf8(_findData.cFileName).c_str());
+#endif
 #endif
                     copyToDirEntry(ec);
                 }
