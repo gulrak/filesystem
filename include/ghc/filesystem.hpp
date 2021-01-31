@@ -489,7 +489,6 @@ private:
     friend class directory_iterator;
     void append_name(const char* name);
     static constexpr impl_value_type generic_separator = '/';
-    static constexpr impl_value_type internal_separator = preferred_separator;
     template <typename InputIterator>
     class input_iterator_range
     {
@@ -1598,7 +1597,7 @@ GHC_INLINE void path::postprocess_path_with_format(path::format fmt)
         case path::generic_format:
             for (auto& c : _path) {
                 if (c == generic_separator) {
-                    c = internal_separator;
+                    c = preferred_separator;
                 }
             }
 #ifdef GHC_WIN_AUTO_PREFIX_LONG_PATH
@@ -1616,12 +1615,12 @@ GHC_INLINE void path::postprocess_path_with_format(path::format fmt)
             break;
 #endif
     }
-    if (_path.length() > _prefixLength + 2 && _path[_prefixLength] == internal_separator && _path[_prefixLength + 1] == internal_separator && _path[_prefixLength + 2] != internal_separator) {
-        std::string::iterator new_end = std::unique(_path.begin() + _prefixLength + 2, _path.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == internal_separator; });
+    if (_path.length() > _prefixLength + 2 && _path[_prefixLength] == preferred_separator && _path[_prefixLength + 1] == preferred_separator && _path[_prefixLength + 2] != preferred_separator) {
+        std::string::iterator new_end = std::unique(_path.begin() + _prefixLength + 2, _path.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == preferred_separator; });
         _path.erase(new_end, _path.end());
     }
     else {
-        std::string::iterator new_end = std::unique(_path.begin() + _prefixLength, _path.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == internal_separator; });
+        std::string::iterator new_end = std::unique(_path.begin() + _prefixLength, _path.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == preferred_separator; });
         _path.erase(new_end, _path.end());
     }
 }
@@ -2300,8 +2299,8 @@ GHC_INLINE path& path::operator/=(const path& p)
 {
     if (p.empty()) {
         // was: if ((!has_root_directory() && is_absolute()) || has_filename())
-        if (!_path.empty() && _path[_path.length() - 1] != internal_separator && _path[_path.length() - 1] != ':') {
-            _path += internal_separator;
+        if (!_path.empty() && _path[_path.length() - 1] != preferred_separator && _path[_path.length() - 1] != ':') {
+            _path += preferred_separator;
         }
         return *this;
     }
@@ -2313,7 +2312,7 @@ GHC_INLINE path& path::operator/=(const path& p)
         assign(root_name());
     }
     else if ((!has_root_directory() && is_absolute()) || has_filename()) {
-        _path += internal_separator;
+        _path += preferred_separator;
     }
     auto iter = p.begin();
     bool first = true;
@@ -2321,8 +2320,8 @@ GHC_INLINE path& path::operator/=(const path& p)
         ++iter;
     }
     while (iter != p.end()) {
-        if (!first && !(!_path.empty() && _path[_path.length() - 1] == internal_separator)) {
-            _path += internal_separator;
+        if (!first && !(!_path.empty() && _path[_path.length() - 1] == preferred_separator)) {
+            _path += preferred_separator;
         }
         first = false;
         _path += (*iter++).string();
@@ -2337,8 +2336,8 @@ GHC_INLINE void path::append_name(const char* name)
         this->operator/=(path(name));
     }
     else {
-        if (_path.back() != path::internal_separator) {
-            _path.push_back(path::internal_separator);
+        if (_path.back() != path::preferred_separator) {
+            _path.push_back(path::preferred_separator);
         }
         _path += name;
         check_long_path();
@@ -2403,10 +2402,10 @@ GHC_INLINE path& path::operator+=(value_type x)
 {
 #ifdef GHC_OS_WINDOWS
     if (x == generic_separator) {
-        x = internal_separator;
+        x = preferred_separator;
     }
 #endif
-    if (_path.empty() || _path.back() != internal_separator) {
+    if (_path.empty() || _path.back() != preferred_separator) {
 #ifdef GHC_USE_WCHAR_T
         _path += detail::toUtf8(string_type(1, x));
 #else
@@ -2588,7 +2587,7 @@ inline std::basic_string<EcharT, traits, Allocator> path::generic_string(const A
 #ifdef GHC_OS_WINDOWS
     auto result = detail::fromUtf8<std::basic_string<EcharT, traits, Allocator>>(_path, a);
     for (auto& c : result) {
-        if (c == internal_separator) {
+        if (c == preferred_separator) {
             c = generic_separator;
         }
     }
@@ -2691,10 +2690,10 @@ GHC_INLINE int path::compare(const path& p) const noexcept
     if (iter2 == p._path.end()) {
         return 1;
     }
-    if (*iter1 == internal_separator) {
+    if (*iter1 == preferred_separator) {
         return -1;
     }
-    if (*iter2 == internal_separator) {
+    if (*iter2 == preferred_separator) {
         return 1;
     }
     return *iter1 < *iter2 ? -1 : 1;
@@ -2753,8 +2752,8 @@ GHC_INLINE path::string_type::size_type path::root_name_length() const noexcept
         return 2;
     }
 #endif
-    if (_path.length() > _prefixLength + 2 && _path[_prefixLength] == internal_separator && _path[_prefixLength + 1] == internal_separator && _path[_prefixLength + 2] != internal_separator && std::isprint(_path[_prefixLength + 2])) {
-        impl_string_type::size_type pos = _path.find(internal_separator, _prefixLength + 3);
+    if (_path.length() > _prefixLength + 2 && _path[_prefixLength] == preferred_separator && _path[_prefixLength + 1] == preferred_separator && _path[_prefixLength + 2] != preferred_separator && std::isprint(_path[_prefixLength + 2])) {
+        impl_string_type::size_type pos = _path.find(preferred_separator, _prefixLength + 3);
         if (pos == impl_string_type::npos) {
             return _path.length();
         }
@@ -2773,7 +2772,7 @@ GHC_INLINE path path::root_name() const
 GHC_INLINE path path::root_directory() const
 {
     if (has_root_directory()) {
-        static const path _root_dir(std::string(1, internal_separator), native_format);
+        static const path _root_dir(std::string(1, preferred_separator), native_format);
         return _root_dir;
     }
     return path();
@@ -2800,7 +2799,7 @@ GHC_INLINE path path::parent_path() const
         else {
             auto piter = end();
             auto iter = piter.decrement(_path.end());
-            if (iter > _path.begin() + static_cast<long>(rootPathLen) && *iter != internal_separator) {
+            if (iter > _path.begin() + static_cast<long>(rootPathLen) && *iter != preferred_separator) {
                 --iter;
             }
             return path(_path.begin(), iter, native_format);
@@ -2877,7 +2876,7 @@ GHC_INLINE bool path::has_root_name() const
 GHC_INLINE bool path::has_root_directory() const
 {
     auto rootLen = _prefixLength + root_name_length();
-    return (_path.length() > rootLen && _path[rootLen] == internal_separator);
+    return (_path.length() > rootLen && _path[rootLen] == preferred_separator);
 }
 
 GHC_INLINE bool path::has_root_path() const
@@ -2942,7 +2941,7 @@ GHC_INLINE path path::lexically_normal() const
                 continue;
             }
             else if (*(--dest.end()) != "..") {
-                if (dest._path.back() == internal_separator) {
+                if (dest._path.back() == preferred_separator) {
                     dest._path.pop_back();
                 }
                 dest.remove_filename();
@@ -3023,17 +3022,17 @@ GHC_INLINE path::impl_string_type::const_iterator path::iterator::increment(cons
         if (fromStart && i == _first && _prefix > _first) {
             i = _prefix;
         }
-        else if (*i++ == internal_separator) {
+        else if (*i++ == preferred_separator) {
             // we can only sit on a slash if it is a network name or a root
-            if (i != _last && *i == internal_separator) {
-                if (fromStart && !(i + 1 != _last && *(i + 1) == internal_separator)) {
+            if (i != _last && *i == preferred_separator) {
+                if (fromStart && !(i + 1 != _last && *(i + 1) == preferred_separator)) {
                     // leadind double slashes detected, treat this and the
                     // following until a slash as one unit
-                    i = std::find(++i, _last, internal_separator);
+                    i = std::find(++i, _last, preferred_separator);
                 }
                 else {
                     // skip redundant slashes
-                    while (i != _last && *i == internal_separator) {
+                    while (i != _last && *i == preferred_separator) {
                         ++i;
                     }
                 }
@@ -3044,7 +3043,7 @@ GHC_INLINE path::impl_string_type::const_iterator path::iterator::increment(cons
                 ++i;
             }
             else {
-                i = std::find(i, _last, internal_separator);
+                i = std::find(i, _last, preferred_separator);
             }
         }
     }
@@ -3058,7 +3057,7 @@ GHC_INLINE path::impl_string_type::const_iterator path::iterator::decrement(cons
         --i;
         // if this is now the root slash or the trailing slash, we are done,
         // else check for network name
-        if (i != _root && (pos != _last || *i != internal_separator)) {
+        if (i != _root && (pos != _last || *i != preferred_separator)) {
 #ifdef GHC_OS_WINDOWS
             static const std::string seps = "\\:";
             i = std::find_first_of(std::reverse_iterator<path::impl_string_type::const_iterator>(i), std::reverse_iterator<path::impl_string_type::const_iterator>(_first), seps.begin(), seps.end()).base();
@@ -3066,10 +3065,10 @@ GHC_INLINE path::impl_string_type::const_iterator path::iterator::decrement(cons
                 i++;
             }
 #else
-            i = std::find(std::reverse_iterator<path::impl_string_type::const_iterator>(i), std::reverse_iterator<path::impl_string_type::const_iterator>(_first), internal_separator).base();
+            i = std::find(std::reverse_iterator<path::impl_string_type::const_iterator>(i), std::reverse_iterator<path::impl_string_type::const_iterator>(_first), preferred_separator).base();
 #endif
             // Now we have to check if this is a network name
-            if (i - _first == 2 && *_first == internal_separator && *(_first + 1) == internal_separator) {
+            if (i - _first == 2 && *_first == preferred_separator && *(_first + 1) == preferred_separator) {
                 i -= 2;
             }
         }
@@ -3079,14 +3078,14 @@ GHC_INLINE path::impl_string_type::const_iterator path::iterator::decrement(cons
 
 GHC_INLINE void path::iterator::updateCurrent()
 {
-    if ((_iter == _last) || (_iter != _first && _iter != _last && (*_iter == internal_separator && _iter != _root) && (_iter + 1 == _last))) {
+    if ((_iter == _last) || (_iter != _first && _iter != _last && (*_iter == preferred_separator && _iter != _root) && (_iter + 1 == _last))) {
         _current.clear();
     }
     else {
         _current.assign(_iter, increment(_iter));
-        if (_current.generic_string().size() > 1 && _current.generic_string()[0] == internal_separator && _current.generic_string()[_current.generic_string().size() - 1] == internal_separator) {
+        if (_current.generic_string().size() > 1 && _current.generic_string()[0] == preferred_separator && _current.generic_string()[_current.generic_string().size() - 1] == preferred_separator) {
             // shrink successive slashes to one
-            _current._path = internal_separator;
+            _current._path = preferred_separator;
         }
     }
 }
@@ -3096,7 +3095,7 @@ GHC_INLINE path::iterator& path::iterator::operator++()
     _iter = increment(_iter);
     while (_iter != _last &&                // we didn't reach the end
            _iter != _root &&                // this is not a root position
-           *_iter == internal_separator &&  // we are on a separator
+           *_iter == preferred_separator &&  // we are on a separator
            (_iter + 1) != _last             // the slash is not the last char
     ) {
         ++_iter;
