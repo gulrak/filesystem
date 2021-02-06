@@ -1665,11 +1665,11 @@ GHC_INLINE void path::postprocess_path_with_format(path::format fmt)
 #endif
     }
     if (_path.length() > _prefixLength + 2 && _path[_prefixLength] == preferred_separator && _path[_prefixLength + 1] == preferred_separator && _path[_prefixLength + 2] != preferred_separator) {
-        impl_string_type::iterator new_end = std::unique(_path.begin() + _prefixLength + 2, _path.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == preferred_separator; });
+        impl_string_type::iterator new_end = std::unique(_path.begin() + static_cast<string_type::difference_type>(_prefixLength) + 2, _path.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == preferred_separator; });
         _path.erase(new_end, _path.end());
     }
     else {
-        impl_string_type::iterator new_end = std::unique(_path.begin() + _prefixLength, _path.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == preferred_separator; });
+        impl_string_type::iterator new_end = std::unique(_path.begin() + static_cast<string_type::difference_type>(_prefixLength), _path.end(), [](path::value_type lhs, path::value_type rhs) { return lhs == rhs && lhs == preferred_separator; });
         _path.erase(new_end, _path.end());
     }
 }
@@ -3064,8 +3064,8 @@ GHC_INLINE path::iterator::iterator() {}
 GHC_INLINE path::iterator::iterator(const path& p, const impl_string_type::const_iterator& pos)
     : _first(p._path.begin())
     , _last(p._path.end())
-    , _prefix(_first + p._prefixLength)
-    , _root(p.has_root_directory() ? _first + static_cast<difference_type>(p._prefixLength + p.root_name_length()) : _last)
+    , _prefix(_first + static_cast<string_type::difference_type>(p._prefixLength))
+    , _root(p.has_root_directory() ? _first + static_cast<string_type::difference_type>(p._prefixLength + p.root_name_length()) : _last)
     , _iter(pos)
 {
     updateCurrent();
