@@ -2850,7 +2850,7 @@ GHC_INLINE path path::parent_path() const
 {
     auto rootPathLen = _prefixLength + root_name_length() + (has_root_directory() ? 1 : 0);
     if (rootPathLen < _path.length()) {
-        if (empty() || begin() == --end()) {
+        if (empty()) {
             return path();
         }
         else {
@@ -3068,7 +3068,9 @@ GHC_INLINE path::iterator::iterator(const path& p, const impl_string_type::const
     , _root(p.has_root_directory() ? _first + static_cast<string_type::difference_type>(p._prefixLength + p.root_name_length()) : _last)
     , _iter(pos)
 {
-    updateCurrent();
+    if(pos != _last) {
+        updateCurrent();
+    }
 }
 
 GHC_INLINE path::impl_string_type::const_iterator path::iterator::increment(const path::impl_string_type::const_iterator& pos) const
