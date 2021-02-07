@@ -225,10 +225,13 @@
 // LWG #2937 enforces that fs::equivalent emits an error, if !fs::exists(p1)||!exists(p2)
 #define LWG_2937_BEHAVIOUR
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// UTF8-Everywhere is the original behaviour of ghc::filesystem. With this define you can
-// enable the more standard conforming implementation option that uses wstring on Windows
-// as ghc::filesystem::string_type.
-// #define GHC_WIN_WSTRING_STRING_TYPE
+// UTF8-Everywhere is the original behaviour of ghc::filesystem. But since v1.5 the windows
+// version defaults to std::wstring storage backend. Still all std::string will be interpreted
+// as UTF-8 encoded. With this define you can enfoce the old behavior on Windows, using
+// std::string as backend and for fs::path::native() and char for fs::path::c_str(). This
+// needs more conversions so it is (an was before v1.5) slower, bot might help keeping source
+// homogenous in a multi platform project.
+// #define GHC_WIN_DISABLE_WSTRING_STORAGE_TYPE
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Raise errors/exceptions when invalid unicode codepoints or UTF-8 sequences are found,
 // instead of replacing them with the unicode replacement character (U+FFFD).
@@ -290,7 +293,7 @@ bool has_executable_extension(const path& p);
 
 // 30.10.8 class path
 class GHC_FS_API_CLASS path
-#if defined(GHC_OS_WINDOWS) && defined(GHC_WIN_WSTRING_STRING_TYPE)
+#if defined(GHC_OS_WINDOWS) && !defined(GHC_WIN_DISABLE_WSTRING_STORAGE_TYPE)
 #define GHC_USE_WCHAR_T
 #define GHC_NATIVEWP(p) p.c_str()
 #define GHC_PLATFORM_LITERAL(str) L##str
