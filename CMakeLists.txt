@@ -1,22 +1,22 @@
 cmake_minimum_required(VERSION 3.7.2)
 project(ghcfilesystem)
 
+if (POLICY CMP0077)
+    cmake_policy(SET CMP0077 NEW)
+endif()
 if(POLICY CMP0110)
-    cmake_policy(PUSH)
-    cmake_policy(SET CMP0110 OLD)
+    cmake_policy(SET CMP0110 NEW)
 endif()
 
-include(CMakeDependentOption)
-
-cmake_dependent_option(GHC_FILESYSTEM_BUILD_TESTING
-    "Enable tests" ON
-    "CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR" OFF)
-cmake_dependent_option(GHC_FILESYSTEM_BUILD_EXAMPLES
-    "Build examples" ON
-    "CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR" OFF)
-cmake_dependent_option(GHC_FILESYSTEM_WITH_INSTALL
-    "With install target" ON
-    "CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR" OFF)
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    option(GHC_FILESYSTEM_BUILD_TESTING "Enable tests" ON)
+    option(GHC_FILESYSTEM_BUILD_EXAMPLES "Build examples" ON)
+    option(GHC_FILESYSTEM_WITH_INSTALL "With install target" ON)
+else()
+    option(GHC_FILESYSTEM_BUILD_EXAMPLES "Build examples" OFF)
+    option(GHC_FILESYSTEM_BUILD_TESTING "Enable tests" OFF)
+    option(GHC_FILESYSTEM_WITH_INSTALL "With install target" ON)
+endif()
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 11)
@@ -34,8 +34,7 @@ target_include_directories(ghc_filesystem INTERFACE
 target_compile_options(ghc_filesystem INTERFACE "$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 target_compile_options(ghc_filesystem INTERFACE "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
-get_directory_property(hasParent PARENT_DIRECTORY)
-if(NOT hasParent)
+if(GHC_FILESYSTEM_BUILD_TESTING OR GHC_FILESYSTEM_BUILD_EXAMPLES)
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
     include(GhcHelper)
@@ -53,12 +52,7 @@ endif()
 if(GHC_FILESYSTEM_WITH_INSTALL)
     include(CMakePackageConfigHelpers)
     include(GNUInstallDirs)
-
     install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
     install(TARGETS ghc_filesystem EXPORT ghcFilesystemConfig)
     install(EXPORT ghcFilesystemConfig NAMESPACE ghcFilesystem:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ghcFilesystem)
-endif()
-
-if(POLICY CMP0110)
-    cmake_policy(POP)
 endif()
