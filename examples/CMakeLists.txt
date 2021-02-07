@@ -10,3 +10,8 @@ add_executable(fs_du du.cpp)
 target_link_libraries(fs_du ghc_filesystem)
 AddExecutableWithStdFS(std_fs_du du.cpp)
 
+if(EXISTS "${PROJECT_SOURCE_DIR}/examples/benchmark.cpp")
+    add_executable(fs_benchmark benchmark.cpp)
+    set_property(TARGET fs_benchmark PROPERTY CXX_STANDARD 17)
+    target_link_libraries(fs_benchmark ghc_filesystem)
+endif()

@@ -2816,8 +2816,8 @@ TEST_CASE("Windows: path namespace handling", "[filesystem][path][fs.path.win.na
         {R"(\\?\C:\Windows\notepad.exe)", R"(\\?\C:\Windows\notepad.exe)", "\\\\?", "\\\\?\\", "//?,/,C:,Windows,notepad.exe"},
         {R"(\??\C:\Windows\notepad.exe)", R"(\??\C:\Windows\notepad.exe)", "\\??", "\\??\\", "/??,/,C:,Windows,notepad.exe"},
 #else
-        {R"(\\?\C:\Windows\notepad.exe)", R"(C:\Windows\notepad.exe)", "C:", "C:\\", "C:,/,Windows,notepad.exe"},
-        {R"(\??\C:\Windows\notepad.exe)", R"(C:\Windows\notepad.exe)", "C:", "C:\\", "C:,/,Windows,notepad.exe"},
+        {R"(\\?\C:\Windows\notepad.exe)", R"(\\?\C:\Windows\notepad.exe)", "C:", "C:\\", "//?/,C:,/,Windows,notepad.exe"},
+        {R"(\??\C:\Windows\notepad.exe)", R"(\??\C:\Windows\notepad.exe)", "C:", "C:\\", "/?\?/,C:,/,Windows,notepad.exe"},
 #endif
         {R"(\\.\C:\Windows\notepad.exe)", R"(\\.\C:\Windows\notepad.exe)", "\\\\.", "\\\\.\\", "//.,/,C:,Windows,notepad.exe"},
         {R"(\\?\HarddiskVolume1\Windows\notepad.exe)", R"(\\?\HarddiskVolume1\Windows\notepad.exe)", "\\\\?", "\\\\?\\", "//?,/,HarddiskVolume1,Windows,notepad.exe"},
@@ -2834,6 +2834,7 @@ TEST_CASE("Windows: path namespace handling", "[filesystem][path][fs.path.win.na
         INFO("Used path: " + ti._path);
         auto p = fs::path(ti._path);
         CHECK(p.string() == ti._string);
+        CHECK(p.is_absolute());
         CHECK(p.root_name().string() == ti._rootName);
         CHECK(p.root_path().string() == ti._rootPath);
         CHECK(iterateResult(p) == ti._iterateResult);
