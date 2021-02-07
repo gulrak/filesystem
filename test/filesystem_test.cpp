@@ -127,6 +127,14 @@ struct StringMaker<fs::perms>
     static std::string convert(fs::perms const& value) { return std::to_string(static_cast<unsigned int>(value)); }
 };
 
+template <>
+struct StringMaker<fs::file_status>
+{
+    static std::string convert(fs::file_status const& value) {
+        return std::string("[") + std::to_string(static_cast<unsigned int>(value.type())) + "," + std::to_string(static_cast<unsigned int>(value.permissions())) + "]";
+    }
+};
+
 #ifdef __cpp_lib_char8_t
 template <>
 struct StringMaker<char8_t>
@@ -1219,6 +1227,7 @@ TEST_CASE("30.10.11 class file_status", "[filesystem][file_status][fs.class.file
         CHECK(fs.type() == fs::file_type::regular);
         CHECK(fs.permissions() == fs::perms::unknown);
     }
+#if !defined(USE_STD_FS) || defined(GHC_FILESYSTEM_RUNNING_CPP20)
     {
         fs::file_status fs1{fs::file_type::regular, fs::perms::owner_read | fs::perms::owner_write | fs::perms::owner_exec};
         fs::file_status fs2{fs::file_type::regular, fs::perms::owner_read | fs::perms::owner_write | fs::perms::owner_exec};
@@ -1228,6 +1237,7 @@ TEST_CASE("30.10.11 class file_status", "[filesystem][file_status][fs.class.file
         CHECK_FALSE(fs1 == fs3);
         CHECK_FALSE(fs1 == fs4);
     }
+#endif
 }
 
 TEST_CASE("30.10.12 class directory_entry", "[filesystem][directory_entry][fs.dir.entry]")
