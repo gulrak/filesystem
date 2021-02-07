@@ -1577,7 +1577,7 @@ template <class StringType, class WString, typename std::enable_if<path::_is_bas
 inline StringType fromWChar(const WString& wString, const typename StringType::allocator_type& alloc = typename StringType::allocator_type())
 {
     auto temp = toUtf8(wString);
-    return fromUtf8<StringType>(temp);
+    return fromUtf8<StringType>(temp, alloc);
 }
 
 template <typename strT, typename std::enable_if<path::_is_basic_string<strT>::value && (sizeof(typename strT::value_type) == 1), bool>::type = false>
