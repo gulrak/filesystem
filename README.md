@@ -19,7 +19,7 @@ had reports of it being used on iOS (within sandboxing constraints).
 It is of course in its own namespace `ghc::filesystem` to not interfere with a regular `std::filesystem` should you use it in a mixed C++17
 environment (which is possible).
 
-*Test coverage is well above 90%, and starting with v1.3.6
+*Test coverage is well above 90%, and starting with v1.3.6 and in v1.5.0
 more time was invested in benchmarking and optimizing parts of the library. I'll try
 to continue to optimize some parts and refactor others, striving
 to improve it as long as it doesn't introduce additional C++17/C++20 compatibility
@@ -68,10 +68,10 @@ where full C++17 or C++20 is available, it doesn't try to be a "better"
 `std::filesystem`, just an almost drop-in if you can't use it (with the exception
 of the UTF-8 preference).
 
-This implementation is following the ["UTF-8 Everywhere" philosophy](https://utf8everywhere.org/) in that all
+:information_source: **Important:** _This implementation is following the ["UTF-8 Everywhere" philosophy](https://utf8everywhere.org/) in that all
 `std::string` instances will be interpreted the same as `std::u8string` encoding
 wise and as being in UTF-8. The `std::u16string` will be seen as UTF-16. See *Differences in API*
-for more information. 
+for more information._
 
 Unit tests are currently run with:
 
@@ -187,14 +187,13 @@ Now you have e.g. `fs::ofstream out(somePath);` and it is either the wrapper or
 the C++17 `std::ofstream`.
 
 **Be aware, as a header-only library, it is not hiding the fact, that it
-uses system includes, so they "pollute" your global namespace.**
+uses system includes, so they "pollute" your global namespace. Use the
+forwarding-/implementation-header based approach (see below) to avoid this.**
 
 :information_source: **Hint:** There is an additional header named `ghc/fs_std.hpp` that implements this
 dynamic selection of a filesystem implementation, that you can include
 instead of `ghc/filesystem.hpp` when you want std::filesystem where
-available and ghc::filesystem where not. It also enables the `wchar_t`
-support on `ghc::filesystem` on Windows, so the resulting implementation
-in the `fs` namespace will be compatible.
+available and ghc::filesystem where not.
 
 
 ### Using it as Forwarding-/Implementation-Header
@@ -284,7 +283,7 @@ There is a version macro `GHC_FILESYSTEM_VERSION` defined in case future changes
 might make it needed to react on the version, but I don't plan to break anything.
 It's the version as decimal number `(major * 10000 + minor * 100 + patch)`.
 
-**Note:** Starting from v1.0.2 only even patch versions will be used for releases
+:information_source: **Note:** Only even patch versions will be used for releases
 and odd patch version will only be used for in between commits while working on
 the next version.
 
@@ -302,8 +301,8 @@ are only supported on C++17. When Compiling with C++20, `ghc::filesysytem`
 defaults to the C++20 API, with the `char8_t` and `std::u8string` interfaces
 and the deprecated `fs::u8path` factory method.
 
-**Note:** If the C++17 API should  be enforced even in C++20 mode, use the define
-`GHC_FILESYSTEM_ENFORCE_CPP17_API`.
+:information_source: **Note:** If the C++17 API should  be enforced even in C++20 mode,
+use the define `GHC_FILESYSTEM_ENFORCE_CPP17_API`.
 Even then it is possible to create `fws::path` from `std::u8string` but
 `fs::path::u8string()` and `fs::path::generic_u8string()` return normal
 UTF-8 encoded `std::string` instances, so code written for C++17 could
@@ -361,8 +360,8 @@ change anything. I still need to investigate this.
 ## Differences
 
 As this implementation is based on existing code from my private helper
-classes, it derived some constraints of it, leading to some differences
-between this and the standard C++17/C++20 API.
+classes, it derived some constraints of it. Starting from v1.5.0 most of the
+differences between this and the standard C++17/C++20 API where removed.
 
 
 ### LWG Defects
@@ -398,7 +397,7 @@ These are not implemented under C++11 and C++14, as there is no
 `std::basic_string_view` available and I did want to keep this
 implementation self-contained and not write a full C++17-upgrade for
 C++11/14. Starting with v1.1.0 these are supported when compiling
-ghc::filesystem under C++17.
+ghc::filesystem under C++17 of C++20.
 
 
 ### Differences in API
@@ -413,43 +412,21 @@ seen as unicode codepoints. Depending on the size of `std::wstring` characters, 
 
 #### Differences of Specific Interfaces
 
-```cpp
-filesystem::path::string_type
-filesystem::path::value_type
-```
+Starting with v1.5.0 `ghc::filesystem` is following the C++17 standard in
+using `wchar_t` and `std::wstring` on Windows as the types internally used
+for path representation. It is still possible to get the old behavior by defining
+`GHC_WIN_DISABLE_WSTRING_STORAGE_TYPE` and get `filesystem::path::string_type` as
+`std::string` and `filesystem::path::value_type` as `wchar_t`.
 
-In Windows, an implementation should use `std::wstring` and `wchar_t` as types used
-for the native representation, but as I'm a big fan of the
-["UTF-8 Everywhere" philosophy](https://utf8everywhere.org/), I decided
-agains it for now. If you need to call some Windows API, use the W-variant
-with the `path::wstring()` member
+If you need to call some Windows API, with v1.5.0 and above, simply
+use the W-variant of the Windows-API call (e.g. `GetFileAttributesW(p.c_str())`).
+
+:information_source: **Note:** _When using the old behavior by defining
+`GHC_WIN_DISABLE_WSTRING_STORAGE_TYPE`, use the `path::wstring()` member
 (e.g. `GetFileAttributesW(p.wstring().c_str())`). This gives you the
 Unicode variant independant of the `UNICODE` macro and makes sharing code
-between Windows, Linux and macOS easier.
-
-Starting with v1.2.0 `ghc::filesystem` has the option to select the more
-standard conforming APi with `wchar_t` and `std::wstring` on Windows by
-defining `GHC_WIN_WSTRING_STRING_TYPE`. This define has no effect on other
-platforms and will be set by the helping headers `ghc/fs_std.hpp` and
-the pair `ghc/fs_std_fwd.hpp`/`ghc/fs_std_impl.hpp` to enhance compatibility.
-
-
-```cpp
-const path::string_type& path::native() const /*noexcept*/;
-const path::value_type *path::c_str() const /*noexcept*/;
-```
-
-These two can not be `noexcept` with the current implementation. This due
-to the fact, that internally path is working on the generic path version
-only, and the getters need to do a conversion to native path format.
-
-```cpp
-const path::string_type& path::generic_string() const;
-```
-
-This returns a const reference, instead of a value, because it can. This
-implementation uses the generic representation for internal workings, so
-it's "free" to return that.
+between Windows, Linux and macOS easier and works with `std::filesystem` and
+`ghc::filesystem`._
 
 ```cpp
 std::string path::u8string() const;
@@ -462,7 +439,7 @@ std::u8string path::generic_u8string() const;
 The return type of these two methods is depending on the used C++ standard
 and if `GHC_FILESYSTEM_ENFORCE_CPP17_API` is defined. On C++11, C++14 and
 C++17 or when `GHC_FILESYSTEM_ENFORCE_CPP17_API` is defined, the return
-type is `std::string`, and on C++20 without the define it is `std::u8string`. 
+type is `std::string`, and on C++20 without the define it is `std::u8string`.
 
 ### Differences in Behavior
 
@@ -502,33 +479,8 @@ ASSERT(p1 == p2);
 For all non-host-leading paths the behaviour will match the one described by
 the standard.
 
-#### fs.op.copy ([ref](https://en.cppreference.com/w/cpp/filesystem/copy))
-
-Then there is `fs::copy`. The tests in the suite fail partially with C++17 `std::filesystem`
-on GCC/Clang. They complain about a copy call with `fs::copy_options::recursive` combined
-with `fs::copy_options::create_symlinks` or `fs::copy_options::create_hard_links` if the
-source is a directory. There is nothing in the standard that forbids this combination
-and it is the only way to deep-copy a tree while only create links for the files.
-There is [LWG #2682](https://wg21.cmeerw.net/lwg/issue2682) that supports this
-interpretation, but the issue ignores the usefulness of the combination with recursive
-and part of the justification for the proposed solution is "we did it so for almost two years".
-But this makes `fs::copy` with `fs::copy_options::create_symlinks` or `fs::copy_options::create_hard_links`
-just a more complicated syntax for the `fs::create_symlink` or `fs::create_hardlink` operation
-and I don't want to believe, that this was the intention of the original writing.
-As there is another issue related to copy, with a different take on the description.
-
-**Note:** With v1.1.2 I decided to integrate a behavior switch for this and make the LWG #2682
-the default.
 
 ## Open Issues
-
-### General Known Issues
-
-There are still some methods that break the `noexcept` clause, some
-are related to LWG defects, some are due to my implementation. I
-work on fixing the later ones, and might in cases where there is no
-way of implementing the feature without risk of an exception, break
-conformance and remove the `noexcept`.
 
 ### Windows
 
@@ -552,8 +504,37 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.4.2 (WIP)
+### v1.5.0 (WIP)
 
+* Fix for [#91](https://github.com/gulrak/filesystem/issues/91), the way
+  the CMake build options `GHC_FILESYSTEM_BUILD_TESTING`, `GHC_FILESYSTEM_BUILD_EXAMPLES`
+  and `GHC_FILESYSTEM_WITH_INSTALL` where implemented, prohibited setting them
+  from a parent project when using this via `add_subdirectory`, this fix
+  allows to set them again.
+* Major refactoring for [#90](https://github.com/gulrak/filesystem/issues/90),
+  the way, the Windows version of `fs::path` was originally created from the
+  POSIX based implementation was, by adaption of the incoming and outgoing
+  strings. This resulted in a mutable cache inside `fs::path`on Windows, that
+  was inherently not thread-safe, even for `const` methods.
+  To not add additional patches to a suboptimal solution, this time I reworked
+  the `path` code to now store _native_ path-representation. This changed a
+  lot of code, but when combined with `wchar_t` as `value_type` helped to avoid
+  lots of conversion for calls to Win-API.<br>
+  As interfaces where changed, it had to be released in a new minor version.
+  The set of refactorings resulted in the following changes:
+  * `fs::path::native()` and `fs::path::c_str()` can now be `noexcept` as the
+    standard mandates
+  * On Windows `wchar_t` is now the default for `fs::path::value_type` and
+    `std::wstring` is the default für `fs::path::string_type`.
+  * This allows the implementation to call Win-API without allocating
+    conversions
+  * Thread-safety on `const` methods of `fs::path` is no longer an issue
+  * Some code could be simplified during this refactoring
+  * Automatic prefixing of long path on Windows can now be disabled with
+    defining `GHC_WIN_DISABLE_AUTO_PREFIXES`, for all other types of prefixes
+    or namespaces the behavior follows that of MSVC `std::filesystem::path`
+  * In case the old `char`/`std::string` based approach for Windows is still
+    needed, it can be activated with `GHC_WIN_DISABLE_WSTRING_STORAGE_TYPE`
 * Enhancement for [#89](https://github.com/gulrak/filesystem/issues/89), `fs::file_status`
   now supports `operator==` introduced in `std::filesystem` with C++20.
 * Refactoring for [#88](https://github.com/gulrak/filesystem/issues/88), `fs::path::parent_path()`
@@ -564,16 +545,16 @@ to the expected behavior.
 ### [v1.4.0](https://github.com/gulrak/filesystem/releases/tag/v1.4.0)
 
 * Enhancements for [#71](https://github.com/gulrak/filesystem/issues/71), when compiled with C++20:
-    * `char8_t` and `std::u8string` are supported where `Source` is the parameter type
-    * `fs::path::u8string()` and `fs::path::generic_u8string()` now return a `std::u8string`
-    * The _spaceship operator_ `<=>` is now supported for `fs::path`
-    * With the define `GHC_FILESYSTEM_ENFORCE_CPP17_API` `ghc::filesystem` will fall back
-      to the old `fs::path::u8string()` and `fs::path::generic_u8string()` API if preferred
+  * `char8_t` and `std::u8string` are supported where `Source` is the parameter type
+  * `fs::path::u8string()` and `fs::path::generic_u8string()` now return a `std::u8string`
+  * The _spaceship operator_ `<=>` is now supported for `fs::path`
+  * With the define `GHC_FILESYSTEM_ENFORCE_CPP17_API` `ghc::filesystem` will fall back
+    to the old `fs::path::u8string()` and `fs::path::generic_u8string()` API if preferred
 * Bugfix for `fs::proximate(p, ec)` where the internal call to `fs::current_path()` was not
   using the `error_code` variant, throwing possible exceptions instead of setting `ec`.
 * Enhancement `LWG_2936_BEHAVIOUR` is now on by default.
 * Some cleanup work to reduce preprocessor directives for better readability and remove unneeded
-  template specializations. 
+  template specializations.
 
 ### [v1.3.10](https://github.com/gulrak/filesystem/releases/tag/v1.3.10)
 
@@ -581,7 +562,7 @@ to the expected behavior.
   handling `Source` parameters that are string views.
 * Fix for [#79](https://github.com/gulrak/filesystem/issues/79), the bit operations
   for filesystem bitmasks that should be are now `constexpr`.
-  
+
 ### [v1.3.8](https://github.com/gulrak/filesystem/releases/tag/v1.3.8)
 
 * Refactoring for [#78](https://github.com/gulrak/filesystem/issues/78), the dynamic
