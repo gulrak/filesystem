@@ -5,7 +5,7 @@
 [![Build Status](https://api.cirrus-ci.com/github/gulrak/filesystem.svg?branch=master)](https://cirrus-ci.com/github/gulrak/filesystem)
 [![Build Status](https://cloud.drone.io/api/badges/gulrak/filesystem/status.svg?ref=refs/heads/master)](https://cloud.drone.io/gulrak/filesystem)
 [![Coverage Status](https://coveralls.io/repos/github/gulrak/filesystem/badge.svg?branch=master)](https://coveralls.io/github/gulrak/filesystem?branch=master)
-[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.4.0)
+[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.5.0)
 
 # Filesystem
 
@@ -115,10 +115,13 @@ in the standard, and there might be issues in these implementations too.
 
 ### Downloads
 
-The latest release version is [v1.4.0](https://github.com/gulrak/filesystem/tree/v1.4.0) and
+The latest release version is [v1.5.0](https://github.com/gulrak/filesystem/tree/v1.5.0) and
+source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.5.0).
+
+The latest pre-native-backend version is [v1.4.0](https://github.com/gulrak/filesystem/tree/v1.4.0) and
 source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.4.0).
 
-The latest pre-C++20 release version is [v1.3.10](https://github.com/gulrak/filesystem/tree/v1.3.10) and
+The latest pre-C++20-support release version is [v1.3.10](https://github.com/gulrak/filesystem/tree/v1.3.10) and
 source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.3.10).
 
 
@@ -453,11 +456,13 @@ Any additional observations are welcome!
 
 #### fs.path ([ref](https://en.cppreference.com/w/cpp/filesystem/path))
 
-As the complete inner mechanics of this implementation `fs::path` are working
-on the generic format, it is the internal representation. So creating any mixed
-slash `fs::path` object under Windows (e.g. with `"C:\foo/bar"`) will lead to a
-unified path with `"C:\foo\bar"` via `native()` and `"C:/foo/bar"` via
-`generic_string()` API.
+Since v1.5.0 the complete inner mechanics of this implementations `fs::path` 
+where changed to the _native_ format as the internal representation.
+Creating any mixed slash `fs::path` object under Windows (e.g. with `"C:\foo/bar"`)
+will lead clean path with `"C:\foo\bar"` via `native()` and `"C:/foo/bar"` via
+`generic_string()` API. On all platforms redundant additional separators are
+removed, even if this is not enforced by the standard and other implementations
+mostly not do this.
 
 Additionally this implementation follows the standards suggestion to handle
 posix paths of the form `"//host/path"` and USC path on windows also as having
@@ -504,7 +509,7 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.5.0 (WIP)
+### [v1.5.0](https://github.com/gulrak/filesystem/releases/tag/v1.5.0)
 
 * Fix for [#91](https://github.com/gulrak/filesystem/issues/91), the way
   the CMake build options `GHC_FILESYSTEM_BUILD_TESTING`, `GHC_FILESYSTEM_BUILD_EXAMPLES`
