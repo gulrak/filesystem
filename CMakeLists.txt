@@ -59,7 +59,7 @@ if(GHC_FILESYSTEM_WITH_INSTALL)
     configure_package_config_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.in"
         "${PROJECT_BINARY_DIR}/cmake/ghc_filesystem-config.cmake"
-        INSTALL_DESTINATION "${DUNE_INSTALL_LIBDIR}/cmake/ghcFilesystem"
+        INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ghcFilesystem"
         PATH_VARS CMAKE_INSTALL_INCLUDEDIR)
     add_library(ghcFilesystem::ghc_filesystem ALIAS ghc_filesystem)
 endif()
