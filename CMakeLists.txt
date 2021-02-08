@@ -53,6 +53,15 @@ if(GHC_FILESYSTEM_WITH_INSTALL)
     include(CMakePackageConfigHelpers)
     include(GNUInstallDirs)
     install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-    install(TARGETS ghc_filesystem EXPORT ghcFilesystemConfig)
-    install(EXPORT ghcFilesystemConfig NAMESPACE ghcFilesystem:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ghcFilesystem)
+    install(TARGETS ghc_filesystem EXPORT ghc_filesystem-targets)
+    install(EXPORT ghc_filesystem-targets NAMESPACE ghcFilesystem:: DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ghc_filesystem")
+    export(EXPORT ghc_filesystem-targets NAMESPACE ghcFilesystem:: FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/ghc_filesystem-targets.cmake")
+    configure_package_config_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.in"
+        "${PROJECT_BINARY_DIR}/cmake/ghc_filesystem-config.cmake"
+        INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ghc_filesystem"
+        PATH_VARS CMAKE_INSTALL_INCLUDEDIR)
+    install(FILES "${PROJECT_BINARY_DIR}/cmake/ghc_filesystem-config.cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ghc_filesystem")
+    add_library(ghcFilesystem::ghc_filesystem ALIAS ghc_filesystem)
 endif()
