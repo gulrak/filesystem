@@ -95,26 +95,46 @@
 #define GHC_EXPAND_IMPL
 #define GHC_INLINE
 #ifdef GHC_OS_WINDOWS
+#ifndef GHC_FS_API
 #define GHC_FS_API
+#endif
+#ifndef GHC_FS_API_CLASS
 #define GHC_FS_API_CLASS
+#endif
 #else
+#ifndef GHC_FS_API
 #define GHC_FS_API __attribute__((visibility("default")))
+#endif
+#ifndef GHC_FS_API_CLASS
 #define GHC_FS_API_CLASS __attribute__((visibility("default")))
+#endif
 #endif
 #elif defined(GHC_FILESYSTEM_FWD)
 #define GHC_INLINE
 #ifdef GHC_OS_WINDOWS
+#ifndef GHC_FS_API
 #define GHC_FS_API extern
+#endif
+#ifndef GHC_FS_API_CLASS
 #define GHC_FS_API_CLASS
+#endif
 #else
+#ifndef GHC_FS_API
 #define GHC_FS_API extern
+#endif
+#ifndef GHC_FS_API_CLASS
 #define GHC_FS_API_CLASS
+#endif
 #endif
 #else
 #define GHC_EXPAND_IMPL
 #define GHC_INLINE inline
+#ifndef GHC_FS_API
 #define GHC_FS_API
+#endif
+#ifndef GHC_FS_API_CLASS
 #define GHC_FS_API_CLASS
+#endif
 #endif
 
 #ifdef GHC_EXPAND_IMPL
