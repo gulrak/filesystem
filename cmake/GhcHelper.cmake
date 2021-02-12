@@ -12,7 +12,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND (CMAKE_CXX_COMPILER_VERSION 
             target_link_libraries(${targetName} -lc++fs)
         else()
             target_compile_options(${targetName} PRIVATE "-stdlib=libc++")
-            target_link_libraries(${targetName} -stdlib=libc++ -lc++fs)
+            target_link_libraries(${targetName} -stdlib=libc++ -lc++fs $<$<PLATFORM_ID:Linux>:rt>)
         endif()
     else()
         if(NOT APPLE)
