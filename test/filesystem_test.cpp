@@ -2019,6 +2019,15 @@ TEST_CASE("30.10.15.14 file_size", "[filesystem][operations][fs.op.file_size]")
     ec.clear();
 }
 
+#ifndef GHC_OS_WINDOWS
+static uintmax_t getHardlinkCount(const fs::path& p)
+{
+    struct stat st = {};
+    auto rc = ::lstat(p.c_str(), &st);
+    return rc == 0 ? st.st_nlink : ~0u;
+}
+#endif
+
 TEST_CASE("30.10.15.15 hard_link_count", "[filesystem][operations][fs.op.hard_link_count]")
 {
 #ifndef GHC_OS_WEB
@@ -2034,9 +2043,9 @@ TEST_CASE("30.10.15.15 hard_link_count", "[filesystem][operations][fs.op.hard_li
     // unix/bsd/linux typically implements "."/".." as hardlinks
     // so an empty dir has 2 (from parent and the ".") and
     // adding a subdirectory adds one due to its ".."
-    CHECK(fs::hard_link_count(t.path()) == 2);
+    CHECK(fs::hard_link_count(t.path()) == getHardlinkCount(t.path()));
     fs::create_directory("dir");
-    CHECK(fs::hard_link_count(t.path()) == 3);
+    CHECK(fs::hard_link_count(t.path()) == getHardlinkCount(t.path()));
 #endif
     generateFile("foo");
     CHECK(fs::hard_link_count(t.path() / "foo") == 1);
