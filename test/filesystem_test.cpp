@@ -2024,7 +2024,7 @@ static uintmax_t getHardlinkCount(const fs::path& p)
 {
     struct stat st = {};
     auto rc = ::lstat(p.c_str(), &st);
-    return rc == 0 ? st.st_nlink : ~0;
+    return rc == 0 ? st.st_nlink : ~0u;
 }
 #endif
 
