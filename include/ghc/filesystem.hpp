@@ -2433,7 +2433,7 @@ inline path& path::operator/=(const Source& source)
 template <class Source>
 inline path& path::append(const Source& source)
 {
-    return this->operator/=(path(detail::toUtf8(source)));
+    return this->operator/=(path(source));
 }
 
 template <>
@@ -2502,7 +2502,7 @@ template <class EcharT>
 inline path::path_type_EcharT<EcharT>& path::operator+=(EcharT x)
 {
     std::basic_string<EcharT> part(1, x);
-    concat(detail::toUtf8(part));
+    concat(part);
     return *this;
 }
 
