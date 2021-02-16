@@ -509,6 +509,25 @@ to the expected behavior.
 
 ## Release Notes
 
+### v1.5.1 (WIP)
+
+* Pull request [#101](https://github.com/gulrak/filesystem/pull/101), fix for
+  [#100](https://github.com/gulrak/filesystem/issues/100), append and concat
+  type of operations on path called redundant conversions.
+* Pull request [#98](https://github.com/gulrak/filesystem/pull/98), on older
+  linux variants (GCC 7/8), the comerative `std::filesystem` tests now link
+  with `-lrt` to avoid issues.
+* Fix for [#97](https://github.com/gulrak/filesystem/issues/97), on BTRFS the
+  test case for `fs::hard_link_count` failed due to the filesystems behavior,
+  the test case was adapted to take that into account.
+* Pull request [#96](https://github.com/gulrak/filesystem/pull/96), the export
+  attribute defines  `GHC_FS_API` and `GHC_FS_API_CLASS` are now honored when when
+  set from outside to allow override of behavior.
+* Fix for [#95](https://github.com/gulrak/filesystem/issues/95), the syntax for
+  disabling the deprecated warning in tests in MSVC was wrong.
+* Pull request [#93](https://github.com/gulrak/filesystem/pull/93), now the
+  CMake configuration file is configured and part of the `make install` files.
+
 ### [v1.5.0](https://github.com/gulrak/filesystem/releases/tag/v1.5.0)
 
 * Fix for [#91](https://github.com/gulrak/filesystem/issues/91), the way
