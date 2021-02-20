@@ -2740,31 +2740,44 @@ TEST_CASE("30.10.15.39 weakly_canonical", "[filesystem][operations][fs.op.weakly
 
 TEST_CASE("std::string_view support", "[filesystem][fs.string_view]")
 {
-#if __cpp_lib_string_view
+#if defined(GHC_HAS_STD_STRING_VIEW) || defined(GHC_HAS_STD_EXPERIMENTAL_STRING_VIEW)
+
+#if defined(GHC_HAS_STD_STRING_VIEW)
     using namespace std::literals;
+    using string_view = std::string_view;
+#if defined(IS_WCHAR_PATH) || defined(GHC_USE_WCHAR_T)
+    using wstring_view = std::wstring_view;
+#endif
+#elif defined(GHC_HAS_STD_EXPERIMENTAL_STRING_VIEW)
+    using string_view = std::experimental::string_view;
+#if defined(IS_WCHAR_PATH) || defined(GHC_USE_WCHAR_T)
+    using wstring_view = std::experimental::wstring_view;
+#endif
+#endif
+
     {
         std::string p("foo/bar");
-        std::string_view sv(p);
+        string_view sv(p);
         CHECK(fs::path(sv, fs::path::format::generic_format).generic_string() == "foo/bar");
         fs::path p2("fo");
-        p2 += std::string_view("o");
+        p2 += string_view("o");
         CHECK(p2 == "foo");
-        CHECK(p2.compare(std::string_view("foo")) == 0);
+        CHECK(p2.compare(string_view("foo")) == 0);
     }
     {
         auto p = fs::path{"XYZ"};
-        p /= std::string_view("Appendix");
+        p /= string_view("Appendix");
         CHECK(p == "XYZ/Appendix");
     }
 #if defined(IS_WCHAR_PATH) || defined(GHC_USE_WCHAR_T)
     {
         std::wstring p(L"foo/bar");
-        std::wstring_view sv(p);
+        wstring_view sv(p);
         CHECK(fs::path(sv, fs::path::format::generic_format).generic_string() == "foo/bar");
         fs::path p2(L"fo");
-        p2 += std::wstring_view(L"o");
+        p2 += wstring_view(L"o");
         CHECK(p2 == "foo");
-        CHECK(p2.compare(std::wstring_view(L"foo")) == 0);
+        CHECK(p2.compare(wstring_view(L"foo")) == 0);
     }
 #endif
 
