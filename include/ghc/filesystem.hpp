@@ -5730,22 +5730,26 @@ GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::operator+
 
 GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::increment(std::error_code& ec) noexcept
 {
-    if (recursion_pending() && (*this)->is_directory() && (!(*this)->is_symlink() || (options() & directory_options::follow_directory_symlink) != directory_options::none)) {
-        _impl->_dir_iter_stack.push(directory_iterator((*this)->path(), _impl->_options, ec));
-    }
-    else {
-        _impl->_dir_iter_stack.top().increment(ec);
-    }
-    if (!ec) {
-        while (depth() && _impl->_dir_iter_stack.top() == directory_iterator()) {
-            _impl->_dir_iter_stack.pop();
+    bool isDir = (*this)->is_directory(ec);
+    bool isSymLink = !ec && (*this)->is_symlink(ec);
+    if(!ec) {
+        if (recursion_pending() && (*this)->is_directory() && (!(*this)->is_symlink() || (options() & directory_options::follow_directory_symlink) != directory_options::none)) {
+            _impl->_dir_iter_stack.push(directory_iterator((*this)->path(), _impl->_options, ec));
+        }
+        else {
             _impl->_dir_iter_stack.top().increment(ec);
         }
+        if (!ec) {
+            while (depth() && _impl->_dir_iter_stack.top() == directory_iterator()) {
+                _impl->_dir_iter_stack.pop();
+                _impl->_dir_iter_stack.top().increment(ec);
+            }
+        }
+        else if (!_impl->_dir_iter_stack.empty()) {
+            _impl->_dir_iter_stack.pop();
+        }
+        _impl->_recursion_pending = true;
     }
-    else if (!_impl->_dir_iter_stack.empty()) {
-        _impl->_dir_iter_stack.pop();
-    }
-    _impl->_recursion_pending = true;
     return *this;
 }
 
