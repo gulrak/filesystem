@@ -441,6 +441,10 @@ TEST_CASE("30.10.8.4.2 path assignments", "[filesystem][path][fs.path.assign]")
     REQUIRE(p1 == p3);
     p3 = fs::path{"/usr/local"};
     REQUIRE(p2 == p3);
+    p3 = fs::path{L"/usr/local"};
+    REQUIRE(p2 == p3);
+    p3.assign(L"/usr/local");
+    REQUIRE(p2 == p3);
 #if defined(IS_WCHAR_PATH) || defined(GHC_USE_WCHAR_T)
     p3 = fs::path::string_type{L"/foo/bar"};
     REQUIRE(p1 == p3);
@@ -499,9 +503,13 @@ TEST_CASE("30.10.8.4.4 path concatenation", "[filesystem][path][fs.path.concat]"
 
     CHECK((fs::path("foo") += "bar") == "foobar");
     CHECK((fs::path("foo") += "/bar") == "foo/bar");
+    CHECK((fs::path("foo") += L"bar") == "foobar");
+    CHECK((fs::path("foo") += L"/bar") == "foo/bar");
 
     CHECK((fs::path("foo") += 'b') == "foob");
     CHECK((fs::path("foo") += '/') == "foo/");
+    CHECK((fs::path("foo") += L'b') == "foob");
+    CHECK((fs::path("foo") += L'/') == "foo/");
 
     CHECK((fs::path("foo") += std::string("bar")) == "foobar");
     CHECK((fs::path("foo") += std::string("/bar")) == "foo/bar");
@@ -514,6 +522,8 @@ TEST_CASE("30.10.8.4.4 path concatenation", "[filesystem][path][fs.path.concat]"
 
     CHECK(fs::path("foo").concat("bar") == "foobar");
     CHECK(fs::path("foo").concat("/bar") == "foo/bar");
+    CHECK(fs::path("foo").concat(L"bar") == "foobar");
+    CHECK(fs::path("foo").concat(L"/bar") == "foo/bar");
     std::string bar = "bar";
     CHECK(fs::path("foo").concat(bar.begin(), bar.end()) == "foobar");
 #ifndef USE_STD_FS
@@ -2745,14 +2755,10 @@ TEST_CASE("std::string_view support", "[filesystem][fs.string_view]")
 #if defined(GHC_HAS_STD_STRING_VIEW)
     using namespace std::literals;
     using string_view = std::string_view;
-#if defined(IS_WCHAR_PATH) || defined(GHC_USE_WCHAR_T)
     using wstring_view = std::wstring_view;
-#endif
 #elif defined(GHC_HAS_STD_EXPERIMENTAL_STRING_VIEW)
     using string_view = std::experimental::string_view;
-#if defined(IS_WCHAR_PATH) || defined(GHC_USE_WCHAR_T)
     using wstring_view = std::experimental::wstring_view;
-#endif
 #endif
 
     {
@@ -2769,7 +2775,6 @@ TEST_CASE("std::string_view support", "[filesystem][fs.string_view]")
         p /= string_view("Appendix");
         CHECK(p == "XYZ/Appendix");
     }
-#if defined(IS_WCHAR_PATH) || defined(GHC_USE_WCHAR_T)
     {
         std::wstring p(L"foo/bar");
         wstring_view sv(p);
@@ -2779,7 +2784,6 @@ TEST_CASE("std::string_view support", "[filesystem][fs.string_view]")
         CHECK(p2 == "foo");
         CHECK(p2.compare(wstring_view(L"foo")) == 0);
     }
-#endif
 
 #else
     WARN("std::string_view specific tests are empty without std::string_view.");
