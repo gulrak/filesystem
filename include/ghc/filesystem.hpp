@@ -5733,7 +5733,7 @@ GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::increment
     bool isDir = (*this)->is_directory(ec);
     bool isSymLink = !ec && (*this)->is_symlink(ec);
     if(!ec) {
-        if (recursion_pending() && (*this)->is_directory() && (!(*this)->is_symlink() || (options() & directory_options::follow_directory_symlink) != directory_options::none)) {
+        if (recursion_pending() && isDir && (!isSymLink || (options() & directory_options::follow_directory_symlink) != directory_options::none)) {
             _impl->_dir_iter_stack.push(directory_iterator((*this)->path(), _impl->_options, ec));
         }
         else {
