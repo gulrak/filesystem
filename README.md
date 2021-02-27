@@ -5,7 +5,7 @@
 [![Build Status](https://api.cirrus-ci.com/github/gulrak/filesystem.svg?branch=master)](https://cirrus-ci.com/github/gulrak/filesystem)
 [![Build Status](https://cloud.drone.io/api/badges/gulrak/filesystem/status.svg?ref=refs/heads/master)](https://cloud.drone.io/gulrak/filesystem)
 [![Coverage Status](https://coveralls.io/repos/github/gulrak/filesystem/badge.svg?branch=master)](https://coveralls.io/github/gulrak/filesystem?branch=master)
-[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.5.0)
+[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.5.2)
 
 # Filesystem
 
@@ -115,8 +115,8 @@ in the standard, and there might be issues in these implementations too.
 
 ### Downloads
 
-The latest release version is [v1.5.0](https://github.com/gulrak/filesystem/tree/v1.5.0) and
-source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.5.0).
+The latest release version is [v1.5.0](https://github.com/gulrak/filesystem/tree/v1.5.2) and
+source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.5.2).
 
 The latest pre-native-backend version is [v1.4.0](https://github.com/gulrak/filesystem/tree/v1.4.0) and
 source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.4.0).
@@ -304,7 +304,7 @@ are only supported on C++17. When Compiling with C++20, `ghc::filesysytem`
 defaults to the C++20 API, with the `char8_t` and `std::u8string` interfaces
 and the deprecated `fs::u8path` factory method.
 
-:information_source: **Note:** If the C++17 API should  be enforced even in C++20 mode,
+:information_source: **Note:** If the C++17 API should be enforced even in C++20 mode,
 use the define `GHC_FILESYSTEM_ENFORCE_CPP17_API`.
 Even then it is possible to create `fws::path` from `std::u8string` but
 `fs::path::u8string()` and `fs::path::generic_u8string()` return normal
@@ -402,6 +402,22 @@ implementation self-contained and not write a full C++17-upgrade for
 C++11/14. Starting with v1.1.0 these are supported when compiling
 ghc::filesystem under C++17 of C++20.
 
+Starting with v1.5.2 `ghc::filesystem` will try to allow the use of
+`std::experimental::basic_string_view` where it detects is availability.
+Additionally if you have a `basic_string_view` compatible c++11
+implementation it can be used instead of `std::basic_string_view`
+by defining `GHC_HAS_CUSTOM_STRING_VIEW` and importing the
+implementation into the `ghc::filesystem` namespace with:
+
+```cpp
+namespace ghc {
+    namespace filesystem {
+        using my::basic_string_view;
+    }
+}
+```
+
+before including the filesystem header.
 
 ### Differences in API
 
@@ -509,8 +525,19 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.5.1 (WIP)
+### [v1.5.2](https://github.com/gulrak/filesystem/releases/tag/v1.5.2)
 
+* Enhancement [#104](https://github.com/gulrak/filesystem/issues/104),
+  on POSIX backend: optimized reuse of status information and reduced
+  `directory_entry` creation leads to about 20%-25% in tests with
+  `recursive_directory_iterator` over a larger directory tree.
+* Pull request [#103](https://github.com/gulrak/filesystem/pull/103), `wchar_t`
+  was not in the list of supported char types on non-Windows backends.
+* Pull request [#102](https://github.com/gulrak/filesystem/pull/102), improved
+  `string_view` support makes use of `<string_view>` or `<experiemental/string_view>`
+  when available, and allows use of custom `basic_string_view` implementation
+  when defining `GHC_HAS_CUSTOM_STRING_VIEW` and importing the string view
+  into the `ghc::filesystem` namespace before including filesystem header.
 * Pull request [#101](https://github.com/gulrak/filesystem/pull/101), fix for
   [#100](https://github.com/gulrak/filesystem/issues/100), append and concat
   type of operations on path called redundant conversions.
