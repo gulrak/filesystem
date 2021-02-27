@@ -2219,12 +2219,12 @@ GHC_INLINE file_status status_ex(const path& p, std::error_code& ec, file_status
     if (result == 0) {
         ec.clear();
         file_status fs = detail::file_status_from_st_mode(st.st_mode);
+        if (sls) {
+            *sls = fs;
+        }
         if (fs.type() == file_type::symlink) {
             result = ::stat(p.c_str(), &st);
             if (result == 0) {
-                if (sls) {
-                    *sls = fs;
-                }
                 fs = detail::file_status_from_st_mode(st.st_mode);
             }
         }
@@ -5480,7 +5480,7 @@ public:
                 if (_entry) {
                     _current = _base;
                     _current.append_name(_entry->d_name);
-                    _dir_entry = directory_entry(_current, ec);
+                    _dir_entry.assign(_current, ec);
                     if (ec && (ec.value() == EACCES || ec.value() == EPERM) && (_options & directory_options::skip_permission_denied) == directory_options::skip_permission_denied) {
                         ec.clear();
                         skip = true;
@@ -5723,28 +5723,26 @@ GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::operator+
 
 GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::increment(std::error_code& ec) noexcept
 {
-    auto status = (*this)->status(ec);
-    if (ec)
-        return *this;
-    auto symlink_status = (*this)->symlink_status(ec);
-    if (ec)
-        return *this;
-    if (recursion_pending() && is_directory(status) && (!is_symlink(symlink_status) || (options() & directory_options::follow_directory_symlink) != directory_options::none)) {
-        _impl->_dir_iter_stack.push(directory_iterator((*this)->path(), _impl->_options, ec));
-    }
-    else {
-        _impl->_dir_iter_stack.top().increment(ec);
-    }
-    if (!ec) {
-        while (depth() && _impl->_dir_iter_stack.top() == directory_iterator()) {
-            _impl->_dir_iter_stack.pop();
+    bool isDir = (*this)->is_directory(ec);
+    bool isSymLink = !ec && (*this)->is_symlink(ec);
+    if(!ec) {
+        if (recursion_pending() && isDir && (!isSymLink || (options() & directory_options::follow_directory_symlink) != directory_options::none)) {
+            _impl->_dir_iter_stack.push(directory_iterator((*this)->path(), _impl->_options, ec));
+        }
+        else {
             _impl->_dir_iter_stack.top().increment(ec);
         }
+        if (!ec) {
+            while (depth() && _impl->_dir_iter_stack.top() == directory_iterator()) {
+                _impl->_dir_iter_stack.pop();
+                _impl->_dir_iter_stack.top().increment(ec);
+            }
+        }
+        else if (!_impl->_dir_iter_stack.empty()) {
+            _impl->_dir_iter_stack.pop();
+        }
+        _impl->_recursion_pending = true;
     }
-    else if (!_impl->_dir_iter_stack.empty()) {
-        _impl->_dir_iter_stack.pop();
-    }
-    _impl->_recursion_pending = true;
     return *this;
 }
 
