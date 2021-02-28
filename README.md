@@ -115,7 +115,7 @@ in the standard, and there might be issues in these implementations too.
 
 ### Downloads
 
-The latest release version is [v1.5.0](https://github.com/gulrak/filesystem/tree/v1.5.2) and
+The latest release version is [v1.5.2](https://github.com/gulrak/filesystem/tree/v1.5.2) and
 source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.5.2).
 
 The latest pre-native-backend version is [v1.4.0](https://github.com/gulrak/filesystem/tree/v1.4.0) and
