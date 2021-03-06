@@ -525,6 +525,14 @@ to the expected behavior.
 
 ## Release Notes
 
+### v1.5.3 (WIP)
+
+* Pull request [#105](https://github.com/gulrak/filesystem/issues/105), added
+  option GHC_FILESYSTEM_BUILD_STD_TESTING to override additional build of
+  `std::filesystem` versions of the tests for comparison and the possibility 
+  to use GHC_FILESYSTEM_TEST_COMPILE_FEATURES to prefill the used compile
+  features defaulting to CMAKE_CXX_COMPILE_FEATURES when not given.
+
 ### [v1.5.2](https://github.com/gulrak/filesystem/releases/tag/v1.5.2)
 
 * Enhancement [#104](https://github.com/gulrak/filesystem/issues/104),
