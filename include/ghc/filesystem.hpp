@@ -2227,6 +2227,13 @@ GHC_INLINE file_status status_ex(const path& p, std::error_code& ec, file_status
             if (result == 0) {
                 fs = detail::file_status_from_st_mode(st.st_mode);
             }
+            else {
+                ec = detail::make_system_error();
+                if (detail::is_not_found_error(ec)) {
+                    return file_status(file_type::not_found, perms::unknown);
+                }
+                return file_status(file_type::none);
+            }
         }
         if (sz) {
             *sz = static_cast<uintmax_t>(st.st_size);
@@ -4661,23 +4668,22 @@ GHC_INLINE uintmax_t remove_all(const path& p, std::error_code& ec) noexcept
     auto fs = status(p, tec);
     if (exists(fs) && is_directory(fs)) {
         for (auto iter = directory_iterator(p, ec); iter != directory_iterator(); iter.increment(ec)) {
-            if (ec) {
+            if (ec && !detail::is_not_found_error(ec)) {
                 break;
             }
             bool is_symlink_result = iter->is_symlink(ec);
             if (ec)
                 return static_cast<uintmax_t>(-1);
-            bool is_directory_result = iter->is_directory(ec);
-            if (ec)
-                return static_cast<uintmax_t>(-1);
-            if (!is_symlink_result && is_directory_result) {
+            if (!is_symlink_result && iter->is_directory(ec)) {
                 count += remove_all(iter->path(), ec);
                 if (ec) {
                     return static_cast<uintmax_t>(-1);
                 }
             }
             else {
-                remove(iter->path(), ec);
+                if (!ec) {
+                    remove(iter->path(), ec);
+                }
                 if (ec) {
                     return static_cast<uintmax_t>(-1);
                 }
