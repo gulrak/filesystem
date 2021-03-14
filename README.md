@@ -527,6 +527,10 @@ to the expected behavior.
 
 ### v1.5.3 (WIP)
 
+* Fix for [#107](https://github.com/gulrak/filesystem/issues/107), the error
+  handling for status calls was suppressing errors on symlink targets. 
+* Pull request [#106](https://github.com/gulrak/filesystem/issues/106), fixed
+  detection of AppleClang for compile options.
 * Pull request [#105](https://github.com/gulrak/filesystem/issues/105), added
   option GHC_FILESYSTEM_BUILD_STD_TESTING to override additional build of
   `std::filesystem` versions of the tests for comparison and the possibility 
