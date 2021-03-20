@@ -29,6 +29,7 @@ if (CMAKE_COMPILER_IS_GNUCXX AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 8.0 O
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
         target_link_libraries(${targetName} -lstdc++fs)
     endif()
+    target_compile_options(${targetName} PRIVATE $<$<BOOL:${CYGWIN}>:-Wa,-mbig-obj>)
     target_compile_definitions(${targetName} PRIVATE USE_STD_FS)
 endif()
 
@@ -50,7 +51,8 @@ macro(AddTestExecutableWithStdCpp cppStd)
             $<$<BOOL:${EMSCRIPTEN}>:-s DISABLE_EXCEPTION_CATCHING=0>
             $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wpedantic -Werror -Wno-error=deprecated-declarations>
             $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wpedantic -Wno-psabi -Werror -Wno-error=deprecated-declarations>
-            $<$<CXX_COMPILER_ID:MSVC>:/WX /wd4996>)
+            $<$<CXX_COMPILER_ID:MSVC>:/WX /wd4996>
+            $<$<BOOL:${CYGWIN}>:-Wa,-mbig-obj>)
     if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
         target_compile_definitions(filesystem_test_cpp${cppStd} PRIVATE _CRT_SECURE_NO_WARNINGS)
     endif()

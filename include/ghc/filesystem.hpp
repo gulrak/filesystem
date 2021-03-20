@@ -65,6 +65,8 @@
 #elif defined(_WIN32)
 #define GHC_OS_WINDOWS
 #define GHC_OS_WIN32
+#elif defined(__CYGWIN__)
+#define GHC_OS_CYGWIN
 #elif defined(__svr4__)
 #define GHC_OS_SYS5R4
 #elif defined(BSD)
@@ -165,6 +167,9 @@
 #define statvfs statfs
 #else
 #include <sys/statvfs.h>
+#endif
+#ifdef GHC_OS_CYGWIN
+#include <strings.h>
 #endif
 #if !defined(__ANDROID__) || __ANDROID_API__ >= 26
 #include <langinfo.h>
