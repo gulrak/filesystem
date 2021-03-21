@@ -9,7 +9,7 @@
 
 # Filesystem
 
-This is a header-only single-file std::filesystem compatible helper library,
+This is a header-only single-file `std::filesystem` compatible helper library,
 based on the C++17 and C++20 specs, but implemented for C++11, C++14, C++17 or C++20
 (tightly following  the C++17 standard with very few documented exceptions). It is currently tested on
 macOS 10.12/10.14/10.15, Windows 10, Ubuntu 18.04, CentOS 7, CentOS 8, FreeBSD 12
@@ -87,7 +87,7 @@ Unit tests are currently run with:
 The header comes with a set of unit-tests and uses [CMake](https://cmake.org/)
 as a build tool and [Catch2](https://github.com/catchorg/Catch2) as test framework.
 
-All tests agains this implementation should succeed, depending on your environment
+All tests against this implementation should succeed, depending on your environment
 it might be that there are some warnings, e.g. if you have no rights to create
 Symlinks on Windows or at least the test thinks so, but these are just informative.
 
@@ -128,7 +128,7 @@ source archives can be found [here](https://github.com/gulrak/filesystem/release
 ### Using it as Single-File-Header
 
 As `ghc::filesystem` is at first a header-only library, it should be enough to copy the header
-or the `include/ghc` directory into your project folder oder point your include path to this place and
+or the `include/ghc` directory into your project folder or point your include path to this place and
 simply include the `filesystem.hpp` header (or `ghc/filesystem.hpp` if you use the subdirectory).
 
 Everything is in the namespace `ghc::filesystem`, so one way to use it only as
@@ -150,12 +150,12 @@ namespace fs = ghc::filesystem;
 
 **Note that this code uses a two-stage preprocessor condition because Visual Studio 2015
 doesn't like the `(<...>)` syntax, even if it could cut evaluation early before. This code also
-used the minimum deployment target to detect if std::filesystem really is available on macOS
+used the minimum deployment target to detect if `std::filesystem` really is available on macOS
 compilation.**
 
 **Note also, this detection now works on MSVC versions prior to 15.7 on, or without setting
 the `/Zc:__cplusplus` compile switch that would fix `__cplusplus` on MSVC. (Without the switch
-the compiler allways reports `199711L`
+the compiler always reports `199711L`
 ([see](https://blogs.msdn.microsoft.com/vcblog/2018/04/09/msvc-now-correctly-reports-__cplusplus/)),
 but `_MSVC_LANG` works without it.**
 
@@ -182,7 +182,7 @@ using namespace ghc::filesystem;
 using ifstream = ghc::filesystem::ifstream;
 using ofstream = ghc::filesystem::ofstream;
 using fstream = ghc::filesystem::fstream;
-} 
+}
 #endif
 ```
 
@@ -195,8 +195,8 @@ forwarding-/implementation-header based approach (see below) to avoid this.**
 
 :information_source: **Hint:** There is an additional header named `ghc/fs_std.hpp` that implements this
 dynamic selection of a filesystem implementation, that you can include
-instead of `ghc/filesystem.hpp` when you want std::filesystem where
-available and ghc::filesystem where not.
+instead of `ghc/filesystem.hpp` when you want `std::filesystem` where
+available and `ghc::filesystem` where not.
 
 
 ### Using it as Forwarding-/Implementation-Header
@@ -204,9 +204,9 @@ available and ghc::filesystem where not.
 Alternatively, starting from v1.1.0 `ghc::filesystem` can also be used by
 including one of two additional wrapper headers. These allow to include
 a forwarded version in most places (`ghc/fs_fwd.hpp`) while hiding the
-implementation details in a single cpp that includes `ghc/fs_impl.hpp` to
+implementation details in a single cpp file that includes `ghc/fs_impl.hpp` to
 implement the needed code. That way system includes are only visible from
-inside the cpp, all other places are clean.
+inside the cpp file, all other places are clean.
 
 Be aware, that it is currently not supported to hide the implementation
 into a Windows-DLL, as a DLL interface with C++ standard templates in interfaces
@@ -236,7 +236,7 @@ using namespace ghc::filesystem;
 using ifstream = ghc::filesystem::ifstream;
 using ofstream = ghc::filesystem::ofstream;
 using fstream = ghc::filesystem::fstream;
-} 
+}
 #endif
 ```
 
@@ -271,7 +271,7 @@ as a git submodule, add the directory to your `CMakeLists.txt` with
 to ensure correct include path that allow `#include <ghc/filesystem.hpp>`
 to work.
 
-The `CMakeLists.txt` offers a few options to customize its behaviour:
+The `CMakeLists.txt` offers a few options to customize its behavior:
 
 * `GHC_FILESYSTEM_BUILD_TESTING` - Compile tests, default is `OFF` when used as
   a submodule, else `ON`.
@@ -317,13 +317,13 @@ The only additions to the standard are documented here:
 ### `ghc::filesystem::ifstream`, `ghc::filesystem::ofstream`, `ghc::filesystem::fstream`
 
 These are simple wrappers around `std::ifstream`, `std::ofstream` and `std::fstream`.
-They simply add an `open()` method and a constuctor with an `ghc::filesystem::path`
+They simply add an `open()` method and a constructor with an `ghc::filesystem::path`
 argument as the `fstream` variants in C++17 have them.
 
 ### `ghc::filesystem::u8arguments`
 
 This is a helper class that currently checks for UTF-8 encoding on non-Windows platforms but on Windows it
-fetches the command line arguments als Unicode strings from the OS with
+fetches the command line arguments as Unicode strings from the OS with
 
 ```cpp
 ::CommandLineToArgvW(::GetCommandLineW(), &argc)
@@ -383,7 +383,7 @@ where a regular file of the same name prohibits the creation of a directory and 
 the user of those functions to double-check via `fs::is_directory` if it really worked.
 The more intuitive approach to directory creation of treating a file with that name as an
 error is also advocated by the newer paper
-[WG21 P1164R0](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1164r0.pdf), the revison
+[WG21 P1164R0](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1164r0.pdf), the revision
 P1161R1 was agreed upon on Kona 2019 meeting [see merge](https://github.com/cplusplus/draft/issues/2703)
 and GCC by now switched to following its proposal
 ([GCC #86910](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86910)).
@@ -400,7 +400,7 @@ These are not implemented under C++11 and C++14, as there is no
 `std::basic_string_view` available and I did want to keep this
 implementation self-contained and not write a full C++17-upgrade for
 C++11/14. Starting with v1.1.0 these are supported when compiling
-ghc::filesystem under C++17 of C++20.
+`ghc::filesystem` under C++17 of C++20.
 
 Starting with v1.5.2 `ghc::filesystem` will try to allow the use of
 `std::experimental::basic_string_view` where it detects is availability.
@@ -425,8 +425,8 @@ To not depend on any external third party libraries and still stay portable and
 compact, this implementation is following the ["UTF-8 Everywhere" philosophy](https://utf8everywhere.org/) in that all
 `std::string` instances will be interpreted the same as `std::u8string` encoding
 wise and as being in UTF-8. The `std::u16string` will be seen as UTF-16 and `std::u32string` will be
-seen as unicode codepoints. Depending on the size of `std::wstring` characters, it will handle
-`std::wstring` as being UTF-16 (e.g. Windows) or `char32_t` unicode codepoints
+seen as Unicode codepoints. Depending on the size of `std::wstring` characters, it will handle
+`std::wstring` as being UTF-16 (e.g. Windows) or `char32_t` Unicode codepoints
 (currently all other platforms).
 
 #### Differences of Specific Interfaces
@@ -443,7 +443,7 @@ use the W-variant of the Windows-API call (e.g. `GetFileAttributesW(p.c_str())`)
 :information_source: **Note:** _When using the old behavior by defining
 `GHC_WIN_DISABLE_WSTRING_STORAGE_TYPE`, use the `path::wstring()` member
 (e.g. `GetFileAttributesW(p.wstring().c_str())`). This gives you the
-Unicode variant independant of the `UNICODE` macro and makes sharing code
+Unicode variant independent of the `UNICODE` macro and makes sharing code
 between Windows, Linux and macOS easier and works with `std::filesystem` and
 `ghc::filesystem`._
 
@@ -472,7 +472,7 @@ Any additional observations are welcome!
 
 #### fs.path ([ref](https://en.cppreference.com/w/cpp/filesystem/path))
 
-Since v1.5.0 the complete inner mechanics of this implementations `fs::path` 
+Since v1.5.0 the complete inner mechanics of this implementations `fs::path`
 where changed to the _native_ format as the internal representation.
 Creating any mixed slash `fs::path` object under Windows (e.g. with `"C:\foo/bar"`)
 will lead clean path with `"C:\foo\bar"` via `native()` and `"C:/foo/bar"` via
@@ -484,10 +484,10 @@ Additionally this implementation follows the standards suggestion to handle
 posix paths of the form `"//host/path"` and USC path on windows also as having
 a root-name (e.g. `"//host"`). The GCC implementation didn't choose to do that
 while testing on Ubuntu 18.04 and macOS with GCC 8.1.0 or Clang 7.0.0. This difference
-will show as warnings under std::filesystem. This leads to a change in the
+will show as warnings under `std::filesystem`. This leads to a change in the
 algorithm described in the standard for `operator/=(path& p)` where any path
 `p` with `p.is_absolute()` will degrade to an assignment, while this implementation
-has the exception where `*this == *this.root_name()` and `p == preferred_seperator`
+has the exception where `*this == *this.root_name()` and `p == preferred_separator`
 a normal append will be done, to allow:
 
 ```cpp
@@ -497,7 +497,7 @@ for (auto p : p1) p2 /= p;
 ASSERT(p1 == p2);
 ```
 
-For all non-host-leading paths the behaviour will match the one described by
+For all non-host-leading paths the behavior will match the one described by
 the standard.
 
 
@@ -541,12 +541,12 @@ to the expected behavior.
 * Pull request [#108](https://github.com/gulrak/filesystem/issues/108), old
   style casts removed.
 * Fix for [#107](https://github.com/gulrak/filesystem/issues/107), the error
-  handling for status calls was suppressing errors on symlink targets. 
+  handling for status calls was suppressing errors on symlink targets.
 * Pull request [#106](https://github.com/gulrak/filesystem/issues/106), fixed
   detection of AppleClang for compile options.
 * Pull request [#105](https://github.com/gulrak/filesystem/issues/105), added
   option GHC_FILESYSTEM_BUILD_STD_TESTING to override additional build of
-  `std::filesystem` versions of the tests for comparison and the possibility 
+  `std::filesystem` versions of the tests for comparison and the possibility
   to use GHC_FILESYSTEM_TEST_COMPILE_FEATURES to prefill the used compile
   features defaulting to CMAKE_CXX_COMPILE_FEATURES when not given.
 
@@ -559,7 +559,7 @@ to the expected behavior.
 * Pull request [#103](https://github.com/gulrak/filesystem/pull/103), `wchar_t`
   was not in the list of supported char types on non-Windows backends.
 * Pull request [#102](https://github.com/gulrak/filesystem/pull/102), improved
-  `string_view` support makes use of `<string_view>` or `<experiemental/string_view>`
+  `string_view` support makes use of `<string_view>` or `<experimental/string_view>`
   when available, and allows use of custom `basic_string_view` implementation
   when defining `GHC_HAS_CUSTOM_STRING_VIEW` and importing the string view
   into the `ghc::filesystem` namespace before including filesystem header.
@@ -567,7 +567,7 @@ to the expected behavior.
   [#100](https://github.com/gulrak/filesystem/issues/100), append and concat
   type of operations on path called redundant conversions.
 * Pull request [#98](https://github.com/gulrak/filesystem/pull/98), on older
-  linux variants (GCC 7/8), the comerative `std::filesystem` tests now link
+  linux variants (GCC 7/8), the comparison `std::filesystem` tests now link
   with `-lrt` to avoid issues.
 * Fix for [#97](https://github.com/gulrak/filesystem/issues/97), on BTRFS the
   test case for `fs::hard_link_count` failed due to the filesystems behavior,
@@ -601,7 +601,7 @@ to the expected behavior.
   * `fs::path::native()` and `fs::path::c_str()` can now be `noexcept` as the
     standard mandates
   * On Windows `wchar_t` is now the default for `fs::path::value_type` and
-    `std::wstring` is the default für `fs::path::string_type`.
+    `std::wstring` is the default for `fs::path::string_type`.
   * This allows the implementation to call Win-API without allocating
     conversions
   * Thread-safety on `const` methods of `fs::path` is no longer an issue
@@ -667,8 +667,8 @@ to the expected behavior.
   `filesystem_test.cpp` was completed to fulfill the requirements to build on CentOS 7 with
   `devtoolset-9`. CentOS 7 and CentOS 8 are now part of the CI builds.
 * Bugfix for [#70](https://github.com/gulrak/filesystem/issues/70), root names are now case
-  insensitive on Windows. This fix also adds the new behaviour switch `LWG_2936_BEHAVIOUR`
-  that allows to enable post C++17 `fs::path::compare` behaviour, where the comparison is as
+  insensitive on Windows. This fix also adds the new behavior switch `LWG_2936_BEHAVIOUR`
+  that allows to enable post C++17 `fs::path::compare` behavior, where the comparison is as
   if it was an element wise path comparison as described in
   [LWG 2936](https://cplusplus.github.io/LWG/issue2936) and C++20 `[fs.path.compare]`.
   It is default off in v1.3.6 and will be default starting from v1.4.0 as it changes ordering.
@@ -709,7 +709,7 @@ to the expected behavior.
 * Pull request [#52](https://github.com/gulrak/filesystem/pull/52), an ARM Linux
   target is now part of the CI infrastructure with the service of Drone CI.
 * Pull request [#51](https://github.com/gulrak/filesystem/pull/51), FreeBSD is now
-  part of the CI infrastucture with the service of Cirrus CI.
+  part of the CI infrastructure with the service of Cirrus CI.
 * Pull request [#50](https://github.com/gulrak/filesystem/pull/50), adaptive cast to
   `timespec` fields to avoid warnings.
 
@@ -727,10 +727,10 @@ to the expected behavior.
 * The Visual Studio 2019 compiler, GCC 9.2 and Clang 9.0 where added to the
   CI configuration.
 * Bugfix for [#41](https://github.com/gulrak/filesystem/issues/41), `fs::rename`
-  on Windows didn't replace an axisting regular file as required by the standard,
+  on Windows didn't replace an existing regular file as required by the standard,
   but gave an error. New tests and a fix as provided in the issue was implemented.
 * Bugfix for [#39](https://github.com/gulrak/filesystem/issues/39), for the
-  forwarding use via `fs_fwd.hpp` or `fs_std_fwd.hpp` der was a use of
+  forwarding use via `fs_fwd.hpp` or `fs_std_fwd.hpp` there was a use of
   `DWORD` in the forwarding part leading to an error if `Windows.h` was not
   included before the header. The tests were changed to give an error in that
   case too and the useage of `DWORD` was removed.
@@ -762,20 +762,20 @@ to the expected behavior.
 * Bugfix for [#33](https://github.com/gulrak/filesystem/issues/33), fixes
   an issue with `fs::path::lexically_normal()` that leaves a trailing separator
   in case of a resulting path ending with `..` as last element.
-* Bugfix for [#36](https://github.com/gulrak/filesystem/issues/36), warings
-  on Xcode 11.2 due to unhelpfull references in path element iteration.
+* Bugfix for [#36](https://github.com/gulrak/filesystem/issues/36), warnings
+  on Xcode 11.2 due to unhelpful references in path element iteration.
 
 ### [v1.2.6](https://github.com/gulrak/filesystem/releases/tag/v1.2.6)
 
 * Pull request [#23](https://github.com/gulrak/filesystem/pull/23), tests and
-  examples can now be disabled in CMake via seting `BUILD_TESTING` and
+  examples can now be disabled in CMake via setting `BUILD_TESTING` and
   `BUILD_EXAMPLES` to `NO`, `OFF` or `FALSE`.
 * Pull request [#25](https://github.com/gulrak/filesystem/pull/25),
   missing specialization for construction from `std::string_view` when
   available was added.
 * Additional test case when `std::string_view` is available.
 * Bugfix for [#27](https://github.com/gulrak/filesystem/issues/27), the
-  `fs::path::preferred_seperator` declaration was not compiling on pre
+  `fs::path::preferred_separator` declaration was not compiling on pre
   C++17 compilers and no test accessed it, to show the problem. Fixed
   it to an construction C++11 compiler should accept and added a test that
   is successful on all combinations tested.
@@ -814,7 +814,7 @@ to the expected behavior.
   compiling on Windows with defined `GHC_WIN_WSTRING_STRING_TYPE`, this is
   default when using the `ghc/fs_std*.hpp` header, to enhance compatibility.
 * New feature ([#18](https://github.com/gulrak/filesystem/issues/18)), optional
-  filesystem exceptions/errors on unicode errors with defined
+  filesystem exceptions/errors on Unicode errors with defined
   `GHC_RAISE_UNICODE_ERRORS` (instead of replacing invalid code points or
   UTF-8 encoding errors with the replacement character `U+FFFD`).
 * Pull request ([#20](https://github.com/gulrak/filesystem/pull/20)), fix for
@@ -825,9 +825,9 @@ to the expected behavior.
 
 * Additional Bugfix for ([#12](https://github.com/gulrak/filesystem/issues/12)),
   error in old unified `readdir/readdir_r` code of `fs::directory_iterator`;
-  as `readdir_r` is now depricated, I decided to drop it and the resulting
+  as `readdir_r` is now deprecated, I decided to drop it and the resulting
   code is much easier, shorter and due to more refactoring faster
-* Fix for crashing unit tests against MSVC C++17 std::filesystem
+* Fix for crashing unit tests against MSVC C++17 `std::filesystem`
 * Travis-CI now additionally test with Xcode 10.2 on macOS
 * Some minor refactorings
 
@@ -837,10 +837,10 @@ to the expected behavior.
   `fs::path::lexically_normal()` had some issues with `".."`-sequences.
 * Bugfix for ([#12](https://github.com/gulrak/filesystem/issues/12)),
   `fs::recursive_directory_iterator` could run into endless loops,
-  the methods depth() and pop() had issues and the copy behaviour and
+  the methods depth() and pop() had issues and the copy behavior and
   `input_iterator_tag` conformance was broken, added tests
 * Restructured some CMake code into a macro to ease the support for
-  C++17 std::filesystem builds of tests and examples for interoperability
+  C++17 `std::filesystem` builds of tests and examples for interoperability
   checks.
 * Some fixes on Windows tests to ease interoperability test runs.
 * Reduced noise on `fs::weakly_canonical()` tests against `std::fs`
@@ -925,7 +925,7 @@ to the expected behavior.
   available.
 * Starting with this version, only even patch level versions will be tagged and
   odd patch levels mark in-between non-stable wip states.
-* Tests can now also be run against MS version of std::filesystem for comparison.
+* Tests can now also be run against MS version of `std::filesystem` for comparison.
 * Added missing `fstream` include.
 * Removed non-conforming C99 `timespec`/`timeval` usage.
 * Fixed some integer type mismatches that could lead to warnings.
@@ -938,7 +938,7 @@ to the expected behavior.
   paths for non-existant argument paths. ([#1](https://github.com/gulrak/filesystem/issues/1))
 * Bugfix: `ghc::filesystem::remove_all` now also counts directories removed ([#2](https://github.com/gulrak/filesystem/issues/2))
 * Bugfix: `recursive_directory_iterator` tests didn't respect equality domain issues
-  and dereferencable constraints, leading to fails on `std::filesystem` tests.
+  and dereferencapable constraints, leading to fails on `std::filesystem` tests.
 * Bugfix: Some `noexcept` tagged methods and functions could indirectly throw exceptions
   due to UFT-8 decoding issues.
 * `std_filesystem_test` is now also generated if LLVM/clang 7.0.0 is found.
@@ -947,5 +947,5 @@ to the expected behavior.
 ### [v1.0.0](https://github.com/gulrak/filesystem/releases/tag/v1.0.0)
 
 This was the first public release version. It implements the full range of
-C++17 std::filesystem, as far as possible without other C++17 dependencies.
+C++17 `std::filesystem`, as far as possible without other C++17 dependencies.
 
