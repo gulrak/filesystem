@@ -527,6 +527,19 @@ to the expected behavior.
 
 ### v1.5.3 (WIP)
 
+* Enhancement for [#111](https://github.com/gulrak/filesystem/issues/111),
+  further optimization of directory iteration, performance for
+  `recursive_directory_iterator` over large trees now somewhere  between
+  libc++ and libstdc++.
+* Enhancement for [#110](https://github.com/gulrak/filesystem/issues/110),
+  `ghc::filesystem` now has preliminary support for Cygwin. Changes where
+  made to allow the tests to compile and run successfully (tested with GCC
+  10.2.0), feedback and additional PRs welcome as it is currently not
+  part of the CI configuration.
+* Pull request [#109](https://github.com/gulrak/filesystem/issues/109), various
+  spelling errors in error messages and comments fixed.
+* Pull request [#108](https://github.com/gulrak/filesystem/issues/108), old
+  style casts removed.
 * Fix for [#107](https://github.com/gulrak/filesystem/issues/107), the error
   handling for status calls was suppressing errors on symlink targets. 
 * Pull request [#106](https://github.com/gulrak/filesystem/issues/106), fixed
