@@ -5,7 +5,7 @@
 [![Build Status](https://api.cirrus-ci.com/github/gulrak/filesystem.svg?branch=master)](https://cirrus-ci.com/github/gulrak/filesystem)
 [![Build Status](https://cloud.drone.io/api/badges/gulrak/filesystem/status.svg?ref=refs/heads/master)](https://cloud.drone.io/gulrak/filesystem)
 [![Coverage Status](https://coveralls.io/repos/github/gulrak/filesystem/badge.svg?branch=master)](https://coveralls.io/github/gulrak/filesystem?branch=master)
-[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.5.2)
+[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.5.4)
 
 # Filesystem
 
@@ -76,7 +76,7 @@ for more information._
 Unit tests are currently run with:
 
 * macOS 10.12: Xcode 9.2 (clang-900.0.39.2), GCC 9.2, Clang 9.0, macOS 10.13: Xcode 10.1, macOS 10.14: Xcode 11.2, macOS 10.15: Xcode 11.6
-* Windows: Visual Studio 2017, Visual Studio 2015, Visual Studio 2019, MinGW GCC 6.3 (Win32), GCC 7.2 (Win64)
+* Windows: Visual Studio 2017, Visual Studio 2015, Visual Studio 2019, MinGW GCC 6.3 (Win32), GCC 7.2 (Win64), Cygwin GCC 10.2 (no CI yet)
 * Linux (Ubuntu): GCC (5.5, 6.5, 7.4, 8.3, 9.2), Clang (5.0, 6.0, 7.1, 8.0, 9.0)
 * Linux (Alpine ARM/ARM64): GCC 9.2.0
 * FreeBSD: Clang 8.0
@@ -86,6 +86,8 @@ Unit tests are currently run with:
 
 The header comes with a set of unit-tests and uses [CMake](https://cmake.org/)
 as a build tool and [Catch2](https://github.com/catchorg/Catch2) as test framework.
+All tests are registered with in CMake, so the [ctest](https://cmake.org/cmake/help/latest/manual/ctest.1.html)
+commando can be used to run the tests. 
 
 All tests against this implementation should succeed, depending on your environment
 it might be that there are some warnings, e.g. if you have no rights to create
@@ -98,9 +100,11 @@ mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Debug ..
 make
+ctest
 ```
 
-This generates `filesystem_test`, the binary that runs all tests.
+This generates the test binaries that run the tests and the last command executes
+them.
 
 If the default compiler is a GCC 8 or newer, or Clang 7 or newer, it
 additionally tries to build a version of the test binary compiled against GCCs/Clangs
@@ -115,8 +119,8 @@ in the standard, and there might be issues in these implementations too.
 
 ### Downloads
 
-The latest release version is [v1.5.2](https://github.com/gulrak/filesystem/tree/v1.5.2) and
-source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.5.2).
+The latest release version is [v1.5.4](https://github.com/gulrak/filesystem/tree/v1.5.4) and
+source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.5.4).
 
 The latest pre-native-backend version is [v1.4.0](https://github.com/gulrak/filesystem/tree/v1.4.0) and
 source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.4.0).
@@ -124,6 +128,8 @@ source archives can be found [here](https://github.com/gulrak/filesystem/release
 The latest pre-C++20-support release version is [v1.3.10](https://github.com/gulrak/filesystem/tree/v1.3.10) and
 source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.3.10).
 
+Currently only the latest minor release version receives bugfixes, so if possible,
+you should use the latest release.
 
 ### Using it as Single-File-Header
 
@@ -279,6 +285,12 @@ The `CMakeLists.txt` offers a few options to customize its behavior:
   a submodule, else `ON`.
 * `GHC_FILESYSTEM_WITH_INSTALL` - Add install target to build, default is `OFF` when used as
   a submodule, else `ON`.
+* `GHC_FILESYSTEM_BUILD_STD_TESTING` -  Compile `std_filesystem_test`, the variant of
+  the test suite running against `std::filesystem`, defaulting to `GHC_FILESYSTEM_BUILD_TESTING`.
+  This is only done if the compiler is detected as being able to do it.
+* `GHC_FILESYSTEM_TEST_COMPILE_FEATURES` can be set to a list of features to override
+  `CMAKE_CXX_COMPILE_FEATURES` when the detection of C++17 or C++20 for additional tests
+  is not working (e.g. `cxx_std_20` to enforce building a `filesystem_test_cpp20` with C++20).
 
 ### Versioning
 
@@ -525,8 +537,10 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.5.3 (WIP)
+### [v1.5.4](https://github.com/gulrak/filesystem/releases/tag/v1.5.4)
 
+* Pull request [#112](https://github.com/gulrak/filesystem/issues/112), lots
+  of cleanup work on the readme, thanks!
 * Enhancement for [#111](https://github.com/gulrak/filesystem/issues/111),
   further optimization of directory iteration, performance for
   `recursive_directory_iterator` over large trees now somewhere  between
@@ -545,10 +559,10 @@ to the expected behavior.
 * Pull request [#106](https://github.com/gulrak/filesystem/issues/106), fixed
   detection of AppleClang for compile options.
 * Pull request [#105](https://github.com/gulrak/filesystem/issues/105), added
-  option GHC_FILESYSTEM_BUILD_STD_TESTING to override additional build of
+  option `GHC_FILESYSTEM_BUILD_STD_TESTING` to override additional build of
   `std::filesystem` versions of the tests for comparison and the possibility
-  to use GHC_FILESYSTEM_TEST_COMPILE_FEATURES to prefill the used compile
-  features defaulting to CMAKE_CXX_COMPILE_FEATURES when not given.
+  to use `GHC_FILESYSTEM_TEST_COMPILE_FEATURES` to prefill the used compile
+  features defaulting to `CMAKE_CXX_COMPILE_FEATURES` when not given.
 
 ### [v1.5.2](https://github.com/gulrak/filesystem/releases/tag/v1.5.2)
 
