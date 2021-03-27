@@ -295,7 +295,7 @@
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 // ghc::filesystem version in decimal (major * 10000 + minor * 100 + patch)
-#define GHC_FILESYSTEM_VERSION 10504L
+#define GHC_FILESYSTEM_VERSION 10505L
 
 #if !defined(GHC_WITH_EXCEPTIONS) && (defined(__EXCEPTIONS) || defined(__cpp_exceptions) || defined(_CPPUNWIND))
 #define GHC_WITH_EXCEPTIONS
@@ -351,7 +351,7 @@ bool has_executable_extension(const path& p);
 }
 #endif
 
-// 30.10.8 class path
+// [fs.class.path] class path
 class GHC_FS_API_CLASS path
 #if defined(GHC_OS_WINDOWS) && !defined(GHC_WIN_DISABLE_WSTRING_STORAGE_TYPE)
 #define GHC_USE_WCHAR_T
@@ -372,7 +372,7 @@ public:
     using string_type = std::basic_string<value_type>;
     using path_helper_base<value_type>::preferred_separator;
 
-    // 30.10.10.1 enumeration format
+    // [fs.enum.path.format] enumeration format
     /// The path format in which the constructor argument is given.
     enum format {
         generic_format,  ///< The generic format, internally used by
@@ -413,7 +413,7 @@ public:
                                                      path>::type;
     template <typename T>
     using path_type_EcharT = typename std::enable_if<std::is_same<T, char>::value || std::is_same<T, char16_t>::value || std::is_same<T, char32_t>::value || std::is_same<T, wchar_t>::value, path>::type;
-    // 30.10.8.4.1 constructors and destructor
+    // [fs.path.construct] constructors and destructor
     path() noexcept;
     path(const path& p);
     path(path&& p) noexcept;
@@ -430,7 +430,7 @@ public:
 #endif
     ~path();
 
-    // 30.10.8.4.2 assignments
+    // [fs.path.assign] assignments
     path& operator=(const path& p);
     path& operator=(path&& p) noexcept;
     path& operator=(string_type&& source);
@@ -442,7 +442,7 @@ public:
     template <class InputIterator>
     path& assign(InputIterator first, InputIterator last);
 
-    // 30.10.8.4.3 appends
+    // [fs.path.append] appends
     path& operator/=(const path& p);
     template <class Source>
     path& operator/=(const Source& source);
@@ -451,7 +451,7 @@ public:
     template <class InputIterator>
     path& append(InputIterator first, InputIterator last);
 
-    // 30.10.8.4.4 concatenation
+    // [fs.path.concat] concatenation
     path& operator+=(const path& x);
     path& operator+=(const string_type& x);
 #ifdef GHC_WITH_STRING_VIEW
@@ -468,7 +468,7 @@ public:
     template <class InputIterator>
     path& concat(InputIterator first, InputIterator last);
 
-    // 30.10.8.4.5 modifiers
+    // [fs.path.modifiers] modifiers
     void clear() noexcept;
     path& make_preferred();
     path& remove_filename();
@@ -476,7 +476,7 @@ public:
     path& replace_extension(const path& replacement = path());
     void swap(path& rhs) noexcept;
 
-    // 30.10.8.4.6 native format observers
+    // [fs.path.native.obs] native format observers
     const string_type& native() const noexcept;
     const value_type* c_str() const noexcept;
     operator string_type() const;
@@ -492,7 +492,7 @@ public:
     std::u16string u16string() const;
     std::u32string u32string() const;
 
-    // 30.10.8.4.7 generic format observers
+    // [fs.path.generic.obs] generic format observers
     template <class EcharT, class traits = std::char_traits<EcharT>, class Allocator = std::allocator<EcharT>>
     std::basic_string<EcharT, traits, Allocator> generic_string(const Allocator& a = Allocator()) const;
     std::string generic_string() const;
@@ -505,7 +505,7 @@ public:
     std::u16string generic_u16string() const;
     std::u32string generic_u32string() const;
 
-    // 30.10.8.4.8 compare
+    // [fs.path.compare] compare
     int compare(const path& p) const noexcept;
     int compare(const string_type& s) const;
 #ifdef GHC_WITH_STRING_VIEW
@@ -513,7 +513,7 @@ public:
 #endif
     int compare(const value_type* s) const;
 
-    // 30.10.8.4.9 decomposition
+    // [fs.path.decompose] decomposition
     path root_name() const;
     path root_directory() const;
     path root_path() const;
@@ -523,7 +523,7 @@ public:
     path stem() const;
     path extension() const;
 
-    // 30.10.8.4.10 query
+    // [fs.path.query] query
     bool empty() const noexcept;
     bool has_root_name() const;
     bool has_root_directory() const;
@@ -536,12 +536,12 @@ public:
     bool is_absolute() const;
     bool is_relative() const;
 
-    // 30.10.8.4.11 generation
+    // [fs.path.gen] generation
     path lexically_normal() const;
     path lexically_relative(const path& base) const;
     path lexically_proximate(const path& base) const;
 
-    // 30.10.8.5 iterators
+    // [fs.path.itr] iterators
     class iterator;
     using const_iterator = iterator;
     iterator begin() const;
@@ -594,7 +594,7 @@ private:
 #endif
 };
 
-// 30.10.8.6 path non-member functions
+// [fs.path.nonmember] path non-member functions
 GHC_FS_API void swap(path& lhs, path& rhs) noexcept;
 GHC_FS_API size_t hash_value(const path& p) noexcept;
 #ifdef GHC_HAS_THREEWAY_COMP
@@ -608,13 +608,13 @@ GHC_FS_API bool operator>(const path& lhs, const path& rhs) noexcept;
 GHC_FS_API bool operator>=(const path& lhs, const path& rhs) noexcept;
 GHC_FS_API path operator/(const path& lhs, const path& rhs);
 
-// 30.10.8.6.1 path inserter and extractor
+// [fs.path.io] path inserter and extractor
 template <class charT, class traits>
 std::basic_ostream<charT, traits>& operator<<(std::basic_ostream<charT, traits>& os, const path& p);
 template <class charT, class traits>
 std::basic_istream<charT, traits>& operator>>(std::basic_istream<charT, traits>& is, path& p);
 
-// 30.10.8.6.2 path factory functions
+// [pfs.path.factory] path factory functions
 template <class Source, typename = path::path_from_string<Source>>
 #if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
 [[deprecated("use ghc::filesystem::path::path() with std::u8string instead")]]
@@ -626,7 +626,7 @@ template <class InputIterator>
 #endif
 path u8path(InputIterator first, InputIterator last);
 
-// 30.10.9 class filesystem_error
+// [fs.class.filesystem_error] class filesystem_error
 class GHC_FS_API_CLASS filesystem_error : public std::system_error
 {
 public:
@@ -683,7 +683,8 @@ struct space_info
     uintmax_t available;
 };
 
-// 30.10.10, enumerations
+// [fs.enum] enumerations
+// [fs.enum.file_type]
 enum class file_type {
     none,
     not_found,
@@ -697,6 +698,7 @@ enum class file_type {
     unknown,
 };
 
+// [fs.enum.perms]
 enum class perms : uint16_t {
     none = 0,
 
@@ -724,6 +726,7 @@ enum class perms : uint16_t {
     unknown = 0xffff
 };
 
+// [fs.enum.perm.opts]
 enum class perm_options : uint16_t {
     replace = 3,
     add = 1,
@@ -731,6 +734,7 @@ enum class perm_options : uint16_t {
     nofollow = 4,
 };
 
+// [fs.enum.copy.opts]
 enum class copy_options : uint16_t {
     none = 0,
 
@@ -750,17 +754,18 @@ enum class copy_options : uint16_t {
 #endif
 };
 
+// [fs.enum.dir.opts]
 enum class directory_options : uint16_t {
     none = 0,
     follow_directory_symlink = 1,
     skip_permission_denied = 2,
 };
 
-// 30.10.11 class file_status
+// [fs.class.file_status] class file_status
 class GHC_FS_API_CLASS file_status
 {
 public:
-    // 30.10.11.1 constructors and destructor
+    // [fs.file_status.cons] constructors and destructor
     file_status() noexcept;
     explicit file_status(file_type ft, perms prms = perms::unknown) noexcept;
     file_status(const file_status&) noexcept;
@@ -769,10 +774,10 @@ public:
     // assignments:
     file_status& operator=(const file_status&) noexcept;
     file_status& operator=(file_status&&) noexcept;
-    // 30.10.11.3 modifiers
+    // [fs.file_status.mods] modifiers
     void type(file_type ft) noexcept;
     void permissions(perms prms) noexcept;
-    // 30.10.11.2 observers
+    // [fs.file_status.obs] observers
     file_type type() const noexcept;
     perms permissions() const noexcept;
     friend bool operator==(const file_status& lhs, const file_status& rhs) noexcept { return lhs.type() == rhs.type() && lhs.permissions() == rhs.permissions(); }
@@ -783,11 +788,11 @@ private:
 
 using file_time_type = std::chrono::time_point<std::chrono::system_clock>;
 
-// 30.10.12 Class directory_entry
+// [fs.class.directory_entry] Class directory_entry
 class GHC_FS_API_CLASS directory_entry
 {
 public:
-    // 30.10.12.1 constructors and destructor
+    // [fs.dir.entry.cons] constructors and destructor
     directory_entry() noexcept = default;
     directory_entry(const directory_entry&) = default;
     directory_entry(directory_entry&&) noexcept = default;
@@ -801,7 +806,7 @@ public:
     directory_entry& operator=(const directory_entry&) = default;
     directory_entry& operator=(directory_entry&&) noexcept = default;
 
-    // 30.10.12.2 modifiers
+    // [fs.dir.entry.mods] modifiers
 #ifdef GHC_WITH_EXCEPTIONS
     void assign(const path& p);
     void replace_filename(const path& p);
@@ -811,7 +816,7 @@ public:
     void replace_filename(const path& p, std::error_code& ec);
     void refresh(std::error_code& ec) noexcept;
 
-    // 30.10.12.3 observers
+    // [fs.dir.entry.obs] observers
     const filesystem::path& path() const noexcept;
     operator const filesystem::path&() const noexcept;
 #ifdef GHC_WITH_EXCEPTIONS
@@ -876,7 +881,7 @@ private:
     time_t _last_write_time = 0;
 };
 
-// 30.10.13 Class directory_iterator
+// [fs.class.directory.iterator] Class directory_iterator
 class GHC_FS_API_CLASS directory_iterator
 {
 public:
@@ -901,7 +906,7 @@ public:
     using pointer = const directory_entry*;
     using reference = const directory_entry&;
 
-    // 30.10.13.1 member functions
+    // [fs.dir.itr.members] member functions
     directory_iterator() noexcept;
 #ifdef GHC_WITH_EXCEPTIONS
     explicit directory_iterator(const path& p);
@@ -921,7 +926,7 @@ public:
 #endif
     directory_iterator& increment(std::error_code& ec) noexcept;
 
-    // other members as required by 27.2.3, input iterators
+    // other members as required by [input.iterators]
 #ifdef GHC_WITH_EXCEPTIONS
     proxy operator++(int)
     {
@@ -939,11 +944,11 @@ private:
     std::shared_ptr<impl> _impl;
 };
 
-// 30.10.13.2 directory_iterator non-member functions
+// [fs.dir.itr.nonmembers] directory_iterator non-member functions
 GHC_FS_API directory_iterator begin(directory_iterator iter) noexcept;
 GHC_FS_API directory_iterator end(const directory_iterator&) noexcept;
 
-// 30.10.14 class recursive_directory_iterator
+// [fs.class.re.dir.itr] class recursive_directory_iterator
 class GHC_FS_API_CLASS recursive_directory_iterator
 {
 public:
@@ -953,7 +958,7 @@ public:
     using pointer = const directory_entry*;
     using reference = const directory_entry&;
 
-    // 30.10.14.1 constructors and destructor
+    // [fs.rec.dir.itr.members] constructors and destructor
     recursive_directory_iterator() noexcept;
 #ifdef GHC_WITH_EXCEPTIONS
     explicit recursive_directory_iterator(const path& p);
@@ -965,7 +970,7 @@ public:
     recursive_directory_iterator(recursive_directory_iterator&& rhs) noexcept;
     ~recursive_directory_iterator();
 
-    // 30.10.14.1 observers
+    // [fs.rec.dir.itr.members] observers
     directory_options options() const;
     int depth() const;
     bool recursion_pending() const;
@@ -973,7 +978,7 @@ public:
     const directory_entry& operator*() const;
     const directory_entry* operator->() const;
 
-    // 30.10.14.1 modifiers recursive_directory_iterator&
+    // [fs.rec.dir.itr.members] modifiers recursive_directory_iterator&
     recursive_directory_iterator& operator=(const recursive_directory_iterator& rhs);
     recursive_directory_iterator& operator=(recursive_directory_iterator&& rhs) noexcept;
 #ifdef GHC_WITH_EXCEPTIONS
@@ -987,7 +992,7 @@ public:
     void pop(std::error_code& ec);
     void disable_recursion_pending();
 
-    // other members as required by 27.2.3, input iterators
+    // other members as required by [input.iterators]
 #ifdef GHC_WITH_EXCEPTIONS
     directory_iterator::proxy operator++(int)
     {
@@ -1014,11 +1019,11 @@ private:
     std::shared_ptr<recursive_directory_iterator_impl> _impl;
 };
 
-// 30.10.14.2 directory_iterator non-member functions
+// [fs.rec.dir.itr.nonmembers] directory_iterator non-member functions
 GHC_FS_API recursive_directory_iterator begin(recursive_directory_iterator iter) noexcept;
 GHC_FS_API recursive_directory_iterator end(const recursive_directory_iterator&) noexcept;
 
-// 30.10.15 filesystem operations
+// [fs.op.funcs] filesystem operations
 #ifdef GHC_WITH_EXCEPTIONS
 GHC_FS_API path absolute(const path& p);
 GHC_FS_API path canonical(const path& p);
@@ -2299,7 +2304,7 @@ GHC_INLINE u8arguments::u8arguments(int& argc, char**& argv)
 }
 
 //-----------------------------------------------------------------------------
-// 30.10.8.4.1 constructors and destructor
+// [fs.path.construct] constructors and destructor
 
 GHC_INLINE path::path() noexcept {}
 
@@ -2354,7 +2359,7 @@ inline path::path(InputIterator first, InputIterator last, const std::locale& lo
 GHC_INLINE path::~path() {}
 
 //-----------------------------------------------------------------------------
-// 30.10.8.4.2 assignments
+// [fs.path.assign] assignments
 
 GHC_INLINE path& path::operator=(const path& p)
 {
@@ -2427,7 +2432,7 @@ inline path& path::assign(InputIterator first, InputIterator last)
 #ifdef GHC_EXPAND_IMPL
 
 //-----------------------------------------------------------------------------
-// 30.10.8.4.3 appends
+// [fs.path.append] appends
 
 GHC_INLINE path& path::operator/=(const path& p)
 {
@@ -2508,7 +2513,7 @@ inline path& path::append(InputIterator first, InputIterator last)
 #ifdef GHC_EXPAND_IMPL
 
 //-----------------------------------------------------------------------------
-// 30.10.8.4.4 concatenation
+// [fs.path.concat] concatenation
 
 GHC_INLINE path& path::operator+=(const path& x)
 {
@@ -2590,7 +2595,7 @@ inline path& path::concat(InputIterator first, InputIterator last)
 #ifdef GHC_EXPAND_IMPL
 
 //-----------------------------------------------------------------------------
-// 30.10.8.4.5 modifiers
+// [fs.path.modifiers] modifiers
 GHC_INLINE void path::clear() noexcept
 {
     _path.clear();
@@ -2640,7 +2645,7 @@ GHC_INLINE void path::swap(path& rhs) noexcept
 }
 
 //-----------------------------------------------------------------------------
-// 30.10.8.4.6, native format observers
+// [fs.path.native.obs] native format observers
 GHC_INLINE const path::string_type& path::native() const noexcept
 {
     return _path;
@@ -2723,7 +2728,7 @@ GHC_INLINE std::u32string path::u32string() const
 #endif  // GHC_EXPAND_IMPL
 
 //-----------------------------------------------------------------------------
-// 30.10.8.4.7, generic format observers
+// [fs.path.generic.obs] generic format observers
 template <class EcharT, class traits, class Allocator>
 inline std::basic_string<EcharT, traits, Allocator> path::generic_string(const Allocator& a) const
 {
@@ -2803,7 +2808,7 @@ GHC_INLINE std::u32string path::generic_u32string() const
 }
 
 //-----------------------------------------------------------------------------
-// 30.10.8.4.8, compare
+// [fs.path.compare] compare
 GHC_INLINE int path::compare(const path& p) const noexcept
 {
 #ifdef LWG_2936_BEHAVIOUR
@@ -2877,7 +2882,7 @@ GHC_INLINE int path::compare(const value_type* s) const
 }
 
 //-----------------------------------------------------------------------------
-// 30.10.8.4.9, decomposition
+// [fs.path.decompose] decomposition
 #ifdef GHC_OS_WINDOWS
 GHC_INLINE void path::handle_prefixes()
 {
@@ -3009,7 +3014,7 @@ GHC_INLINE bool has_executable_extension(const path& p)
 #endif
 
 //-----------------------------------------------------------------------------
-// 30.10.8.4.10, query
+// [fs.path.query] query
 GHC_INLINE bool path::empty() const noexcept
 {
     return _path.empty();
@@ -3072,7 +3077,7 @@ GHC_INLINE bool path::is_relative() const
 }
 
 //-----------------------------------------------------------------------------
-// 30.10.8.4.11, generation
+// [fs.path.gen] generation
 GHC_INLINE path path::lexically_normal() const
 {
     path dest;
@@ -3148,7 +3153,7 @@ GHC_INLINE path path::lexically_proximate(const path& base) const
 }
 
 //-----------------------------------------------------------------------------
-// 30.10.8.5, iterators
+// [fs.path.itr] iterators
 GHC_INLINE path::iterator::iterator() {}
 
 GHC_INLINE path::iterator::iterator(const path& p, const impl_string_type::const_iterator& pos)
@@ -3301,7 +3306,7 @@ GHC_INLINE path::iterator path::end() const
 }
 
 //-----------------------------------------------------------------------------
-// 30.10.8.6, path non-member functions
+// [fs.path.nonmember] path non-member functions
 GHC_INLINE void swap(path& lhs, path& rhs) noexcept
 {
     swap(lhs._path, rhs._path);
@@ -3359,7 +3364,7 @@ GHC_INLINE path operator/(const path& lhs, const path& rhs)
 #endif  // GHC_EXPAND_IMPL
 
 //-----------------------------------------------------------------------------
-// 30.10.8.6.1 path inserter and extractor
+// [fs.path.io] path inserter and extractor
 template <class charT, class traits>
 inline std::basic_ostream<charT, traits>& operator<<(std::basic_ostream<charT, traits>& os, const path& p)
 {
@@ -3416,7 +3421,7 @@ inline std::basic_istream<charT, traits>& operator>>(std::basic_istream<charT, t
 #ifdef GHC_EXPAND_IMPL
 
 //-----------------------------------------------------------------------------
-// 30.10.9 Class filesystem_error
+// [fs.class.filesystem_error] Class filesystem_error
 GHC_INLINE filesystem_error::filesystem_error(const std::string& what_arg, std::error_code ec)
     : std::system_error(ec, what_arg)
     , _what_arg(what_arg)
@@ -3466,7 +3471,7 @@ GHC_INLINE const char* filesystem_error::what() const noexcept
 }
 
 //-----------------------------------------------------------------------------
-// 30.10.15, filesystem operations
+// [fs.op.funcs] filesystem operations
 #ifdef GHC_WITH_EXCEPTIONS
 GHC_INLINE path absolute(const path& p)
 {
@@ -4940,8 +4945,8 @@ GHC_INLINE path weakly_canonical(const path& p, std::error_code& ec) noexcept
 }
 
 //-----------------------------------------------------------------------------
-// 30.10.11 class file_status
-// 30.10.11.1 constructors and destructor
+// [fs.class.file_status] class file_status
+// [fs.file_status.cons] constructors and destructor
 GHC_INLINE file_status::file_status() noexcept
     : file_status(file_type::none)
 {
@@ -4982,7 +4987,7 @@ GHC_INLINE file_status& file_status::operator=(file_status&& rhs) noexcept
     return *this;
 }
 
-// 30.10.11.3 modifiers
+// [fs.file_status.mods] modifiers
 GHC_INLINE void file_status::type(file_type ft) noexcept
 {
     _type = ft;
@@ -4993,7 +4998,7 @@ GHC_INLINE void file_status::permissions(perms prms) noexcept
     _perms = prms;
 }
 
-// 30.10.11.2 observers
+// [fs.file_status.obs] observers
 GHC_INLINE file_type file_status::type() const noexcept
 {
     return _type;
@@ -5005,8 +5010,8 @@ GHC_INLINE perms file_status::permissions() const noexcept
 }
 
 //-----------------------------------------------------------------------------
-// 30.10.12 class directory_entry
-// 30.10.12.1 constructors and destructor
+// [fs.class.directory_entry] class directory_entry
+// [fs.dir.entry.cons] constructors and destructor
 // directory_entry::directory_entry() noexcept = default;
 // directory_entry::directory_entry(const directory_entry&) = default;
 // directory_entry::directory_entry(directory_entry&&) noexcept = default;
@@ -5040,7 +5045,7 @@ GHC_INLINE directory_entry::~directory_entry() {}
 // directory_entry& directory_entry::operator=(const directory_entry&) = default;
 // directory_entry& directory_entry::operator=(directory_entry&&) noexcept = default;
 
-// 30.10.12.2 directory_entry modifiers
+// [fs.dir.entry.mods] directory_entry modifiers
 #ifdef GHC_WITH_EXCEPTIONS
 GHC_INLINE void directory_entry::assign(const filesystem::path& p)
 {
@@ -5089,7 +5094,7 @@ GHC_INLINE void directory_entry::refresh(std::error_code& ec) noexcept
 #endif
 }
 
-// 30.10.12.3 directory_entry observers
+// [fs.dir.entry.obs] directory_entry observers
 GHC_INLINE const filesystem::path& directory_entry::path() const noexcept
 {
     return _path;
@@ -5369,7 +5374,7 @@ GHC_INLINE bool directory_entry::operator>=(const directory_entry& rhs) const no
 }
 
 //-----------------------------------------------------------------------------
-// 30.10.13 class directory_iterator
+// [fs.class.directory_iterator] class directory_iterator
 
 #ifdef GHC_OS_WINDOWS
 class directory_iterator::impl
@@ -5567,7 +5572,7 @@ public:
 };
 #endif
 
-// 30.10.13.1 member functions
+// [fs.dir.itr.members] member functions
 GHC_INLINE directory_iterator::directory_iterator() noexcept
     : _impl(new impl(path(), directory_options::none))
 {
@@ -5670,7 +5675,7 @@ GHC_INLINE bool directory_iterator::operator!=(const directory_iterator& rhs) co
     return _impl->_dir_entry._path != rhs._impl->_dir_entry._path;
 }
 
-// 30.10.13.2 directory_iterator non-member functions
+// [fs.dir.itr.nonmembers] directory_iterator non-member functions
 
 GHC_INLINE directory_iterator begin(directory_iterator iter) noexcept
 {
@@ -5683,7 +5688,7 @@ GHC_INLINE directory_iterator end(const directory_iterator&) noexcept
 }
 
 //-----------------------------------------------------------------------------
-// 30.10.14 class recursive_directory_iterator
+// [fs.class.rec.dir.itr] class recursive_directory_iterator
 
 GHC_INLINE recursive_directory_iterator::recursive_directory_iterator() noexcept
     : _impl(new recursive_directory_iterator_impl(directory_options::none, true))
@@ -5729,7 +5734,7 @@ GHC_INLINE recursive_directory_iterator::recursive_directory_iterator(recursive_
 
 GHC_INLINE recursive_directory_iterator::~recursive_directory_iterator() {}
 
-// 30.10.14.1 observers
+// [fs.rec.dir.itr.members] observers
 GHC_INLINE directory_options recursive_directory_iterator::options() const
 {
     return _impl->_options;
@@ -5755,7 +5760,7 @@ GHC_INLINE const directory_entry* recursive_directory_iterator::operator->() con
     return &(*(_impl->_dir_iter_stack.top()));
 }
 
-// 30.10.14.1 modifiers recursive_directory_iterator&
+// [fs.rec.dir.itr.members] modifiers recursive_directory_iterator&
 GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::operator=(const recursive_directory_iterator& rhs)
 {
     _impl = rhs._impl;
@@ -5834,7 +5839,7 @@ GHC_INLINE void recursive_directory_iterator::disable_recursion_pending()
     _impl->_recursion_pending = false;
 }
 
-// other members as required by 27.2.3, input iterators
+// other members as required by [input.iterators]
 GHC_INLINE bool recursive_directory_iterator::operator==(const recursive_directory_iterator& rhs) const
 {
     return _impl->_dir_iter_stack.top() == rhs._impl->_dir_iter_stack.top();
@@ -5845,7 +5850,7 @@ GHC_INLINE bool recursive_directory_iterator::operator!=(const recursive_directo
     return _impl->_dir_iter_stack.top() != rhs._impl->_dir_iter_stack.top();
 }
 
-// 30.10.14.2 directory_iterator non-member functions
+// [fs.rec.dir.itr.nonmembers] directory_iterator non-member functions
 GHC_INLINE recursive_directory_iterator begin(recursive_directory_iterator iter) noexcept
 {
     return iter;

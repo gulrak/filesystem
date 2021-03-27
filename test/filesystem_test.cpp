@@ -362,7 +362,7 @@ TEST_CASE("fs::detail::toUtf8", "[filesystem][fs.detail.utf8]")
 }
 #endif
 
-TEST_CASE("30.10.8.1 path::preferred_separator", "[filesystem][path][fs.path.generic]")
+TEST_CASE("[fs.path.generic] path::preferred_separator", "[filesystem][path][fs.path.generic]")
 {
 #ifdef GHC_OS_WINDOWS
     CHECK(fs::path::preferred_separator == '\\');
@@ -372,7 +372,7 @@ TEST_CASE("30.10.8.1 path::preferred_separator", "[filesystem][path][fs.path.gen
 }
 
 #ifndef GHC_OS_WINDOWS
-TEST_CASE("30.10.8.1 path(\"//host\").has_root_name()", "[filesystem][path][fs.path.generic]")
+TEST_CASE("[fs.path.generic] path(\"//host\").has_root_name()", "[filesystem][path][fs.path.generic]")
 {
     if (!has_host_root_name_support()) {
         WARN("This implementation doesn't support path(\"//host\").has_root_name() == true [C++17 30.12.8.1 par. 4] on this platform, tests based on this are skipped. (Should be okay.)");
@@ -380,7 +380,7 @@ TEST_CASE("30.10.8.1 path(\"//host\").has_root_name()", "[filesystem][path][fs.p
 }
 #endif
 
-TEST_CASE("30.10.8.4.1 path constructors and destructor", "[filesystem][path][fs.path.construct]")
+TEST_CASE("[fs.path.construct] path constructors and destructor", "[filesystem][path][fs.path.construct]")
 {
     CHECK("/usr/local/bin" == fs::path("/usr/local/bin").generic_string());
     std::string str = "/usr/local/bin";
@@ -432,7 +432,7 @@ TEST_CASE("30.10.8.4.1 path constructors and destructor", "[filesystem][path][fs
 #endif
 }
 
-TEST_CASE("30.10.8.4.2 path assignments", "[filesystem][path][fs.path.assign]")
+TEST_CASE("[fs.path.assign] path assignments", "[filesystem][path][fs.path.assign]")
 {
     fs::path p1{"/foo/bar"};
     fs::path p2{"/usr/local"};
@@ -467,7 +467,7 @@ TEST_CASE("30.10.8.4.2 path assignments", "[filesystem][path][fs.path.assign]")
     REQUIRE(p2 == p3);
 }
 
-TEST_CASE("30.10.8.4.3 path appends", "[filesystem][path][fs.path.append]")
+TEST_CASE("[fs.path.append] path appends", "[filesystem][path][fs.path.append]")
 {
 #ifdef GHC_OS_WINDOWS
     CHECK(fs::path("foo") / "c:/bar" == "c:/bar");
@@ -493,7 +493,7 @@ TEST_CASE("30.10.8.4.3 path appends", "[filesystem][path][fs.path.append]")
     // TODO: append(first, last)
 }
 
-TEST_CASE("30.10.8.4.4 path concatenation", "[filesystem][path][fs.path.concat]")
+TEST_CASE("[fs.path.concat] path concatenation", "[filesystem][path][fs.path.concat]")
 {
     CHECK((fs::path("foo") += fs::path("bar")) == "foobar");
     CHECK((fs::path("foo") += fs::path("/bar")) == "foo/bar");
@@ -532,7 +532,7 @@ TEST_CASE("30.10.8.4.4 path concatenation", "[filesystem][path][fs.path.concat]"
     // TODO: contat(first, last)
 }
 
-TEST_CASE("30.10.8.4.5 path modifiers", "[filesystem][path][fs.path.modifiers]")
+TEST_CASE("[fs.path.modifiers] path modifiers", "[filesystem][path][fs.path.modifiers]")
 {
     fs::path p = fs::path("/foo/bar");
     p.clear();
@@ -571,7 +571,7 @@ TEST_CASE("30.10.8.4.5 path modifiers", "[filesystem][path][fs.path.modifiers]")
     CHECK(p2 == "foo");
 }
 
-TEST_CASE("30.10.8.4.6 path native format observers", "[filesystem][path][fs.path.native.obs]")
+TEST_CASE("[fs.path.native.obs] path native format observers", "[filesystem][path][fs.path.native.obs]")
 {
 #ifdef GHC_OS_WINDOWS
 #if defined(IS_WCHAR_PATH) || defined(GHC_USE_WCHAR_T)
@@ -609,7 +609,7 @@ TEST_CASE("30.10.8.4.6 path native format observers", "[filesystem][path][fs.pat
 #endif
 }
 
-TEST_CASE("30.10.8.4.7 path generic format observers", "[filesystem][path][fs.path.generic.obs]")
+TEST_CASE("[fs.path.generic.obs] path generic format observers", "[filesystem][path][fs.path.generic.obs]")
 {
 #ifdef GHC_OS_WINDOWS
 #ifndef IS_WCHAR_PATH
@@ -644,7 +644,7 @@ TEST_CASE("30.10.8.4.7 path generic format observers", "[filesystem][path][fs.pa
 #endif
 }
 
-TEST_CASE("30.10.8.4.8 path compare", "[filesystem][path][fs.path.compare]")
+TEST_CASE("[fs.path.compare] path compare", "[filesystem][path][fs.path.compare]")
 {
     CHECK(fs::path("/foo/b").compare("/foo/a") > 0);
     CHECK(fs::path("/foo/b").compare("/foo/b") == 0);
@@ -670,7 +670,7 @@ TEST_CASE("30.10.8.4.8 path compare", "[filesystem][path][fs.path.compare]")
 #endif // LWG_2936_BEHAVIOUR
 }
 
-TEST_CASE("30.10.8.4.9 path decomposition", "[filesystem][path][fs.path.decompose]")
+TEST_CASE("[fs.path.decompose] path decomposition", "[filesystem][path][fs.path.decompose]")
 {
     // root_name()
     CHECK(fs::path("").root_name() == "");
@@ -820,7 +820,7 @@ TEST_CASE("30.10.8.4.9 path decomposition", "[filesystem][path][fs.path.decompos
     }
 }
 
-TEST_CASE("30.10.8.4.10 path query", "[fielsystem][path][fs.path.query]")
+TEST_CASE("[fs.path.query] path query", "[fielsystem][path][fs.path.query]")
 {
     // empty
     CHECK(fs::path("").empty());
@@ -918,7 +918,7 @@ TEST_CASE("30.10.8.4.10 path query", "[fielsystem][path][fs.path.query]")
     }
 }
 
-TEST_CASE("30.10.8.4.11 path generation", "[filesystem][path][fs.path.gen]")
+TEST_CASE("[fs.path.gen] path generation", "[filesystem][path][fs.path.gen]")
 {
     // lexically_normal()
     CHECK(fs::path("foo/./bar/..").lexically_normal() == "foo/");
@@ -1005,7 +1005,7 @@ static std::string reverseIterateResult(const fs::path& path)
     return result.str();
 }
 
-TEST_CASE("30.10.8.5 path iterators", "[filesystem][path][fs.path.itr]")
+TEST_CASE("[fs.path.itr] path iterators", "[filesystem][path][fs.path.itr]")
 {
     CHECK(iterateResult(fs::path()).empty());
     CHECK("." == iterateResult(fs::path(".")));
@@ -1088,7 +1088,7 @@ TEST_CASE("30.10.8.5 path iterators", "[filesystem][path][fs.path.itr]")
     }
 }
 
-TEST_CASE("30.10.8.6 path non-member functions", "[filesystem][path][fs.path.nonmember]")
+TEST_CASE("[fs.path.nonmember] path non-member functions", "[filesystem][path][fs.path.nonmember]")
 {
     fs::path p1("foo/bar");
     fs::path p2("some/other");
@@ -1110,7 +1110,7 @@ TEST_CASE("30.10.8.6 path non-member functions", "[filesystem][path][fs.path.non
     CHECK(p1 / p2 == "some/other/foo/bar");
 }
 
-TEST_CASE("30.10.8.6.1 path inserter and extractor", "[filesystem][path][fs.path.io]")
+TEST_CASE("[fs.path.io] path inserter and extractor", "[filesystem][path][fs.path.io]")
 {
     {
         std::ostringstream os;
@@ -1160,7 +1160,7 @@ TEST_CASE("30.10.8.6.1 path inserter and extractor", "[filesystem][path][fs.path
     }
 }
 
-TEST_CASE("30.10.8.6.2 path factory functions", "[filesystem][path][fs.path.factory]")
+TEST_CASE("[fs.path.factory] path factory functions", "[filesystem][path][fs.path.factory]")
 {
     CHECK(fs::u8path("foo/bar") == fs::path("foo/bar"));
     CHECK(fs::u8path("foo/bar") == fs::path("foo/bar"));
@@ -1168,7 +1168,7 @@ TEST_CASE("30.10.8.6.2 path factory functions", "[filesystem][path][fs.path.fact
     CHECK(fs::u8path(str.begin(), str.end()) == str);
 }
 
-TEST_CASE("30.10.9 class filesystem_error", "[filesystem][filesystem_error][fs.class.filesystem_error]")
+TEST_CASE("[fs.class.filesystem_error] class filesystem_error", "[filesystem][filesystem_error][fs.class.filesystem_error]")
 {
     std::error_code ec(1, std::system_category());
     fs::filesystem_error fse("None", std::error_code());
@@ -1192,7 +1192,7 @@ constexpr fs::perms constExprOwnerAll()
     return fs::perms::owner_read | fs::perms::owner_write | fs::perms::owner_exec;
 }
 
-TEST_CASE("30.10.10.4 enum class perms", "[filesystem][enum][fs.enum]")
+TEST_CASE("[fs.enum] enum class perms", "[filesystem][enum][fs.enum]")
 {
     static_assert(constExprOwnerAll() == fs::perms::owner_all, "constexpr didn't result in owner_all");
     CHECK((fs::perms::owner_read | fs::perms::owner_write | fs::perms::owner_exec) == fs::perms::owner_all);
@@ -1202,7 +1202,7 @@ TEST_CASE("30.10.10.4 enum class perms", "[filesystem][enum][fs.enum]")
     CHECK((fs::perms::all | fs::perms::set_uid | fs::perms::set_gid | fs::perms::sticky_bit) == fs::perms::mask);
 }
 
-TEST_CASE("30.10.11 class file_status", "[filesystem][file_status][fs.class.file_status]")
+TEST_CASE("[fs.class.file_status] class file_status", "[filesystem][file_status][fs.class.file_status]")
 {
     {
         fs::file_status fs;
@@ -1250,7 +1250,7 @@ TEST_CASE("30.10.11 class file_status", "[filesystem][file_status][fs.class.file
 #endif
 }
 
-TEST_CASE("30.10.12 class directory_entry", "[filesystem][directory_entry][fs.dir.entry]")
+TEST_CASE("[fs.dir.entry] class directory_entry", "[filesystem][directory_entry][fs.dir.entry]")
 {
     TemporaryDirectory t;
     std::error_code ec;
@@ -1367,7 +1367,7 @@ TEST_CASE("30.10.12 class directory_entry", "[filesystem][directory_entry][fs.di
     CHECK(!(d1 == d2));
 }
 
-TEST_CASE("30.10.13 class directory_iterator", "[filesystem][directory_iterator][fs.class.directory_iterator]")
+TEST_CASE("[fs.class.directory_iterator] class directory_iterator", "[filesystem][directory_iterator][fs.class.directory_iterator]")
 {
     {
         TemporaryDirectory t;
@@ -1428,7 +1428,7 @@ TEST_CASE("30.10.13 class directory_iterator", "[filesystem][directory_iterator]
     }
 }
 
-TEST_CASE("30.10.14 class recursive_directory_iterator", "[filesystem][recursive_directory_iterator][fs.class.rec.dir.itr]")
+TEST_CASE("[fs.class.rec.dir.itr] class recursive_directory_iterator", "[filesystem][recursive_directory_iterator][fs.class.rec.dir.itr]")
 {
     {
         auto iter = fs::recursive_directory_iterator(".");
@@ -1586,7 +1586,7 @@ TEST_CASE("30.10.14 class recursive_directory_iterator", "[filesystem][recursive
     }
 }
 
-TEST_CASE("30.10.15.1 absolute", "[filesystem][operations][fs.op.absolute]")
+TEST_CASE("[fs.op.absolute] absolute", "[filesystem][operations][fs.op.absolute]")
 {
     CHECK(fs::absolute("") == fs::current_path() / "");
     CHECK(fs::absolute(fs::current_path()) == fs::current_path());
@@ -1600,7 +1600,7 @@ TEST_CASE("30.10.15.1 absolute", "[filesystem][operations][fs.op.absolute]")
     CHECK(!ec);
 }
 
-TEST_CASE("30.10.15.2 canonical", "[filesystem][operations][fs.op.canonical]")
+TEST_CASE("[fs.op.canonical] canonical", "[filesystem][operations][fs.op.canonical]")
 {
     CHECK_THROWS_AS(fs::canonical(""), fs::filesystem_error);
     {
@@ -1643,7 +1643,7 @@ TEST_CASE("30.10.15.2 canonical", "[filesystem][operations][fs.op.canonical]")
     }
 }
 
-TEST_CASE("30.10.15.3 copy", "[filesystem][operations][fs.op.copy]")
+TEST_CASE("[fs.op.copy] copy", "[filesystem][operations][fs.op.copy]")
 {
     {
         TemporaryDirectory t(TempOpt::change_path);
@@ -1712,7 +1712,7 @@ TEST_CASE("30.10.15.3 copy", "[filesystem][operations][fs.op.copy]")
 #endif
 }
 
-TEST_CASE("30.10.15.4 copy_file", "[filesystem][operations][fs.op.copy_file]")
+TEST_CASE("[fs.op.copy_file] copy_file", "[filesystem][operations][fs.op.copy_file]")
 {
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
@@ -1737,7 +1737,7 @@ TEST_CASE("30.10.15.4 copy_file", "[filesystem][operations][fs.op.copy_file]")
     CHECK(!fs::exists("foobar"));
 }
 
-TEST_CASE("30.10.15.5 copy_symlink", "[filesystem][operations][fs.op.copy_symlink]")
+TEST_CASE("[fs.op.copy_symlink] copy_symlink", "[filesystem][operations][fs.op.copy_symlink]")
 {
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
@@ -1762,7 +1762,7 @@ TEST_CASE("30.10.15.5 copy_symlink", "[filesystem][operations][fs.op.copy_symlin
     CHECK(ec);
 }
 
-TEST_CASE("30.10.15.6 create_directories", "[filesystem][operations][fs.op.create_directories]")
+TEST_CASE("[fs.op.create_directories] create_directories", "[filesystem][operations][fs.op.create_directories]")
 {
     TemporaryDirectory t;
     fs::path p = t.path() / "testdir";
@@ -1809,7 +1809,7 @@ TEST_CASE("30.10.15.6 create_directories", "[filesystem][operations][fs.op.creat
 #endif
 }
 
-TEST_CASE("30.10.15.7 create_directory", "[filesystem][operations][fs.op.create_directory]")
+TEST_CASE("[fs.op.create_directory] create_directory", "[filesystem][operations][fs.op.create_directory]")
 {
     TemporaryDirectory t;
     fs::path p = t.path() / "testdir";
@@ -1856,7 +1856,7 @@ TEST_CASE("30.10.15.7 create_directory", "[filesystem][operations][fs.op.create_
 #endif
 }
 
-TEST_CASE("30.10.15.8 create_directory_symlink", "[filesystem][operations][fs.op.create_directory_symlink]")
+TEST_CASE("[fs.op.create_directory_symlink] create_directory_symlink", "[filesystem][operations][fs.op.create_directory_symlink]")
 {
     if (is_symlink_creation_supported()) {
         TemporaryDirectory t;
@@ -1875,7 +1875,7 @@ TEST_CASE("30.10.15.8 create_directory_symlink", "[filesystem][operations][fs.op
     }
 }
 
-TEST_CASE("30.10.15.9 create_hard_link", "[filesystem][operations][fs.op.create_hard_link]")
+TEST_CASE("[fs.op.create_hard_link] create_hard_link", "[filesystem][operations][fs.op.create_hard_link]")
 {
 #ifndef GHC_OS_WEB
     TemporaryDirectory t(TempOpt::change_path);
@@ -1894,7 +1894,7 @@ TEST_CASE("30.10.15.9 create_hard_link", "[filesystem][operations][fs.op.create_
 #endif
 }
 
-TEST_CASE("30.10.15.10 create_symlink", "[filesystem][operations][fs.op.create_symlink]")
+TEST_CASE("[fs.op.create_symlink] create_symlink", "[filesystem][operations][fs.op.create_symlink]")
 {
     if (is_symlink_creation_supported()) {
         TemporaryDirectory t;
@@ -1913,7 +1913,7 @@ TEST_CASE("30.10.15.10 create_symlink", "[filesystem][operations][fs.op.create_s
     }
 }
 
-TEST_CASE("30.10.15.11 current_path", "[filesystem][operations][fs.op.current_path]")
+TEST_CASE("[fs.op.current_path] current_path", "[filesystem][operations][fs.op.current_path]")
 {
     TemporaryDirectory t;
     std::error_code ec;
@@ -1928,7 +1928,7 @@ TEST_CASE("30.10.15.11 current_path", "[filesystem][operations][fs.op.current_pa
     CHECK(ec);
 }
 
-TEST_CASE("30.10.15.12 equivalent", "[filesystem][operations][fs.op.equivalent]")
+TEST_CASE("[fs.op.equivalent] equivalent", "[filesystem][operations][fs.op.equivalent]")
 {
     TemporaryDirectory t(TempOpt::change_path);
     generateFile("foo", 1234);
@@ -1982,7 +1982,7 @@ TEST_CASE("30.10.15.12 equivalent", "[filesystem][operations][fs.op.equivalent]"
 #endif
 }
 
-TEST_CASE("30.10.15.13 exists", "[filesystem][operations][fs.op.exists]")
+TEST_CASE("[fs.op.exists] exists", "[filesystem][operations][fs.op.exists]")
 {
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
@@ -2007,7 +2007,7 @@ TEST_CASE("30.10.15.13 exists", "[filesystem][operations][fs.op.exists]")
 #endif
 }
 
-TEST_CASE("30.10.15.14 file_size", "[filesystem][operations][fs.op.file_size]")
+TEST_CASE("[fs.op.file_size] file_size", "[filesystem][operations][fs.op.file_size]")
 {
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
@@ -2038,7 +2038,7 @@ static uintmax_t getHardlinkCount(const fs::path& p)
 }
 #endif
 
-TEST_CASE("30.10.15.15 hard_link_count", "[filesystem][operations][fs.op.hard_link_count]")
+TEST_CASE("[fs.op.hard_link_count] hard_link_count", "[filesystem][operations][fs.op.hard_link_count]")
 {
 #ifndef GHC_OS_WEB
     TemporaryDirectory t(TempOpt::change_path);
@@ -2134,7 +2134,7 @@ private:
     bool _hasSocket;
 };
 
-TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.16 is_block_file", "[filesystem][operations][fs.op.is_block_file]")
+TEST_CASE_METHOD(FileTypeMixFixture, "[fs.op.is_block_file] is_block_file", "[filesystem][operations][fs.op.is_block_file]")
 {
     std::error_code ec;
     CHECK(!fs::is_block_file("directory"));
@@ -2163,7 +2163,7 @@ TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.16 is_block_file", "[filesystem][
     CHECK(!fs::is_block_file(fs::file_status(fs::file_type::unknown)));
 }
 
-TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.17 is_character_file", "[filesystem][operations][fs.op.is_character_file]")
+TEST_CASE_METHOD(FileTypeMixFixture, "[fs.op.is_character_file] is_character_file", "[filesystem][operations][fs.op.is_character_file]")
 {
     std::error_code ec;
     CHECK(!fs::is_character_file("directory"));
@@ -2192,7 +2192,7 @@ TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.17 is_character_file", "[filesyst
     CHECK(!fs::is_character_file(fs::file_status(fs::file_type::unknown)));
 }
 
-TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.18 is_directory", "[filesystem][operations][fs.op.is_directory]")
+TEST_CASE_METHOD(FileTypeMixFixture, "[fs.op.is_directory] is_directory", "[filesystem][operations][fs.op.is_directory]")
 {
     std::error_code ec;
     CHECK(fs::is_directory("directory"));
@@ -2221,7 +2221,7 @@ TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.18 is_directory", "[filesystem][o
     CHECK(!fs::is_directory(fs::file_status(fs::file_type::unknown)));
 }
 
-TEST_CASE("30.10.15.19 is_empty", "[filesystem][operations][fs.op.is_empty]")
+TEST_CASE("[fs.op.is_empty] is_empty", "[filesystem][operations][fs.op.is_empty]")
 {
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
@@ -2243,7 +2243,7 @@ TEST_CASE("30.10.15.19 is_empty", "[filesystem][operations][fs.op.is_empty]")
     CHECK(ec);
 }
 
-TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.20 is_fifo", "[filesystem][operations][fs.op.is_fifo]")
+TEST_CASE_METHOD(FileTypeMixFixture, "[fs.op.is_fifo] is_fifo", "[filesystem][operations][fs.op.is_fifo]")
 {
     std::error_code ec;
     CHECK(!fs::is_fifo("directory"));
@@ -2272,7 +2272,7 @@ TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.20 is_fifo", "[filesystem][operat
     CHECK(!fs::is_fifo(fs::file_status(fs::file_type::unknown)));
 }
 
-TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.21 is_other", "[filesystem][operations][fs.op.is_other]")
+TEST_CASE_METHOD(FileTypeMixFixture, "[fs.op.is_other] is_other", "[filesystem][operations][fs.op.is_other]")
 {
     std::error_code ec;
     CHECK(!fs::is_other("directory"));
@@ -2301,7 +2301,7 @@ TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.21 is_other", "[filesystem][opera
     CHECK(fs::is_other(fs::file_status(fs::file_type::unknown)));
 }
 
-TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.22 is_regular_file", "[filesystem][operations][fs.op.is_regular_file]")
+TEST_CASE_METHOD(FileTypeMixFixture, "[fs.op.is_regular_file] is_regular_file", "[filesystem][operations][fs.op.is_regular_file]")
 {
     std::error_code ec;
     CHECK(!fs::is_regular_file("directory"));
@@ -2330,7 +2330,7 @@ TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.22 is_regular_file", "[filesystem
     CHECK(!fs::is_regular_file(fs::file_status(fs::file_type::unknown)));
 }
 
-TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.23 is_socket", "[filesystem][operations][fs.op.is_socket]")
+TEST_CASE_METHOD(FileTypeMixFixture, "[fs.op.is_socket] is_socket", "[filesystem][operations][fs.op.is_socket]")
 {
     std::error_code ec;
     CHECK(!fs::is_socket("directory"));
@@ -2359,7 +2359,7 @@ TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.23 is_socket", "[filesystem][oper
     CHECK(!fs::is_socket(fs::file_status(fs::file_type::unknown)));
 }
 
-TEST_CASE_METHOD(FileTypeMixFixture, "30.10.15.24 is_symlink", "[filesystem][operations][fs.op.is_symlink]")
+TEST_CASE_METHOD(FileTypeMixFixture, "[fs.op.is_symlink] is_symlink", "[filesystem][operations][fs.op.is_symlink]")
 {
     std::error_code ec;
     CHECK(!fs::is_symlink("directory"));
@@ -2402,7 +2402,7 @@ static fs::file_time_type timeFromString(const std::string& str)
 }
 #endif
 
-TEST_CASE("30.10.15.25 last_write_time", "[filesystem][operations][fs.op.last_write_time]")
+TEST_CASE("[fs.op.last_write_time] last_write_time", "[filesystem][operations][fs.op.last_write_time]")
 {
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
@@ -2437,7 +2437,7 @@ TEST_CASE("30.10.15.25 last_write_time", "[filesystem][operations][fs.op.last_wr
 #endif
 }
 
-TEST_CASE("30.10.15.26 permissions", "[filesystem][operations][fs.op.permissions]")
+TEST_CASE("[fs.op.permissions] permissions", "[filesystem][operations][fs.op.permissions]")
 {
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
@@ -2457,7 +2457,7 @@ TEST_CASE("30.10.15.26 permissions", "[filesystem][operations][fs.op.permissions
     CHECK_THROWS_AS(fs::permissions("bar", fs::perms::owner_write, static_cast<fs::perm_options>(0)), fs::filesystem_error);
 }
 
-TEST_CASE("30.10.15.27 proximate", "[filesystem][operations][fs.op.proximate]")
+TEST_CASE("[fs.op.proximate] proximate", "[filesystem][operations][fs.op.proximate]")
 {
     std::error_code ec;
     CHECK(fs::proximate("/a/d", "/a/b/c") == "../../d");
@@ -2487,7 +2487,7 @@ TEST_CASE("30.10.15.27 proximate", "[filesystem][operations][fs.op.proximate]")
 #endif
 }
 
-TEST_CASE("30.10.15.28 read_symlink", "[filesystem][operations][fs.op.read_symlink]")
+TEST_CASE("[fs.op.read_symlink] read_symlink", "[filesystem][operations][fs.op.read_symlink]")
 {
     if (is_symlink_creation_supported()) {
         TemporaryDirectory t(TempOpt::change_path);
@@ -2503,7 +2503,7 @@ TEST_CASE("30.10.15.28 read_symlink", "[filesystem][operations][fs.op.read_symli
     }
 }
 
-TEST_CASE("30.10.15.29 relative", "[filesystem][operations][fs.op.relative]")
+TEST_CASE("[fs.op.relative] relative", "[filesystem][operations][fs.op.relative]")
 {
     CHECK(fs::relative("/a/d", "/a/b/c") == "../../d");
     CHECK(fs::relative("/a/b/c", "/a/d") == "../b/c");
@@ -2516,7 +2516,7 @@ TEST_CASE("30.10.15.29 relative", "[filesystem][operations][fs.op.relative]")
     CHECK(!ec);
 }
 
-TEST_CASE("30.10.15.30 remove", "[filesystem][operations][fs.op.remove]")
+TEST_CASE("[fs.op.remove] remove", "[filesystem][operations][fs.op.remove]")
 {
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
@@ -2540,7 +2540,7 @@ TEST_CASE("30.10.15.30 remove", "[filesystem][operations][fs.op.remove]")
     CHECK(!ec);
 }
 
-TEST_CASE("30.10.15.31 remove_all", "[filesystem][operations][fs.op.remove_all]")
+TEST_CASE("[fs.op.remove_all] remove_all", "[filesystem][operations][fs.op.remove_all]")
 {
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
@@ -2560,7 +2560,7 @@ TEST_CASE("30.10.15.31 remove_all", "[filesystem][operations][fs.op.remove_all]"
     CHECK(fs::directory_iterator(t.path()) == fs::directory_iterator());
 }
 
-TEST_CASE("30.10.15.32 rename", "[filesystem][operations][fs.op.rename]")
+TEST_CASE("[fs.op.rename] rename", "[filesystem][operations][fs.op.rename]")
 {
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
@@ -2584,7 +2584,7 @@ TEST_CASE("30.10.15.32 rename", "[filesystem][operations][fs.op.rename]")
     CHECK(!fs::exists("barfoo"));
 }
 
-TEST_CASE("30.10.15.33 resize_file", "[filesystem][operations][fs.op.resize_file]")
+TEST_CASE("[fs.op.resize_file] resize_file", "[filesystem][operations][fs.op.resize_file]")
 {
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
@@ -2602,7 +2602,7 @@ TEST_CASE("30.10.15.33 resize_file", "[filesystem][operations][fs.op.resize_file
     CHECK(!fs::exists("bar"));
 }
 
-TEST_CASE("30.10.15.34 space", "[filesystem][operations][fs.op.space]")
+TEST_CASE("[fs.op.space] space", "[filesystem][operations][fs.op.space]")
 {
     {
         fs::space_info si;
@@ -2634,7 +2634,7 @@ TEST_CASE("30.10.15.34 space", "[filesystem][operations][fs.op.space]")
 #endif
 }
 
-TEST_CASE("30.10.15.35 status", "[filesystem][operations][fs.op.status]")
+TEST_CASE("[fs.op.status] status", "[filesystem][operations][fs.op.status]")
 {
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
@@ -2662,7 +2662,7 @@ TEST_CASE("30.10.15.35 status", "[filesystem][operations][fs.op.status]")
     }
 }
 
-TEST_CASE("30.10.15.36 status_known", "[filesystem][operations][fs.op.status_known]")
+TEST_CASE("[fs.op.status_known] status_known", "[filesystem][operations][fs.op.status_known]")
 {
     CHECK(!fs::status_known(fs::file_status()));
     CHECK(fs::status_known(fs::file_status(fs::file_type::not_found)));
@@ -2675,7 +2675,7 @@ TEST_CASE("30.10.15.36 status_known", "[filesystem][operations][fs.op.status_kno
     CHECK(fs::status_known(fs::file_status(fs::file_type::unknown)));
 }
 
-TEST_CASE("30.10.15.37 symlink_status", "[filesystem][operations][fs.op.symlink_status]")
+TEST_CASE("[fs.op.symlink_status] symlink_status", "[filesystem][operations][fs.op.symlink_status]")
 {
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
@@ -2702,7 +2702,7 @@ TEST_CASE("30.10.15.37 symlink_status", "[filesystem][operations][fs.op.symlink_
     }
 }
 
-TEST_CASE("30.10.15.38 temporary_directory_path", "[filesystem][operations][fs.op.temp_dir_path]")
+TEST_CASE("[fs.op.temp_dir_path] temporary_directory_path", "[filesystem][operations][fs.op.temp_dir_path]")
 {
     std::error_code ec;
     CHECK_NOTHROW(fs::exists(fs::temp_directory_path()));
@@ -2711,7 +2711,7 @@ TEST_CASE("30.10.15.38 temporary_directory_path", "[filesystem][operations][fs.o
     CHECK(!ec);
 }
 
-TEST_CASE("30.10.15.39 weakly_canonical", "[filesystem][operations][fs.op.weakly_canonical]")
+TEST_CASE("[fs.op.weakly_canonical] weakly_canonical", "[filesystem][operations][fs.op.weakly_canonical]")
 {
     INFO("This might fail on std::implementations that return fs::current_path() for fs::canonical(\"\")");
     CHECK(fs::weakly_canonical("") == ".");
