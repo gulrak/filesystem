@@ -537,6 +537,16 @@ to the expected behavior.
 
 ## Release Notes
 
+### v1.5.5 (WIP)
+
+* Fix for [#114](https://github.com/gulrak/filesystem/issues/114), for macOS
+  the pre-Catalina deployment target detection worked only if `<Availability.h>`
+  was included before `<ghc/fs_std.hpp>` or `<ghc/fs_std_fwd.hpp>`/`<ghc/fs_std_impl.hpp>`.
+* Fix for [#113](https://github.com/gulrak/filesystem/issues/113), the use of
+  standard chapter numbers was misleading since C++17 and C++20 `std::filesystem`
+  features are supported, and was replaced by the tag-like chapter names that
+  stay (mostly) consistent over the versions.
+
 ### [v1.5.4](https://github.com/gulrak/filesystem/releases/tag/v1.5.4)
 
 * Pull request [#112](https://github.com/gulrak/filesystem/issues/112), lots
