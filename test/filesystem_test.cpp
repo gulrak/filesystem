@@ -405,7 +405,7 @@ TEST_CASE("fs.path.construct - path constructors and destructor", "[filesystem][
         CHECK("//host/foo/bar" == fs::path("//host/foo/bar"));
     }
 
-#if !defined(GHC_OS_WINDOWS) && !(defined(GCC_VERSION) && GCC_VERSION < 80100) && !defined(USE_STD_FS)
+#if !defined(GHC_OS_WINDOWS) && !(defined(__GLIBCXX__) && !(defined(_GLIBCXX_RELEASE) && (_GLIBCXX_RELEASE >= 8))) && !defined(USE_STD_FS)
     std::locale loc;
     bool testUTF8Locale = false;
     try {
