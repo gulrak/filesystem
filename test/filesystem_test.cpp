@@ -76,6 +76,7 @@ using fstream = ghc::filesystem::fstream;
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/un.h>
+#include <unistd.h>
 #endif
 
 #ifndef GHC_FILESYSTEM_FWD_TEST
@@ -2445,8 +2446,13 @@ TEST_CASE("fs.op.permissions - permissions", "[filesystem][operations][fs.op.per
     auto allWrite = fs::perms::owner_write | fs::perms::group_write | fs::perms::others_write;
     CHECK_NOTHROW(fs::permissions("foo", allWrite, fs::perm_options::remove));
     CHECK((fs::status("foo").permissions() & fs::perms::owner_write) != fs::perms::owner_write);
-    CHECK_THROWS_AS(fs::resize_file("foo", 1024), fs::filesystem_error);
-    CHECK(fs::file_size("foo") == 512);
+#if !defined(GHC_OS_WINDOWS)
+    if (geteuid() != 0)
+#endif
+    {
+        CHECK_THROWS_AS(fs::resize_file("foo", 1024), fs::filesystem_error);
+        CHECK(fs::file_size("foo") == 512);
+    }
     CHECK_NOTHROW(fs::permissions("foo", fs::perms::owner_write, fs::perm_options::add));
     CHECK((fs::status("foo").permissions() & fs::perms::owner_write) == fs::perms::owner_write);
     CHECK_NOTHROW(fs::resize_file("foo", 2048));
