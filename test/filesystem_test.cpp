@@ -385,11 +385,22 @@ TEST_CASE("fs.path.construct - path constructors and destructor", "[filesystem][
 {
     CHECK("/usr/local/bin" == fs::path("/usr/local/bin").generic_string());
     std::string str = "/usr/local/bin";
+#if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
+    std::u8string u8str = u8"/usr/local/bin";
+#endif
     std::u16string u16str = u"/usr/local/bin";
     std::u32string u32str = U"/usr/local/bin";
+#if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
+    CHECK(u8str == fs::path(u8str).generic_u8string());
+#endif
+    CHECK(u16str == fs::path(u16str).generic_u16string());
+    CHECK(u32str == fs::path(u32str).generic_u32string());
     CHECK(str == fs::path(str, fs::path::format::generic_format));
     CHECK(str == fs::path(str.begin(), str.end()));
     CHECK(fs::path(std::wstring(3, 67)) == "CCC");
+#if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
+    CHECK(str == fs::path(u8str.begin(), u8str.end()));
+#endif
     CHECK(str == fs::path(u16str.begin(), u16str.end()));
     CHECK(str == fs::path(u32str.begin(), u32str.end()));
 #ifdef GHC_FILESYSTEM_VERSION
@@ -1993,6 +2004,9 @@ TEST_CASE("fs.op.exists - exists", "[filesystem][operations][fs.op.exists]")
     CHECK(!ec);
     ec = std::error_code(42, std::system_category());
     CHECK(!fs::exists("foo", ec));
+#if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
+    CHECK(!fs::exists(u8"foo"));
+#endif
     CHECK(!ec);
     ec.clear();
     CHECK(fs::exists(t.path()));
