@@ -141,6 +141,9 @@ Everything is in the namespace `ghc::filesystem`, so one way to use it only as
 a fallback could be:
 
 ```cpp
+#ifdef __APPLE__
+#include <Availability.h> // for deployment target to support pre-catalina targets without std::fs 
+#endif
 #if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || (defined(__cplusplus) && __cplusplus >= 201703L)) && defined(__has_include)
 #if __has_include(<filesystem>) && (!defined(__MAC_OS_X_VERSION_MIN_REQUIRED) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 101500)
 #define GHC_USE_STD_FS
@@ -169,6 +172,9 @@ If you want to also use the `fstream` wrapper with `path` support as fallback,
 you might use:
 
 ```cpp
+#ifdef __APPLE__
+#include <Availability.h> // for deployment target to support pre-catalina targets without std::fs 
+#endif
 #if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || (defined(__cplusplus) && __cplusplus >= 201703L)) && defined(__has_include)
 #if __has_include(<filesystem>) && (!defined(__MAC_OS_X_VERSION_MIN_REQUIRED) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 101500)
 #define GHC_USE_STD_FS
@@ -211,8 +217,8 @@ Alternatively, starting from v1.1.0 `ghc::filesystem` can also be used by
 including one of two additional wrapper headers. These allow to include
 a forwarded version in most places (`ghc/fs_fwd.hpp`) while hiding the
 implementation details in a single cpp file that includes `ghc/fs_impl.hpp` to
-implement the needed code. That way system includes are only visible from
-inside the cpp file, all other places are clean.
+implement the needed code. Using `ghc::filesystem` this way makes sure
+system includes are only visible from inside the cpp file, all other places are clean.
 
 Be aware, that it is currently not supported to hide the implementation
 into a Windows-DLL, as a DLL interface with C++ standard templates in interfaces
@@ -223,6 +229,9 @@ If you use the forwarding/implementation approach, you can still use the dynamic
 switching like this:
 
 ```cpp
+#ifdef __APPLE__
+#include <Availability.h> // for deployment target to support pre-catalina targets without std::fs
+#endif
 #if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || (defined(__cplusplus) && __cplusplus >= 201703L)) && defined(__has_include)
 #if __has_include(<filesystem>) && (!defined(__MAC_OS_X_VERSION_MIN_REQUIRED) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 101500)
 #define GHC_USE_STD_FS
@@ -250,6 +259,9 @@ and in the implementation hiding cpp, you might use (before any include that inc
 to take precedence:
 
 ```cpp
+#ifdef __APPLE__ // for deployment target to support pre-catalina targets without std::fs 
+#include <Availability.h>
+#endif
 #if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || (defined(__cplusplus) && __cplusplus >= 201703L)) && defined(__has_include)
 #if __has_include(<filesystem>) && (!defined(__MAC_OS_X_VERSION_MIN_REQUIRED) || __MAC_OS_X_VERSION_MIN_REQUIRED >= 101500)
 #define GHC_USE_STD_FS
@@ -539,6 +551,14 @@ to the expected behavior.
 
 ### v1.5.5 (WIP)
 
+* Fix for [#119](https://github.com/gulrak/filesystem/issues/119), added missing
+  support for char16_t and char32_t and on C++20 char8_t literals.
+* Pull request [#118](https://github.com/gulrak/filesystem/pull/118), when
+  running tests as root, disable tests that would not work.
+* Pull request [#117](https://github.com/gulrak/filesystem/pull/117), added
+  checks to tests to detect the clang/libstdc++ combination.
+* Pull request [#115](https://github.com/gulrak/filesystem/pull/115), added
+  `string_view` support when clang with libstdc++ is detected.
 * Fix for [#114](https://github.com/gulrak/filesystem/issues/114), for macOS
   the pre-Catalina deployment target detection worked only if `<Availability.h>`
   was included before `<ghc/fs_std.hpp>` or `<ghc/fs_std_fwd.hpp>`/`<ghc/fs_std_impl.hpp>`.
@@ -549,7 +569,7 @@ to the expected behavior.
 
 ### [v1.5.4](https://github.com/gulrak/filesystem/releases/tag/v1.5.4)
 
-* Pull request [#112](https://github.com/gulrak/filesystem/issues/112), lots
+* Pull request [#112](https://github.com/gulrak/filesystem/pull/112), lots
   of cleanup work on the readme, thanks!
 * Enhancement for [#111](https://github.com/gulrak/filesystem/issues/111),
   further optimization of directory iteration, performance for
@@ -560,15 +580,15 @@ to the expected behavior.
   made to allow the tests to compile and run successfully (tested with GCC
   10.2.0), feedback and additional PRs welcome as it is currently not
   part of the CI configuration.
-* Pull request [#109](https://github.com/gulrak/filesystem/issues/109), various
+* Pull request [#109](https://github.com/gulrak/filesystem/pull/109), various
   spelling errors in error messages and comments fixed.
-* Pull request [#108](https://github.com/gulrak/filesystem/issues/108), old
+* Pull request [#108](https://github.com/gulrak/filesystem/pull/108), old
   style casts removed.
 * Fix for [#107](https://github.com/gulrak/filesystem/issues/107), the error
   handling for status calls was suppressing errors on symlink targets.
-* Pull request [#106](https://github.com/gulrak/filesystem/issues/106), fixed
+* Pull request [#106](https://github.com/gulrak/filesystem/pull/106), fixed
   detection of AppleClang for compile options.
-* Pull request [#105](https://github.com/gulrak/filesystem/issues/105), added
+* Pull request [#105](https://github.com/gulrak/filesystem/pull/105), added
   option `GHC_FILESYSTEM_BUILD_STD_TESTING` to override additional build of
   `std::filesystem` versions of the tests for comparison and the possibility
   to use `GHC_FILESYSTEM_TEST_COMPILE_FEATURES` to prefill the used compile
