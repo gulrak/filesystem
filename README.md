@@ -551,6 +551,8 @@ to the expected behavior.
 
 ### v1.5.5 (WIP)
 
+* Fix for [#122](https://github.com/gulrak/filesystem/issues/122), incrementing
+  the `recursive_directory_iterator` will not try to enter dead symlinks.
 * Fix for [#119](https://github.com/gulrak/filesystem/issues/119), added missing
   support for char16_t and char32_t and on C++20 char8_t literals.
 * Pull request [#118](https://github.com/gulrak/filesystem/pull/118), when
