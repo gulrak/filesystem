@@ -1596,6 +1596,37 @@ TEST_CASE("fs.class.rec.dir.itr - class recursive_directory_iterator", "[filesys
         }
         CHECK(os.str() == "[./a,0],[./d1,0],[./d1/d2,1],[./e,0],");
     }
+    if (is_symlink_creation_supported()) {
+        TemporaryDirectory t(TempOpt::change_path);
+        fs::create_directory("d1");
+        generateFile("d1/a");
+        fs::create_directory("d2");
+        generateFile("d2/b");
+        fs::create_directory_symlink("../d1", "d2/ds1");
+        fs::create_directory_symlink("d3", "d2/ds2");
+        std::multiset<std::string> result;
+        REQUIRE_NOTHROW([&](){
+            for (const auto& de : fs::recursive_directory_iterator("d2", fs::directory_options::follow_directory_symlink)) {
+                result.insert(de.path().generic_string());
+            }
+        }());
+        std::stringstream os;
+        for(const auto& p : result) {
+            os << p << ",";
+        }
+        CHECK(os.str() == "d2/b,d2/ds1,d2/ds1/a,d2/ds2,");
+        os.str("");
+        result.clear();
+        REQUIRE_NOTHROW([&](){
+          for (const auto& de : fs::recursive_directory_iterator("d2")) {
+              result.insert(de.path().generic_string());
+          }
+        }());
+         for(const auto& p : result) {
+            os << p << ",";
+        }
+        CHECK(os.str() == "d2/b,d2/ds1,d2/ds2,");
+    }
 }
 
 TEST_CASE("fs.op.absolute - absolute", "[filesystem][operations][fs.op.absolute]")
