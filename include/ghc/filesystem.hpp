@@ -4650,7 +4650,7 @@ GHC_INLINE bool remove(const path& p, std::error_code& ec) noexcept
         ec = detail::make_system_error(error);
     }
     else if(attr & FILE_ATTRIBUTE_READONLY) {
-        auto new_attr = attr & ~FILE_ATTRIBUTE_READONLY;
+        auto new_attr = attr & ~static_cast<DWORD>(FILE_ATTRIBUTE_READONLY);
         if(!SetFileAttributesW(cstr, new_attr)) {
             auto error = ::GetLastError();
             ec = detail::make_system_error(error);
