@@ -2000,56 +2000,70 @@ GHC_INLINE file_status file_status_from_st_mode(T mode)
 #endif
 }
 
-GHC_INLINE path resolveSymlink(const path& p, std::error_code& ec)
-{
 #ifdef GHC_OS_WINDOWS
 #ifndef REPARSE_DATA_BUFFER_HEADER_SIZE
-    typedef struct _REPARSE_DATA_BUFFER
+typedef struct _REPARSE_DATA_BUFFER
+{
+    ULONG ReparseTag;
+    USHORT ReparseDataLength;
+    USHORT Reserved;
+    union
     {
-        ULONG ReparseTag;
-        USHORT ReparseDataLength;
-        USHORT Reserved;
-        union
+        struct
         {
-            struct
-            {
-                USHORT SubstituteNameOffset;
-                USHORT SubstituteNameLength;
-                USHORT PrintNameOffset;
-                USHORT PrintNameLength;
-                ULONG Flags;
-                WCHAR PathBuffer[1];
-            } SymbolicLinkReparseBuffer;
-            struct
-            {
-                USHORT SubstituteNameOffset;
-                USHORT SubstituteNameLength;
-                USHORT PrintNameOffset;
-                USHORT PrintNameLength;
-                WCHAR PathBuffer[1];
-            } MountPointReparseBuffer;
-            struct
-            {
-                UCHAR DataBuffer[1];
-            } GenericReparseBuffer;
-        } DUMMYUNIONNAME;
-    } REPARSE_DATA_BUFFER;
+            USHORT SubstituteNameOffset;
+            USHORT SubstituteNameLength;
+            USHORT PrintNameOffset;
+            USHORT PrintNameLength;
+            ULONG Flags;
+            WCHAR PathBuffer[1];
+        } SymbolicLinkReparseBuffer;
+        struct
+        {
+            USHORT SubstituteNameOffset;
+            USHORT SubstituteNameLength;
+            USHORT PrintNameOffset;
+            USHORT PrintNameLength;
+            WCHAR PathBuffer[1];
+        } MountPointReparseBuffer;
+        struct
+        {
+            UCHAR DataBuffer[1];
+        } GenericReparseBuffer;
+    } DUMMYUNIONNAME;
+} REPARSE_DATA_BUFFER;
 #ifndef MAXIMUM_REPARSE_DATA_BUFFER_SIZE
 #define MAXIMUM_REPARSE_DATA_BUFFER_SIZE (16 * 1024)
 #endif
 #endif
 
+GHC_INLINE std::shared_ptr<REPARSE_DATA_BUFFER> getReparseData(const path& p, std::error_code& ec)
+{
     std::shared_ptr<void> file(CreateFileW(GHC_NATIVEWP(p), 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, 0, OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, 0), CloseHandle);
     if (file.get() == INVALID_HANDLE_VALUE) {
         ec = detail::make_system_error();
-        return path();
+        return nullptr;
     }
 
     std::shared_ptr<REPARSE_DATA_BUFFER> reparseData((REPARSE_DATA_BUFFER*)std::calloc(1, MAXIMUM_REPARSE_DATA_BUFFER_SIZE), std::free);
     ULONG bufferUsed;
-    path result;
     if (DeviceIoControl(file.get(), FSCTL_GET_REPARSE_POINT, 0, 0, reparseData.get(), MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &bufferUsed, 0)) {
-        if (IsReparseTagMicrosoft(reparseData->ReparseTag)) {
+        return reparseData;
+    }
+    else {
+        ec = detail::make_system_error();
+    }
+    return nullptr;
+}
+#endif
+
+GHC_INLINE path resolveSymlink(const path& p, std::error_code& ec)
+{
+#ifdef GHC_OS_WINDOWS
+    path result;
+    auto reparseData = detail::getReparseData(p, ec);
+    if (!ec) {
+        if (reparseData && IsReparseTagMicrosoft(reparseData->ReparseTag)) {
             switch (reparseData->ReparseTag) {
                 case IO_REPARSE_TAG_SYMLINK: {
                     auto printName = std::wstring(&reparseData->SymbolicLinkReparseBuffer.PathBuffer[reparseData->SymbolicLinkReparseBuffer.PrintNameOffset / sizeof(WCHAR)], reparseData->SymbolicLinkReparseBuffer.PrintNameLength / sizeof(WCHAR));
@@ -2067,15 +2081,13 @@ GHC_INLINE path resolveSymlink(const path& p, std::error_code& ec)
                     break;
                 }
                 case IO_REPARSE_TAG_MOUNT_POINT:
-                    result = std::wstring(&reparseData->MountPointReparseBuffer.PathBuffer[reparseData->MountPointReparseBuffer.SubstituteNameOffset / sizeof(WCHAR)], reparseData->MountPointReparseBuffer.SubstituteNameLength / sizeof(WCHAR));
+                    result = detail::getFullPathName(GHC_NATIVEWP(p), ec);
+                    //result = std::wstring(&reparseData->MountPointReparseBuffer.PathBuffer[reparseData->MountPointReparseBuffer.SubstituteNameOffset / sizeof(WCHAR)], reparseData->MountPointReparseBuffer.SubstituteNameLength / sizeof(WCHAR));
                     break;
                 default:
                     break;
             }
         }
-    }
-    else {
-        ec = detail::make_system_error();
     }
     return result;
 #else
@@ -2126,13 +2138,35 @@ GHC_INLINE uintmax_t hard_links_from_INFO<BY_HANDLE_FILE_INFORMATION>(const BY_H
 }
 
 template <typename INFO>
-GHC_INLINE file_status status_from_INFO(const path& p, const INFO* info, std::error_code&, uintmax_t* sz = nullptr, time_t* lwt = nullptr)
+GHC_INLINE DWORD reparse_tag_from_INFO(const INFO*)
+{
+    return 0;
+}
+
+template <>
+GHC_INLINE DWORD reparse_tag_from_INFO(const WIN32_FIND_DATAW* info)
+{
+    return info->dwReserved0;
+}
+
+template <typename INFO>
+GHC_INLINE file_status status_from_INFO(const path& p, const INFO* info, std::error_code& ec, uintmax_t* sz = nullptr, time_t* lwt = nullptr)
 {
     file_type ft = file_type::unknown;
-    if ((info->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
-        ft = file_type::symlink;
+    if (sizeof(INFO) == sizeof(WIN32_FIND_DATAW)) {
+        if (detail::reparse_tag_from_INFO(info) == IO_REPARSE_TAG_SYMLINK) {
+            ft = file_type::symlink;
+        }
     }
     else {
+        if ((info->dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
+            auto reparseData = detail::getReparseData(p, ec);
+            if (!ec && reparseData && IsReparseTagMicrosoft(reparseData->ReparseTag) && reparseData->ReparseTag == IO_REPARSE_TAG_SYMLINK) {
+                ft = file_type::symlink;
+            }
+        }
+    }
+    if (ft == file_type::unknown) {
         if ((info->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
             ft = file_type::directory;
         }
@@ -2181,9 +2215,6 @@ GHC_INLINE file_status symlink_status_ex(const path& p, std::error_code& ec, uin
         if (nhl) {
             *nhl = 0;
         }
-        if (attr.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
-            fs.type(file_type::symlink);
-        }
     }
     if (detail::is_not_found_error(ec)) {
         return file_status(file_type::not_found);
@@ -2221,15 +2252,18 @@ GHC_INLINE file_status status_ex(const path& p, std::error_code& ec, file_status
         ec = detail::make_system_error();
     }
     else if (attr.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
-        path target = resolveSymlink(p, ec);
-        file_status result;
-        if (!ec && !target.empty()) {
-            if (sls) {
-                *sls = status_from_INFO(p, &attr, ec);
+        auto reparseData = detail::getReparseData(p, ec);
+        if (!ec && reparseData && IsReparseTagMicrosoft(reparseData->ReparseTag) && reparseData->ReparseTag == IO_REPARSE_TAG_SYMLINK) {
+            path target = resolveSymlink(p, ec);
+            file_status result;
+            if (!ec && !target.empty()) {
+                if (sls) {
+                    *sls = status_from_INFO(p, &attr, ec);
+                }
+                return detail::status_ex(target, ec, nullptr, sz, nhl, lwt, recurse_count + 1);
             }
-            return detail::status_ex(target, ec, nullptr, sz, nhl, lwt, recurse_count + 1);
+            return file_status(file_type::unknown);
         }
-        return file_status(file_type::unknown);
     }
     if (ec) {
         if (detail::is_not_found_error(ec)) {
