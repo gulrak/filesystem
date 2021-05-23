@@ -2017,7 +2017,8 @@ TEST_CASE("fs.op.exists - exists", "[filesystem][operations][fs.op.exists]")
     CHECK(!ec);
 #if defined(GHC_OS_WINDOWS) && !defined(GHC_FILESYSTEM_FWD)
     if (::GetFileAttributesW(L"C:\\fs-test") != INVALID_FILE_ATTRIBUTES) {
-        CHECK(fs::exists("C:\\fs-test"));    
+        CHECK(fs::exists("C:\\fs-test"));
+        CHECK(!fs::is_symlink("C:\\fs-test"));
     }
 #endif
 }
@@ -2810,7 +2811,7 @@ TEST_CASE("std::string_view support", "[filesystem][fs.string_view]")
 #endif
 }
 
-TEST_CASE("Windows: Long filename support", "[filesystem][path][fs.path.win.long]")
+TEST_CASE("Windows: Long filename support", "[filesystem][path][fs.win][fs.path.win.long]")
 {
 #ifdef GHC_OS_WINDOWS
     TemporaryDirectory t(TempOpt::change_path);
@@ -2835,7 +2836,7 @@ TEST_CASE("Windows: Long filename support", "[filesystem][path][fs.path.win.long
 #endif
 }
 
-TEST_CASE("Windows: path namespace handling", "[filesystem][path][fs.path.win.namespaces]")
+TEST_CASE("Windows: path namespace handling", "[filesystem][path][fs.win][fs.path.win.namespaces]")
 {
 #ifdef GHC_OS_WINDOWS
     {
@@ -2884,6 +2885,19 @@ TEST_CASE("Windows: path namespace handling", "[filesystem][path][fs.path.win.na
         CHECK(p.root_name().string() == ti._rootName);
         CHECK(p.root_path().string() == ti._rootPath);
         CHECK(iterateResult(p) == ti._iterateResult);
+    }
+#else
+    WARN("Windows specific tests are empty on non-Windows systems.");
+#endif
+}
+
+TEST_CASE("Windows: Mapped folders handling ", "[filesystem][fs.win][fs.win.mapped]")
+{
+#ifdef GHC_OS_WINDOWS
+    // this test expects a mapped volume on C:\\fs-test as is the case on the development test system
+    // does nothing on other systems
+    if (fs::exists("C:\\fs-test")) {
+        CHECK(fs::canonical("C:\\fs-test\\Test.txt").string() == "C:\\fs-test\\Test.txt");
     }
 #else
     WARN("Windows specific tests are empty on non-Windows systems.");
