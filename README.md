@@ -534,7 +534,7 @@ the standard.
 As symbolic links on Windows, while being supported more or less since
 Windows Vista (with some strict security constraints) and fully since some earlier
 build of Windows 10, when "Developer Mode" is activated, are at time of writing
-(2018) rarely used, still they are supported with this implementation.
+(2018) rarely used, still they are supported wiit th this implementation.
 
 #### Permissions
 
@@ -551,6 +551,15 @@ to the expected behavior.
 
 ### v1.5.5 (WIP)
 
+* Fix for [#124](https://github.com/gulrak/filesystem/issues/124),
+  `ghc::filesystem` treated mounted folder/volumes erroneously as symlinks,
+  leading `fs::canonical` to fail on paths containing those.
+* Fix for [#122](https://github.com/gulrak/filesystem/issues/122), incrementing
+  the `recursive_directory_iterator` will not try to enter dead symlinks.
+* Fix for [#121](https://github.com/gulrak/filesystem/issues/121), on Windows
+  backend the `fs::remove` failed when the path pointed to a read-only entry,
+  see also ([microsoft/STL#1511](https://github.com/microsoft/STL/issues/1511))
+  for the corresponding issue in `std::fs` on windows.
 * Fix for [#119](https://github.com/gulrak/filesystem/issues/119), added missing
   support for char16_t and char32_t and on C++20 char8_t literals.
 * Pull request [#118](https://github.com/gulrak/filesystem/pull/118), when
