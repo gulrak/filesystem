@@ -24,7 +24,7 @@ else()
         $<$<CXX_COMPILER_ID:MSVC>:/WX>
         $<$<BOOL:${CYGWIN}>:-Wa,-mbig-obj>)
     if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
-        target_compile_definitions(filesystem_test PRIVATE _CRT_SECURE_NO_WARNINGS)
+        target_compile_definitions(filesystem_test PRIVATE _CRT_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN NOMINMAX)
     endif()
     if(EMSCRIPTEN)
         set_target_properties(filesystem_test PROPERTIES LINK_FLAGS "-g4 -s DISABLE_EXCEPTION_CATCHING=0 -s ALLOW_MEMORY_GROWTH=1")
@@ -68,7 +68,7 @@ target_compile_options(fwd_impl_test PRIVATE
         $<$<CXX_COMPILER_ID:MSVC>:/WX>
         $<$<BOOL:${CYGWIN}>:-Wa,-mbig-obj>)
 if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
-    target_compile_definitions(fwd_impl_test PRIVATE _CRT_SECURE_NO_WARNINGS)
+	target_compile_definitions(fwd_impl_test PRIVATE _CRT_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN NOMINMAX)
 endif()
 add_test(fwd_impl_test fwd_impl_test)
 
