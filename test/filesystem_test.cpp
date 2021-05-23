@@ -2890,6 +2890,19 @@ TEST_CASE("Windows: path namespace handling", "[filesystem][path][fs.path.win.na
 #endif
 }
 
+TEST_CASE("Windows: Mapped folders handling ", "[filesystem][fs.win][fs.win.mapped]")
+{
+#ifdef GHC_OS_WINDOWS
+    // this test expects a mapped volume on C:\\fs-test as is the case on the development test system
+    // does nothing on other systems
+    if (fs::exists("C:\\fs-test")) {
+        CHECK(fs::canonical("C:\\fs-test\\Test.txt").string() == "C:\\fs-test\\Test.txt");
+    }
+#else
+    WARN("Windows specific tests are empty on non-Windows systems.");
+#endif
+}
+
 TEST_CASE("Windows: Deletion of Read-only Files", "[filesystem][fs.win][fs.win.remove]")
 {
 #ifdef GHC_OS_WINDOWS
