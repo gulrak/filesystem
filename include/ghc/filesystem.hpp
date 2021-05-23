@@ -2138,7 +2138,7 @@ GHC_INLINE uintmax_t hard_links_from_INFO<BY_HANDLE_FILE_INFORMATION>(const BY_H
 }
 
 template <typename INFO>
-GHC_INLINE DWORD reparse_tag_from_INFO(const INFO* info)
+GHC_INLINE DWORD reparse_tag_from_INFO(const INFO*)
 {
     return 0;
 }
