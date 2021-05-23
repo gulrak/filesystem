@@ -2889,3 +2889,18 @@ TEST_CASE("Windows: path namespace handling", "[filesystem][path][fs.path.win.na
     WARN("Windows specific tests are empty on non-Windows systems.");
 #endif
 }
+
+TEST_CASE("Windows: Deletion of Read-only Files", "[filesystem][fs.win][fs.win.remove]")
+{
+#ifdef GHC_OS_WINDOWS
+    TemporaryDirectory t(TempOpt::change_path);
+    std::error_code ec;
+    generateFile("foo", 512);
+    auto allWrite = fs::perms::owner_write | fs::perms::group_write | fs::perms::others_write;
+    CHECK_NOTHROW(fs::permissions("foo", allWrite, fs::perm_options::remove));
+    CHECK_NOTHROW(fs::remove("foo"));
+    CHECK(!fs::exists("foo"));
+#else
+    WARN("Windows specific tests are empty on non-Windows systems.");
+#endif
+}
