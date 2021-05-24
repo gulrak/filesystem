@@ -201,9 +201,14 @@ using fstream = ghc::filesystem::fstream;
 Now you have e.g. `fs::ofstream out(somePath);` and it is either the wrapper or
 the C++17 `std::ofstream`.
 
-**Be aware, as a header-only library, it is not hiding the fact, that it
+:information_source: **Be aware, as a header-only library, it is not hiding the fact, that it
 uses system includes, so they "pollute" your global namespace. Use the
-forwarding-/implementation-header based approach (see below) to avoid this.**
+forwarding-/implementation-header based approach (see below) to avoid this.
+For Windows it needs `Windows.h` and it might be a good idea to define
+`WIN32_LEAN_AND_MEAN` or `NOMINMAX` prior to including `filesystem.hpp` or
+`fs_std.hpp` headers  to reduce pollution of your global namespace and compile
+time. They are not defined by `ghc::filesystem` to allow combination with contexts
+where the full `Windows.h`is needed, e.g. for UI elements.**
 
 :information_source: **Hint:** There is an additional header named `ghc/fs_std.hpp` that implements this
 dynamic selection of a filesystem implementation, that you can include
@@ -566,6 +571,11 @@ to the expected behavior.
   running tests as root, disable tests that would not work.
 * Pull request [#117](https://github.com/gulrak/filesystem/pull/117), added
   checks to tests to detect the clang/libstdc++ combination.
+* Fix for [#116](https://github.com/gulrak/filesystem/issues/116), internal
+  macro `GHC_NO_DIRENT_D_TYPE` allows os detection to support systems without
+  the `dirent.d_type` member, experimental first QNX compile support as
+  initial use case, fixed issue with filesystems returning DT_UNKNOWN
+  (e.g. reiserfs).
 * Pull request [#115](https://github.com/gulrak/filesystem/pull/115), added
   `string_view` support when clang with libstdc++ is detected.
 * Fix for [#114](https://github.com/gulrak/filesystem/issues/114), for macOS
