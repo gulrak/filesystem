@@ -5,7 +5,7 @@
 [![Build Status](https://api.cirrus-ci.com/github/gulrak/filesystem.svg?branch=master)](https://cirrus-ci.com/github/gulrak/filesystem)
 [![Build Status](https://cloud.drone.io/api/badges/gulrak/filesystem/status.svg?ref=refs/heads/master)](https://cloud.drone.io/gulrak/filesystem)
 [![Coverage Status](https://coveralls.io/repos/github/gulrak/filesystem/badge.svg?branch=master)](https://coveralls.io/github/gulrak/filesystem?branch=master)
-[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.5.4)
+[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.5.6)
 
 # Filesystem
 
@@ -15,9 +15,11 @@ based on the C++17 and C++20 specs, but implemented for C++11, C++14, C++17 or C
 macOS 10.12/10.14/10.15, Windows 10, Ubuntu 18.04, CentOS 7, CentOS 8, FreeBSD 12
 and Alpine ARM/ARM64 Linux but should work on other systems too, as long as you have
 at least a C++11 compatible compiler. It should work with Android NDK, Emscripten and I even
-had reports of it being used on iOS (within sandboxing constraints).
-It is of course in its own namespace `ghc::filesystem` to not interfere with a regular `std::filesystem` should you use it in a mixed C++17
-environment (which is possible).
+had reports of it being used on iOS (within sandboxing constraints) and with v1.5.6 there
+is experimental support for QNX. The support of Android NDK, Emscripten and QNX is not
+backed up by automated testing but PRs and bug reports are welcome for those too.
+It is of course in its own namespace `ghc::filesystem` to not interfere with a regular `std::filesystem`
+should you use it in a mixed C++17 environment (which is possible).
 
 *Test coverage is well above 90%, and starting with v1.3.6 and in v1.5.0
 more time was invested in benchmarking and optimizing parts of the library. I'll try
@@ -75,7 +77,7 @@ for more information._
 
 Unit tests are currently run with:
 
-* macOS 10.12: Xcode 9.2 (clang-900.0.39.2), GCC 9.2, Clang 9.0, macOS 10.13: Xcode 10.1, macOS 10.14: Xcode 11.2, macOS 10.15: Xcode 11.6
+* macOS 10.12: Xcode 9.2 (clang-900.0.39.2), GCC 9.2, Clang 9.0, macOS 10.13: Xcode 10.1, macOS 10.14: Xcode 11.2, macOS 10.15: Xcode 11.6, Xcode 12.4
 * Windows: Visual Studio 2017, Visual Studio 2015, Visual Studio 2019, MinGW GCC 6.3 (Win32), GCC 7.2 (Win64), Cygwin GCC 10.2 (no CI yet)
 * Linux (Ubuntu): GCC (5.5, 6.5, 7.4, 8.3, 9.2), Clang (5.0, 6.0, 7.1, 8.0, 9.0)
 * Linux (Alpine ARM/ARM64): GCC 9.2.0
@@ -119,8 +121,8 @@ in the standard, and there might be issues in these implementations too.
 
 ### Downloads
 
-The latest release version is [v1.5.4](https://github.com/gulrak/filesystem/tree/v1.5.4) and
-source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.5.4).
+The latest release version is [v1.5.6](https://github.com/gulrak/filesystem/tree/v1.5.6) and
+source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.5.6).
 
 The latest pre-native-backend version is [v1.4.0](https://github.com/gulrak/filesystem/tree/v1.4.0) and
 source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.4.0).
@@ -554,7 +556,7 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.5.5 (WIP)
+### [v1.5.6](https://github.com/gulrak/filesystem/releases/tag/v1.5.6)
 
 * Fix for [#124](https://github.com/gulrak/filesystem/issues/124),
   `ghc::filesystem` treated mounted folder/volumes erroneously as symlinks,
