@@ -74,6 +74,9 @@
 #elif defined(__EMSCRIPTEN__)
 #define GHC_OS_WEB
 #include <wasi/api.h>
+#elif defined(__QNX__)
+#define GHC_OS_QNX
+#define GHC_NO_DIRENT_D_TYPE
 #else
 #error "Operating system currently not supported!"
 #endif
@@ -5595,8 +5598,13 @@ public:
             } while (skip || std::strcmp(_entry->d_name, ".") == 0 || std::strcmp(_entry->d_name, "..") == 0);
         }
     }
+
     void copyToDirEntry()
     {
+#ifdef GHC_NO_DIRENT_D_TYPE
+        _dir_entry._symlink_status = file_status();
+        _dir_entry._status = file_status();
+#else
         _dir_entry._symlink_status.permissions(perms::unknown);
         switch(_entry->d_type) {
             case DT_BLK: _dir_entry._symlink_status.type(file_type::block); break;
@@ -5606,6 +5614,7 @@ public:
             case DT_LNK: _dir_entry._symlink_status.type(file_type::symlink); break;
             case DT_REG: _dir_entry._symlink_status.type(file_type::regular); break;
             case DT_SOCK: _dir_entry._symlink_status.type(file_type::socket); break;
+            case DT_UNKNOWN: _dir_entry._symlink_status.type(file_type::none); break;
             default: _dir_entry._symlink_status.type(file_type::unknown); break;
         }
         if (_entry->d_type != DT_LNK) {
@@ -5615,6 +5624,7 @@ public:
             _dir_entry._status.type(file_type::none);
             _dir_entry._status.permissions(perms::unknown);
         }
+#endif
         _dir_entry._file_size = static_cast<uintmax_t>(-1);
         _dir_entry._hard_link_count = static_cast<uintmax_t>(-1);
         _dir_entry._last_write_time = 0;
