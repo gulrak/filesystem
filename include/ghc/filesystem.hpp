@@ -595,6 +595,7 @@ private:
     friend void swap(path& lhs, path& rhs) noexcept;
     friend size_t hash_value(const path& p) noexcept;
     friend path canonical(const path& p, std::error_code& ec);
+    friend bool create_directories(const path& p, std::error_code& ec) noexcept;
     string_type::size_type root_name_length() const noexcept;
     void postprocess_path_with_format(format fmt);
     void check_long_path();
@@ -3900,35 +3901,36 @@ GHC_INLINE bool create_directories(const path& p, std::error_code& ec) noexcept
     path current;
     ec.clear();
     bool didCreate = false;
-    for (path::string_type part : p) {
+    auto rootPathLen = p._prefixLength + p.root_name_length() + (p.has_root_directory() ? 1 : 0);
+    current = p.native().substr(0, rootPathLen);
+    path folders(p._path.substr(rootPathLen));
+    for (path::string_type part : folders) {
         current /= part;
-        if (current != p.root_name() && current != p.root_path()) {
-            std::error_code tec;
-            auto fs = status(current, tec);
-            if (tec && fs.type() != file_type::not_found) {
-                ec = tec;
-                return false;
-            }
-            if (!exists(fs)) {
-                create_directory(current, ec);
-                if (ec) {
-                    std::error_code tmp_ec;
-                    if (is_directory(current, tmp_ec)) {
-                        ec.clear();
-                    }
-                    else {
-                        return false;
-                    }
-                }
-                didCreate = true;
-            }
-#ifndef LWG_2935_BEHAVIOUR
-            else if (!is_directory(fs)) {
-                ec = detail::make_error_code(detail::portable_error::exists);
-                return false;
-            }
-#endif
+        std::error_code tec;
+        auto fs = status(current, tec);
+        if (tec && fs.type() != file_type::not_found) {
+            ec = tec;
+            return false;
         }
+        if (!exists(fs)) {
+            create_directory(current, ec);
+            if (ec) {
+                std::error_code tmp_ec;
+                if (is_directory(current, tmp_ec)) {
+                    ec.clear();
+                }
+                else {
+                    return false;
+                }
+            }
+            didCreate = true;
+        }
+#ifndef LWG_2935_BEHAVIOUR
+        else if (!is_directory(fs)) {
+            ec = detail::make_error_code(detail::portable_error::exists);
+            return false;
+        }
+#endif
     }
     return didCreate;
 }

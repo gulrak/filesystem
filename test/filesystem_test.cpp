@@ -2854,13 +2854,15 @@ TEST_CASE("Windows: Long filename support", "[filesystem][path][fs.path.win.long
         CHECK_NOTHROW(fs::create_directory(dir));
         CHECK(fs::exists(dir));
         generateFile(dir / "f0");
-        CHECK(fs::exists(dir / "f0"));
-        auto native = dir.u8string();
-        if (native.substr(0, 4) == u8"\\\\?\\") {
-            break;
-        }
+        REQUIRE(fs::exists(dir / "f0"));
     }
-    CHECK(c <= 'Z');
+    CHECK(c > 'Z');
+    fs::remove_all(fs::current_path() / std::string(16, 'A'));
+    CHECK(!fs::exists(fs::current_path() / std::string(16, 'A')));
+    CHECK_NOTHROW(fs::create_directories(dir));
+    CHECK(fs::exists(dir));
+    generateFile(dir / "f0");
+    CHECK(fs::exists(dir / "f0"));
 #else
     WARN("Windows specific tests are empty on non-Windows systems.");
 #endif
