@@ -3902,7 +3902,7 @@ GHC_INLINE bool create_directories(const path& p, std::error_code& ec) noexcept
     bool didCreate = false;
     for (path::string_type part : p) {
         current /= part;
-        if (current != p.root_name() && current != p.root_path()) {
+        if (current != p.root_name() && current != p.root_path() && current != GHC_PLATFORM_LITERAL("\\\\?\\")) {
             std::error_code tec;
             auto fs = status(current, tec);
             if (tec && fs.type() != file_type::not_found) {

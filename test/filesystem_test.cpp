@@ -2861,6 +2861,12 @@ TEST_CASE("Windows: Long filename support", "[filesystem][path][fs.path.win.long
         }
     }
     CHECK(c <= 'Z');
+
+    fs::remove(fs::current_path().u8string() + std::string(16, 'A'));
+    CHECK_NOTHROW(fs::create_directories(dir));
+    CHECK(fs::exists(dir));
+    generateFile(dir / "f0");
+    CHECK(fs::exists(dir / "f0"));
 #else
     WARN("Windows specific tests are empty on non-Windows systems.");
 #endif
