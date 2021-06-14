@@ -5,7 +5,7 @@
 [![Build Status](https://api.cirrus-ci.com/github/gulrak/filesystem.svg?branch=master)](https://cirrus-ci.com/github/gulrak/filesystem)
 [![Build Status](https://cloud.drone.io/api/badges/gulrak/filesystem/status.svg?ref=refs/heads/master)](https://cloud.drone.io/gulrak/filesystem)
 [![Coverage Status](https://coveralls.io/repos/github/gulrak/filesystem/badge.svg?branch=master)](https://coveralls.io/github/gulrak/filesystem?branch=master)
-[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.5.6)
+[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.5.8)
 
 # Filesystem
 
@@ -121,8 +121,8 @@ in the standard, and there might be issues in these implementations too.
 
 ### Downloads
 
-The latest release version is [v1.5.6](https://github.com/gulrak/filesystem/tree/v1.5.6) and
-source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.5.6).
+The latest release version is [v1.5.8](https://github.com/gulrak/filesystem/tree/v1.5.8) and
+source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.5.8).
 
 The latest pre-native-backend version is [v1.4.0](https://github.com/gulrak/filesystem/tree/v1.4.0) and
 source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.4.0).
@@ -556,7 +556,7 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.5.7 (wip)
+### [v1.5.8](https://github.com/gulrak/filesystem/releases/tag/v1.5.8)
 
 * Fix for [#125]((https://github.com/gulrak/filesystem/issues/124), where
   `fs::create_directories` on Windows no longer breaks on long filenames.
