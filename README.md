@@ -556,6 +556,11 @@ to the expected behavior.
 
 ## Release Notes
 
+### v1.5.7 (wip)
+
+* Fix for [#125]((https://github.com/gulrak/filesystem/issues/124), where
+  `fs::create_directories` on Windows no longer breaks on long filenames.
+
 ### [v1.5.6](https://github.com/gulrak/filesystem/releases/tag/v1.5.6)
 
 * Fix for [#124](https://github.com/gulrak/filesystem/issues/124),
