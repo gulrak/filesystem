@@ -1,6 +1,6 @@
 name: CMake Build Matrix
 
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 jobs:
   build:
@@ -10,8 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         config:
-
-          - name: "Ubuntu latest GCC 9.3",
+          - name: "Ubuntu latest GCC 9.3"
             os: ubuntu-20.04
             build_type: Release
             packages: ninja-build
@@ -70,7 +69,7 @@ jobs:
           mkdir build
           mkdir install
           cmake -G "${{ matrix.config.generator }}" -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} -DCMAKE_INSTALL_PREFIX:PATH=install
-          
+
       - name: Build project
         shell: bash
         run: cmake --build build --config ${{ matrix.config.build_type }}
