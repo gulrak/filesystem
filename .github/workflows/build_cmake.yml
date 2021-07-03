@@ -31,12 +31,16 @@ jobs:
             build_type: Release
             packages: ninja
             generator: "Visual Studio 16 2019"
+            cc: cl
+            cxx: cl
 
           - name: "macOS 10.15 AppleClang"
-            os: windows-latest
+            os: macos-10.15
             build_type: Release
             packages: ninja
             generator: Ninja
+            cc: clang
+            cxx: clang++
 
     steps:
       - uses: actions/checkout@v2
@@ -64,6 +68,8 @@ jobs:
       - name: Configure project
         shell: bash
         run: |
+          export CC=${{ matrix.config.cc }}
+          export CXX=${{ matrix.config.cxx }}
           ninja --version
           cmake --version
           mkdir build
@@ -75,4 +81,4 @@ jobs:
         run: cmake --build build --config ${{ matrix.config.build_type }}
 
       - name: Run tests
-        run: cd build && ctest
+        run: cd build && ctest -C ${{ matrix.config.build_type }}
