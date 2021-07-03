@@ -3,58 +3,77 @@ name: CMake Build Matrix
 on: [push, pull_request]
 
 jobs:
-  build-ubuntu-20:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-        with:
-          submodules: true
-      - name: install
-        run: sudo apt-get -y install xorg-dev libglu1-mesa-dev libncursesw5-dev
-      - name: configure
-        run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_WITH_TESTS=ON -DCMAKE_CXX_COMPILER="g++-9" -DCMAKE_C_COMPILER="gcc-9" ..
-      - name: build
-        run: cmake --build build
-      - name: test
-        run: cd build && ctest
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
 
-  build-ubuntu-18:
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v1
-        with:
-          submodules: true
-      - name: install
-        run: sudo apt-get -y install gcc-8 g++-8 xorg-dev libglu1-mesa-dev libncursesw5-dev
-      - name: configure
-        run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_WITH_TESTS=ON -DCMAKE_CXX_COMPILER="g++-8" -DCMAKE_C_COMPILER="gcc-8" ..
-      - name: build
-        run: cmake --build build
-      - name: test
-        run: cd build && ctest
+          - name: "Ubuntu latest GCC 9.3",
+            os: ubuntu-20.04
+            build_type: Release
+            packages: ninja-build
+            generator: Ninja
+            cc: gcc
+            cxx: g++
 
-  build-macos:
-    runs-on: macOS-latest
-    steps:
-      - uses: actions/checkout@v1
-        with:
-          submodules: true
-      - name: configure
-        run: mkdir build && cd build && cmake -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBUILD_WITH_TESTS=ON ..
-      - name: build
-        run: cmake --build build
-      - name: test
-        run: cd build && ctest
+          - name: "Ubuntu 18.04 GCC 8.4"
+            os: ubuntu-18.04
+            build_type: Release
+            packages: ninja-build gcc-8 g++-8
+            generator: Ninja
+            cc: gcc-8
+            cxx: g++-8
 
-  build-windows:
-    runs-on: windows-latest
+          - name: "Windows MSVC 2019"
+            os: windows-latest
+            build_type: Release
+            packages: ninja
+            generator: "Visual Studio 16 2019"
+
+          - name: "macOS 10.15 AppleClang"
+            os: windows-latest
+            build_type: Release
+            packages: ninja
+            generator: Ninja
+
     steps:
-      - uses: actions/checkout@v1
-        with:
-          submodules: true
-      - name: configure
-        run: mkdir build && cd build && cmake ..
-      - name: build
-        run: cmake --build build --config Release
-      - name: test
-        run: cd build && ctest -C Release
+      - uses: actions/checkout@v2
+
+      - name: print environment
+        run: |
+          echo github.event.action: ${{ github.event.action }}
+          echo github.event_name: ${{ github.event_name }}
+
+      - name: Install dependencies on Ubuntu
+        if: startsWith(matrix.config.os, 'ubuntu')
+        run: |
+          sudo apt install ${{ matrix.config.packages }}
+
+      - name: Install dependencies on windows
+        if: startsWith(matrix.config.os, 'windows')
+        run: |
+          choco install ${{ matrix.config.packages }}
+
+      - name: Install dependencies on macOS
+        if: startsWith(matrix.config.os, 'macos')
+        run: |
+          brew install ${{ matrix.config.packages }}
+
+      - name: Configure project
+        shell: bash
+        run: |
+          ninja --version
+          cmake --version
+          mkdir build
+          mkdir install
+          cmake -G "${{ matrix.config.generator }}" -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} -DCMAKE_INSTALL_PREFIX:PATH=install
+          
+      - name: Build project
+        shell: bash
+        run: cmake --build build --config ${{ matrix.config.build_type }}
+
+      - name: Run tests
+        run: cd build && ctest
