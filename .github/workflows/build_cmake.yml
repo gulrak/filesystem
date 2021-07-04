@@ -118,6 +118,7 @@ jobs:
         if: startsWith(matrix.config.build_type, 'Debug')
         env:
           COVERALLS_DEBUG: true
+          NODE_COVERALLS_DEBUG: 1
         uses: coverallsapp/github-action@master
         with:
           path-to-lcov: ${{ github.workspace }}/build/coverage.info
