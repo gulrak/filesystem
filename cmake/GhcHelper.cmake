@@ -52,7 +52,8 @@ macro(AddTestExecutableWithStdCpp cppStd)
             $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wpedantic -Werror -Wno-error=deprecated-declarations>
             $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wpedantic -Wno-psabi -Werror -Wno-error=deprecated-declarations>
             $<$<CXX_COMPILER_ID:MSVC>:/WX /wd4996>
-            $<$<BOOL:${CYGWIN}>:-Wa,-mbig-obj>)
+            $<$<BOOL:${CYGWIN}>:-Wa,-mbig-obj>
+            $<$<BOOL:${GHC_COVERAGE}>:--coverage>)
     if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
         target_compile_definitions(filesystem_test_cpp${cppStd} PRIVATE _CRT_SECURE_NO_WARNINGS)
     endif()
