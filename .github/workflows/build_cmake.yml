@@ -29,7 +29,7 @@ jobs:
           - name: "Ubuntu 20.04 Clang 11.0"
             os: ubuntu-20.04
             build_type: Release
-            packages: ninja-build
+            packages: ninja-build clang-11 libc++-11-dev libc++abi-11-dev
             generator: Ninja
             cc: clang-11
             cxx: clang++-11
@@ -79,19 +79,19 @@ jobs:
             build_type: Release
             packages: ninja-build
             generator: Ninja
-            cc: clang-9.0
-            cxx: clang++-9.0
+            cc: clang
+            cxx: clang++
 
-          - name: "Ubuntu 18.04 Clang 6.0"
-            os: ubuntu-18.04
+          - name: "Ubuntu 16.04 Clang 6.0"
+            os: ubuntu-16.04
             build_type: Release
             packages: ninja-build clang-6.0
             generator: Ninja
             cc: clang-6.0
             cxx: clang++-6.0
 
-          - name: "Ubuntu 18.04 Clang 5.0"
-            os: ubuntu-18.04
+          - name: "Ubuntu 16.04 Clang 5.0"
+            os: ubuntu-16.04
             build_type: Release
             packages: ninja-build clang-5.0
             generator: Ninja
