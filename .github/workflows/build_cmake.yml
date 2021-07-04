@@ -72,7 +72,7 @@ jobs:
         run: |
           sudo apt install ${{ matrix.config.packages }}
           if [[ "${{ matrix.config.build_type }}" == "Debug" ]]; then
-            gem install coveralls-lcov
+            sudo gem install coveralls-lcov
           fi
 
       - name: Install dependencies on windows
