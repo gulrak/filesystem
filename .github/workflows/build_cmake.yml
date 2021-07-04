@@ -18,6 +18,22 @@ jobs:
             cc: gcc
             cxx: g++
 
+          - name: "Ubuntu 20.04 Clang 10.0"
+            os: ubuntu-20.04
+            build_type: Release
+            packages: ninja-build
+            generator: Ninja
+            cc: clang-10
+            cxx: clang++-10
+
+          - name: "Ubuntu 20.04 Clang 11.0"
+            os: ubuntu-20.04
+            build_type: Release
+            packages: ninja-build
+            generator: Ninja
+            cc: clang-11
+            cxx: clang++-11
+
           - name: "Ubuntu 20.04 GCC 9.3 coverage"
             os: ubuntu-20.04
             build_type: Debug
@@ -57,6 +73,30 @@ jobs:
             generator: Ninja
             cc: gcc-5
             cxx: g++-5
+
+          - name: "Ubuntu 18.04 Clang 9.0"
+            os: ubuntu-18.04
+            build_type: Release
+            packages: ninja-build
+            generator: Ninja
+            cc: clang-9.0
+            cxx: clang++-9.0
+
+          - name: "Ubuntu 18.04 Clang 6.0"
+            os: ubuntu-18.04
+            build_type: Release
+            packages: ninja-build clang-6.0
+            generator: Ninja
+            cc: clang-6.0
+            cxx: clang++-6.0
+
+          - name: "Ubuntu 18.04 Clang 5.0"
+            os: ubuntu-18.04
+            build_type: Release
+            packages: ninja-build clang-5.0
+            generator: Ninja
+            cc: clang-5.0
+            cxx: clang++-5.0
 
           - name: "Windows MSVC 2019"
             os: windows-latest
