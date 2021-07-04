@@ -1,18 +1,45 @@
 ![Supported Platforms](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows%20%7C%20FreeBSD-blue.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
-[![Build Status](https://travis-ci.org/gulrak/filesystem.svg?branch=master)](https://travis-ci.org/gulrak/filesystem)
+[![CMake Build Matrix](https://github.com/gulrak/filesystem/actions/workflows/build_cmake.yml/badge.svg?branch=master)](https://github.com/gulrak/filesystem/actions/workflows/build_cmake.yml)
 [![Build Status](https://ci.appveyor.com/api/projects/status/t07wp3k2cddo0hpo/branch/master?svg=true)](https://ci.appveyor.com/project/gulrak/filesystem)
 [![Build Status](https://api.cirrus-ci.com/github/gulrak/filesystem.svg?branch=master)](https://cirrus-ci.com/github/gulrak/filesystem)
 [![Build Status](https://cloud.drone.io/api/badges/gulrak/filesystem/status.svg?ref=refs/heads/master)](https://cloud.drone.io/gulrak/filesystem)
 [![Coverage Status](https://coveralls.io/repos/github/gulrak/filesystem/badge.svg?branch=master)](https://coveralls.io/github/gulrak/filesystem?branch=master)
 [![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.5.8)
 
+- [Filesystem](#filesystem)
+  - [Motivation](#motivation)
+  - [Why the namespace GHC?](#why-the-namespace-ghc)
+  - [Platforms](#platforms)
+  - [Tests](#tests)
+  - [Usage](#usage)
+    - [Downloads](#downloads)
+    - [Using it as Single-File-Header](#using-it-as-single-file-header)
+    - [Using it as Forwarding-/Implementation-Header](#using-it-as-forwarding-implementation-header)
+    - [Git Submodule and CMake](#git-submodule-and-cmake)
+    - [Versioning](#versioning)
+  - [Documentation](#documentation)
+    - [`ghc::filesystem::ifstream`, `ghc::filesystem::ofstream`, `ghc::filesystem::fstream`](#ghcfilesystemifstream-ghcfilesystemofstream-ghcfilesystemfstream)
+    - [`ghc::filesystem::u8arguments`](#ghcfilesystemu8arguments)
+  - [Differences](#differences)
+    - [LWG Defects](#lwg-defects)
+    - [Not Implemented on C++ before C++17](#not-implemented-on-c-before-c17)
+    - [Differences in API](#differences-in-api)
+      - [Differences of Specific Interfaces](#differences-of-specific-interfaces)
+    - [Differences in Behavior](#differences-in-behavior)
+      - [fs.path](#fspath-refhttpsencppreferencecomwcppfilesystempath)
+  - [Open Issues](#open-issues)
+    - [Windows](#windows)
+      - [Symbolic Links on Windows](#symbolic-links-on-windows)
+      - [Permissions](#permissions)
+  - [Release Notes](#release-notes)
+  
 # Filesystem
 
 This is a header-only single-file `std::filesystem` compatible helper library,
 based on the C++17 and C++20 specs, but implemented for C++11, C++14, C++17 or C++20
 (tightly following  the C++17 standard with very few documented exceptions). It is currently tested on
-macOS 10.12/10.14/10.15, Windows 10, Ubuntu 18.04, CentOS 7, CentOS 8, FreeBSD 12
+macOS 10.12/10.14/10.15, Windows 10, Ubuntu 18.04, Ubuntu 20.04, CentOS 7, CentOS 8, FreeBSD 12
 and Alpine ARM/ARM64 Linux but should work on other systems too, as long as you have
 at least a C++11 compatible compiler. It should work with Android NDK, Emscripten and I even
 had reports of it being used on iOS (within sandboxing constraints) and with v1.5.6 there
@@ -555,6 +582,12 @@ to the expected behavior.
 
 
 ## Release Notes
+
+### v1.6.0 (wip)
+
+* Replaced _travis-ci.org_  with GitHub Workflow for the configurations:
+  Ubuntu 20.04: GCC 9.3, Ubuntu 18.04: GCC 7.5, GCC 8.4, macOS 10.15: Xcode 12.4,
+  Windows 10: Visual Studio 2019
 
 ### [v1.5.8](https://github.com/gulrak/filesystem/releases/tag/v1.5.8)
 
