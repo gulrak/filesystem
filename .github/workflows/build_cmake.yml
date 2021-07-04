@@ -116,8 +116,10 @@ jobs:
 
       - name: Upload coverage info
         if: startsWith(matrix.config.build_type, 'Debug')
+        env:
+          COVERALLS_DEBUG: true
         uses: coverallsapp/github-action@master
         with:
-          path-to-lcov: ./build/coverage.info
+          path-to-lcov: ${{ github.workspace }}/build/coverage.info
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
