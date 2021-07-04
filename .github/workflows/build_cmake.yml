@@ -15,6 +15,7 @@ jobs:
             build_type: Release
             packages: ninja-build
             generator: Ninja
+            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
             cc: gcc
             cxx: g++
 
@@ -23,6 +24,7 @@ jobs:
             build_type: Release
             packages: ninja-build
             generator: Ninja
+            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
             cc: clang-10
             cxx: clang++-10
 
@@ -31,6 +33,7 @@ jobs:
             build_type: Release
             packages: ninja-build clang-11 libc++-11-dev libc++abi-11-dev
             generator: Ninja
+            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
             cc: clang-11
             cxx: clang++-11
 
@@ -39,6 +42,7 @@ jobs:
             build_type: Debug
             packages: ninja-build lcov
             generator: Ninja
+            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
             cc: gcc
             cxx: g++
 
@@ -47,6 +51,7 @@ jobs:
             build_type: Release
             packages: ninja-build gcc-8 g++-8
             generator: Ninja
+            compatibility: "cxx_std_11;cxx_std_17"
             cc: gcc-8
             cxx: g++-8
 
@@ -55,6 +60,7 @@ jobs:
             build_type: Release
             packages: ninja-build
             generator: Ninja
+            compatibility: "cxx_std_11;cxx_std_17"
             cc: gcc-7
             cxx: g++-7
 
@@ -63,6 +69,7 @@ jobs:
             build_type: Release
             packages: ninja-build gcc-6 g++-6
             generator: Ninja
+            compatibility: "cxx_std_11;cxx_std_17"
             cc: gcc-6
             cxx: g++-6
 
@@ -71,6 +78,7 @@ jobs:
             build_type: Release
             packages: ninja-build gcc-5 g++-5
             generator: Ninja
+            compatibility: "cxx_std_11;cxx_std_17"
             cc: gcc-5
             cxx: g++-5
 
@@ -79,6 +87,7 @@ jobs:
             build_type: Release
             packages: ninja-build
             generator: Ninja
+            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
             cc: clang
             cxx: clang++
 
@@ -87,6 +96,7 @@ jobs:
             build_type: Release
             packages: ninja-build clang-6.0
             generator: Ninja
+            compatibility: "cxx_std_11;cxx_std_17"
             cc: clang-6.0
             cxx: clang++-6.0
 
@@ -95,6 +105,7 @@ jobs:
             build_type: Release
             packages: ninja-build clang-5.0
             generator: Ninja
+            compatibility: "cxx_std_11;cxx_std_17"
             cc: clang-5.0
             cxx: clang++-5.0
 
@@ -103,6 +114,7 @@ jobs:
             build_type: Release
             packages: ninja
             generator: "Visual Studio 16 2019"
+            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
             cc: cl
             cxx: cl
 
@@ -111,6 +123,7 @@ jobs:
             build_type: Release
             packages: ninja
             generator: Ninja
+            compatibility: "cxx_std_11;cxx_std_17"
             cc: clang
             cxx: clang++
 
@@ -150,9 +163,9 @@ jobs:
           mkdir build
           mkdir install
           if [[ "${{ matrix.config.build_type }}" == "Debug" ]]; then
-            cmake -G "${{ matrix.config.generator }}" -S . -B build -DCMAKE_BUILD_TYPE=Debug -DGHC_COVERAGE=ON -DCMAKE_INSTALL_PREFIX:PATH=install
+            cmake -G "${{ matrix.config.generator }}" -S . -B build -DCMAKE_BUILD_TYPE=Debug -DGHC_COVERAGE=ON -DGHC_FILESYSTEM_TEST_COMPILE_FEATURES="${{ matrix.config.compatibility }}" -DCMAKE_INSTALL_PREFIX:PATH=install
           else
-            cmake -G "${{ matrix.config.generator }}" -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} -DCMAKE_INSTALL_PREFIX:PATH=install
+            cmake -G "${{ matrix.config.generator }}" -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} -DGHC_FILESYSTEM_TEST_COMPILE_FEATURES="${{ matrix.config.compatibility }}" -DCMAKE_INSTALL_PREFIX:PATH=install
           fi
 
       - name: Build project
