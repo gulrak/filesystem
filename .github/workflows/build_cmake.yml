@@ -71,9 +71,6 @@ jobs:
         shell: bash
         run: |
           sudo apt install ${{ matrix.config.packages }}
-          if [[ "${{ matrix.config.build_type }}" == "Debug" ]]; then
-            sudo gem install coveralls-lcov
-          fi
 
       - name: Install dependencies on windows
         if: startsWith(matrix.config.os, 'windows')
@@ -118,6 +115,7 @@ jobs:
           sed -i 's|SF:/.*/filesystem/|SF:../|g' coverage.info
 
       - name: Upload coverage info
+        if: startsWith(matrix.config.build_type, 'Debug')
         uses: coverallsapp/github-action@master
         with:
           path-to-lcov: ./build/coverage.info
