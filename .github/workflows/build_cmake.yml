@@ -10,10 +10,18 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - name: "Ubuntu latest GCC 9.3"
+          - name: "Ubuntu 20.04 GCC 9.3"
             os: ubuntu-20.04
             build_type: Release
             packages: ninja-build
+            generator: Ninja
+            cc: gcc
+            cxx: g++
+
+          - name: "Ubuntu 20.04 GCC 9.3 coverage"
+            os: ubuntu-20.04
+            build_type: Debug
+            packages: ninja-build lcov
             generator: Ninja
             cc: gcc
             cxx: g++
@@ -25,6 +33,14 @@ jobs:
             generator: Ninja
             cc: gcc-8
             cxx: g++-8
+
+          - name: "Ubuntu 18.04 GCC 7.5"
+            os: ubuntu-18.04
+            build_type: Release
+            packages: ninja-build
+            generator: Ninja
+            cc: gcc-7
+            cxx: g++-7
 
           - name: "Windows MSVC 2019"
             os: windows-latest
@@ -52,8 +68,12 @@ jobs:
 
       - name: Install dependencies on Ubuntu
         if: startsWith(matrix.config.os, 'ubuntu')
+        shell: bash
         run: |
           sudo apt install ${{ matrix.config.packages }}
+          if [[ "${{ matrix.config.build_type }}" == "Debug" ]]; then
+            gem install coveralls-lcov
+          fi
 
       - name: Install dependencies on windows
         if: startsWith(matrix.config.os, 'windows')
@@ -74,11 +94,24 @@ jobs:
           cmake --version
           mkdir build
           mkdir install
-          cmake -G "${{ matrix.config.generator }}" -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} -DCMAKE_INSTALL_PREFIX:PATH=install
+          if [[ "${{ matrix.config.build_type }}" == "Debug" ]]; then
+            cmake -G "${{ matrix.config.generator }}" -S . -B build -DCMAKE_BUILD_TYPE=Debug -DGHC_COVERAGE=ON -DCMAKE_INSTALL_PREFIX:PATH=install
+          else
+            cmake -G "${{ matrix.config.generator }}" -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} -DCMAKE_INSTALL_PREFIX:PATH=install
+          fi
 
       - name: Build project
         shell: bash
-        run: cmake --build build --config ${{ matrix.config.build_type }}
+        run: |
+          cmake --build build --config ${{ matrix.config.build_type }}
 
       - name: Run tests
-        run: cd build && ctest -C ${{ matrix.config.build_type }}
+        run: |
+          cd build && ctest -C ${{ matrix.config.build_type }}
+
+      - name: Collect coverage info
+        run: |
+          cd build
+          lcov --compat-libtool --directory . --capture --output-file coverage_output.info
+          lcov --remove coverage_output.info '/usr/*' '*/c++/*' '*.h' '*/catch.hpp' -o coverage.info
+          sed -i 's|SF:/.*/filesystem/|SF:../|g' coverage.info
