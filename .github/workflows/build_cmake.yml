@@ -116,4 +116,10 @@ jobs:
           lcov --compat-libtool --directory . --capture --output-file coverage_output.info
           lcov --remove coverage_output.info '/usr/*' '*/c++/*' '*.h' '*/catch.hpp' -o coverage.info
           sed -i 's|SF:/.*/filesystem/|SF:../|g' coverage.info
-          coveralls-lcov coverage.info
+
+      - name: Upload coverage info
+        uses: coverallsapp/github-action@master
+        with:
+          path-to-lcov: ./build/coverage.info
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
