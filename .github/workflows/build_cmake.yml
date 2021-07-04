@@ -110,8 +110,10 @@ jobs:
           cd build && ctest -C ${{ matrix.config.build_type }}
 
       - name: Collect coverage info
+        if: startsWith(matrix.config.build_type, 'Debug')
         run: |
           cd build
           lcov --compat-libtool --directory . --capture --output-file coverage_output.info
           lcov --remove coverage_output.info '/usr/*' '*/c++/*' '*.h' '*/catch.hpp' -o coverage.info
           sed -i 's|SF:/.*/filesystem/|SF:../|g' coverage.info
+          coveralls-lcov coverage.info
