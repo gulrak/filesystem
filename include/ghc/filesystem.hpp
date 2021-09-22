@@ -4740,7 +4740,7 @@ GHC_INLINE uintmax_t remove_all(const path& p, std::error_code& ec) noexcept
         return static_cast<uintmax_t>(-1);
     }
     std::error_code tec;
-    auto fs = status(p, tec);
+    auto fs = symlink_status(p, tec);
     if (exists(fs) && is_directory(fs)) {
         for (auto iter = directory_iterator(p, ec); iter != directory_iterator(); iter.increment(ec)) {
             if (ec && !detail::is_not_found_error(ec)) {

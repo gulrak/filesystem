@@ -2607,6 +2607,10 @@ TEST_CASE("fs.op.remove_all - remove_all", "[filesystem][operations][fs.op.remov
     CHECK_NOTHROW(fs::remove_all("dir1/non-existing", ec));
     CHECK(!ec);
     CHECK(fs::remove_all("dir1/non-existing", ec) == 0);
+    if (is_symlink_creation_supported()) {
+        fs::create_directory_symlink("dir1", "dir1link");
+        CHECK(fs::remove_all("dir1link") == 1);
+    }
     CHECK(fs::remove_all("dir1") == 5);
     CHECK(fs::directory_iterator(t.path()) == fs::directory_iterator());
 }
