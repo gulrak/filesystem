@@ -91,8 +91,8 @@ jobs:
             cc: clang
             cxx: clang++
 
-          - name: "Ubuntu 16.04 Clang 6.0"
-            os: ubuntu-16.04
+          - name: "Ubuntu 18.04 Clang 6.0"
+            os: ubuntu-18.04
             build_type: Release
             packages: ninja-build clang-6.0
             generator: Ninja
@@ -100,8 +100,8 @@ jobs:
             cc: clang-6.0
             cxx: clang++-6.0
 
-          - name: "Ubuntu 16.04 Clang 5.0"
-            os: ubuntu-16.04
+          - name: "Ubuntu 18.04 Clang 5.0"
+            os: ubuntu-18.04
             build_type: Release
             packages: ninja-build clang-5.0
             generator: Ninja
