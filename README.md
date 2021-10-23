@@ -5,7 +5,7 @@
 [![Build Status](https://api.cirrus-ci.com/github/gulrak/filesystem.svg?branch=master)](https://cirrus-ci.com/github/gulrak/filesystem)
 [![Build Status](https://cloud.drone.io/api/badges/gulrak/filesystem/status.svg?ref=refs/heads/master)](https://cloud.drone.io/gulrak/filesystem)
 [![Coverage Status](https://coveralls.io/repos/github/gulrak/filesystem/badge.svg?branch=master)](https://coveralls.io/github/gulrak/filesystem?branch=master)
-[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.5.8)
+[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.5.10)
 
 - [Filesystem](#filesystem)
   - [Motivation](#motivation)
@@ -148,8 +148,8 @@ in the standard, and there might be issues in these implementations too.
 
 ### Downloads
 
-The latest release version is [v1.5.8](https://github.com/gulrak/filesystem/tree/v1.5.8) and
-source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.5.8).
+The latest release version is [v1.5.10](https://github.com/gulrak/filesystem/tree/v1.5.10) and
+source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.5.10).
 
 The latest pre-native-backend version is [v1.4.0](https://github.com/gulrak/filesystem/tree/v1.4.0) and
 source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.4.0).
@@ -583,8 +583,16 @@ to the expected behavior.
 
 ## Release Notes
 
-### v1.6.0 (wip)
+### [v1.5.10](https://github.com/gulrak/filesystem/releases/tag/v1.5.10)
 
+* Pull request [#136](https://github.com/gulrak/filesystem/pull/136), the Windows
+  implementation used some unnecessary expensive shared pointer for resource
+  management and these where replaced by a dedicated code.
+* Fix for [#132](https://github.com/gulrak/filesystem/issues/132), pull request
+  [#135](https://github.com/gulrak/filesystem/pull/135), `fs::remove_all` now
+  just deletes symbolic links instead of following them.
+* Pull request [#133](https://github.com/gulrak/filesystem/pull/133), fix for
+  `fs::space` where a numerical overflow could happen in a multiplication.
 * Replaced _travis-ci.org_  with GitHub Workflow for the configurations:
   Ubuntu 20.04: GCC 9.3, Ubuntu 18.04: GCC 7.5, GCC 8.4, macOS 10.15: Xcode 12.4,
   Windows 10: Visual Studio 2019

@@ -301,7 +301,7 @@
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 // ghc::filesystem version in decimal (major * 10000 + minor * 100 + patch)
-#define GHC_FILESYSTEM_VERSION 10509L
+#define GHC_FILESYSTEM_VERSION 10510L
 
 #if !defined(GHC_WITH_EXCEPTIONS) && (defined(__EXCEPTIONS) || defined(__cpp_exceptions) || defined(_CPPUNWIND))
 #define GHC_WITH_EXCEPTIONS
@@ -2014,15 +2014,15 @@ public:
     typedef HANDLE element_type;
 
     unique_handle() noexcept
-        : handle_(INVALID_HANDLE_VALUE)
+        : _handle(INVALID_HANDLE_VALUE)
     {
     }
     explicit unique_handle(element_type h) noexcept
-        : handle_(h)
+        : _handle(h)
     {
     }
     unique_handle(unique_handle&& u) noexcept
-        : handle_(u.release())
+        : _handle(u.release())
     {
     }
     ~unique_handle() { reset(); }
@@ -2031,26 +2031,26 @@ public:
         reset(u.release());
         return *this;
     }
-    element_type get() const noexcept { return handle_; }
-    explicit operator bool() const noexcept { return handle_ != INVALID_HANDLE_VALUE; }
+    element_type get() const noexcept { return _handle; }
+    explicit operator bool() const noexcept { return _handle != INVALID_HANDLE_VALUE; }
     element_type release() noexcept
     {
-        element_type tmp = handle_;
-        handle_ = INVALID_HANDLE_VALUE;
+        element_type tmp = _handle;
+        _handle = INVALID_HANDLE_VALUE;
         return tmp;
     }
     void reset(element_type h = INVALID_HANDLE_VALUE) noexcept
     {
-        element_type tmp = handle_;
-        handle_ = h;
+        element_type tmp = _handle;
+        _handle = h;
         if (tmp != INVALID_HANDLE_VALUE) {
             CloseHandle(tmp);
         }
     }
-    void swap(unique_handle& u) noexcept { std::swap(handle_, u.handle_); }
+    void swap(unique_handle& u) noexcept { std::swap(_handle, u._handle); }
 
 private:
-    element_type handle_;
+    element_type _handle;
 };
 
 #ifndef REPARSE_DATA_BUFFER_HEADER_SIZE
