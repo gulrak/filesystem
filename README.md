@@ -39,7 +39,7 @@
 This is a header-only single-file `std::filesystem` compatible helper library,
 based on the C++17 and C++20 specs, but implemented for C++11, C++14, C++17 or C++20
 (tightly following  the C++17 standard with very few documented exceptions). It is currently tested on
-macOS 10.12/10.14/10.15, Windows 10, Ubuntu 18.04, Ubuntu 20.04, CentOS 7, CentOS 8, FreeBSD 12
+macOS 10.12/10.14/10.15/11.6, Windows 10, Ubuntu 18.04, Ubuntu 20.04, CentOS 7, CentOS 8, FreeBSD 12
 and Alpine ARM/ARM64 Linux but should work on other systems too, as long as you have
 at least a C++11 compatible compiler. It should work with Android NDK, Emscripten and I even
 had reports of it being used on iOS (within sandboxing constraints) and with v1.5.6 there
