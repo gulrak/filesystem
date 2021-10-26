@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.7.2)
-project(ghcfilesystem)
+project(ghc_filesystem)
 
 if (POLICY CMP0077)
     cmake_policy(SET CMP0077 NEW)
@@ -17,6 +17,8 @@ else()
     option(GHC_FILESYSTEM_BUILD_TESTING "Enable tests" OFF)
     option(GHC_FILESYSTEM_WITH_INSTALL "With install target" ON)
 endif()
+option(GHC_FILESYSTEM_BUILD_STATIC "Enable building static library" OFF)
+option(GHC_FILESYSTEM_BUILD_SHARED "Enable building shared library" OFF)
 option(GHC_FILESYSTEM_BUILD_STD_TESTING "Enable STD tests" ${GHC_FILESYSTEM_BUILD_TESTING})
 if(NOT DEFINED GHC_FILESYSTEM_TEST_COMPILE_FEATURES)
     set(GHC_FILESYSTEM_TEST_COMPILE_FEATURES ${CMAKE_CXX_COMPILE_FEATURES})
@@ -40,6 +42,28 @@ target_include_directories(ghc_filesystem INTERFACE
     $<INSTALL_INTERFACE:include>)
 target_compile_options(ghc_filesystem INTERFACE "$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 target_compile_options(ghc_filesystem INTERFACE "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
+if(GHC_FILESYSTEM_BUILD_STATIC)
+    add_library(ghc_filesystem_static STATIC src/filesystem.cpp)
+    target_include_directories(ghc_filesystem_static PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<INSTALL_INTERFACE:include>)
+    target_compile_definitions(ghc_filesystem_static PRIVATE GHC_FILESYSTEM_IMPLEMENTATION)
+    target_compile_definitions(ghc_filesystem_static INTERFACE GHC_FILESYSTEM_FWD)
+    target_compile_options(ghc_filesystem_static PUBLIC "$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+    target_compile_options(ghc_filesystem_static PUBLIC "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+endif()
+
+if(GHC_FILESYSTEM_BUILD_SHARED)
+    add_library(ghc_filesystem_shared SHARED src/filesystem.cpp)
+    target_include_directories(ghc_filesystem_shared PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<INSTALL_INTERFACE:include>)
+    target_compile_definitions(ghc_filesystem_shared PRIVATE GHC_FILESYSTEM_IMPLEMENTATION GHC_FILESYSTEM_SHARED)
+    target_compile_definitions(ghc_filesystem_shared INTERFACE GHC_FILESYSTEM_FWD GHC_FILESYSTEM_SHARED)
+    target_compile_options(ghc_filesystem_shared PUBLIC "$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+    target_compile_options(ghc_filesystem_shared PUBLIC "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+endif()
 
 if(GHC_FILESYSTEM_BUILD_TESTING OR GHC_FILESYSTEM_BUILD_EXAMPLES)
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)

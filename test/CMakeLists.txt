@@ -78,6 +78,18 @@ if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
 endif()
 add_test(fwd_impl_test fwd_impl_test)
 
+if(GHC_FILESYSTEM_BUILD_STATIC)
+    add_executable(filesystem_test_static filesystem_test.cpp catch.hpp)
+    target_link_libraries(filesystem_test_static ghc_filesystem_static)
+    ParseAndAddCatchTests(filesystem_test_static)
+endif()
+
+if(GHC_FILESYSTEM_BUILD_SHARED)
+    add_executable(filesystem_test_shared filesystem_test.cpp catch.hpp)
+    target_link_libraries(filesystem_test_shared ghc_filesystem_shared)
+    ParseAndAddCatchTests(filesystem_test_shared)
+endif()
+
 add_executable(exception exception.cpp)
 if(NOT MSVC)
     target_compile_options(exception PRIVATE -fno-exceptions)

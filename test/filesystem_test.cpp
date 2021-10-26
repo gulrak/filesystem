@@ -35,32 +35,32 @@
 #include <thread>
 
 #if (defined(WIN32) || defined(_WIN32)) && !defined(__GNUC__)
-#define NOMINMAX 1
+#    define NOMINMAX 1
 #endif
 
 #ifdef USE_STD_FS
-#include <filesystem>
+#    include <filesystem>
 namespace fs {
 using namespace std::filesystem;
 using ifstream = std::ifstream;
 using ofstream = std::ofstream;
 using fstream = std::fstream;
 }  // namespace fs
-#ifdef __GNUC__
-#define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
-#endif
-#ifdef _MSC_VER
-#define IS_WCHAR_PATH
-#endif
-#ifdef WIN32
-#define GHC_OS_WINDOWS
-#endif
+#    ifdef __GNUC__
+#        define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#    endif
+#    ifdef _MSC_VER
+#        define IS_WCHAR_PATH
+#    endif
+#    ifdef WIN32
+#        define GHC_OS_WINDOWS
+#    endif
 #else
-#ifdef GHC_FILESYSTEM_FWD_TEST
-#include <ghc/fs_fwd.hpp>
-#else
-#include <ghc/filesystem.hpp>
-#endif
+#    ifdef GHC_FILESYSTEM_FWD_TEST
+#        include <ghc/fs_fwd.hpp>
+#    else
+#        include <ghc/filesystem.hpp>
+#    endif
 namespace fs {
 using namespace ghc::filesystem;
 using ifstream = ghc::filesystem::ifstream;
@@ -70,17 +70,17 @@ using fstream = ghc::filesystem::fstream;
 #endif
 
 #if defined(WIN32) || defined(_WIN32)
-#include <windows.h>
+#    include <windows.h>
 #else
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/un.h>
-#include <unistd.h>
+#    include <sys/socket.h>
+#    include <sys/stat.h>
+#    include <sys/types.h>
+#    include <sys/un.h>
+#    include <unistd.h>
 #endif
 
 #ifndef GHC_FILESYSTEM_FWD_TEST
-#define CATCH_CONFIG_MAIN
+#    define CATCH_CONFIG_MAIN
 #endif
 #include "catch.hpp"
 
@@ -131,9 +131,7 @@ struct StringMaker<fs::perms>
 template <>
 struct StringMaker<fs::file_status>
 {
-    static std::string convert(fs::file_status const& value) {
-        return std::string("[") + std::to_string(static_cast<unsigned int>(value.type())) + "," + std::to_string(static_cast<unsigned int>(value.permissions())) + "]";
-    }
+    static std::string convert(fs::file_status const& value) { return std::string("[") + std::to_string(static_cast<unsigned int>(value.type())) + "," + std::to_string(static_cast<unsigned int>(value.permissions())) + "]"; }
 };
 
 #ifdef __cpp_lib_char8_t
@@ -232,18 +230,18 @@ static bool is_symlink_creation_supported()
     bool result = true;
     HKEY key;
     REGSAM flags = KEY_READ;
-#ifdef _WIN64
+#    ifdef _WIN64
     flags |= KEY_WOW64_64KEY;
-#elif defined(KEY_WOW64_64KEY)
+#    elif defined(KEY_WOW64_64KEY)
     if (isWow64Proc()) {
         flags |= KEY_WOW64_64KEY;
     }
     else {
         flags |= KEY_WOW64_32KEY;
     }
-#else
+#    else
     result = false;
-#endif
+#    endif
     if (result) {
         auto err = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock", 0, flags, &key);
         if (err == ERROR_SUCCESS) {
@@ -296,8 +294,9 @@ public:
     }
     value_type* allocate(std::size_t n) { return static_cast<value_type*>(::operator new(n * sizeof(value_type))); }
     void deallocate(value_type* p, std::size_t) noexcept { ::operator delete(p); }
-    template<class U>
-    struct rebind {
+    template <class U>
+    struct rebind
+    {
         typedef TestAllocator<U> other;
     };
 };
@@ -337,29 +336,29 @@ TEST_CASE("fs::detail::fromUtf8", "[filesystem][fs.detail.utf8]")
     CHECK(fs::detail::toUtf8(std::wstring(L"foobar")).length() == 6);
     CHECK(fs::detail::toUtf8(std::wstring(L"foobar")) == "foobar");
     CHECK(fs::detail::toUtf8(std::wstring(L"föobar")).length() == 7);
-    //CHECK(fs::detail::toUtf8(std::wstring(L"föobar")) == u8"föobar");
+    // CHECK(fs::detail::toUtf8(std::wstring(L"föobar")) == u8"föobar");
 
-#ifdef GHC_RAISE_UNICODE_ERRORS
+#    ifdef GHC_RAISE_UNICODE_ERRORS
     CHECK_THROWS_AS(fs::detail::fromUtf8<std::u16string>(std::string("\xed\xa0\x80")), fs::filesystem_error);
     CHECK_THROWS_AS(fs::detail::fromUtf8<std::u16string>(std::string("\xc3")), fs::filesystem_error);
-#else
-    CHECK(std::u16string(2,0xfffd) == fs::detail::fromUtf8<std::u16string>(std::string("\xed\xa0\x80")));
-    CHECK(std::u16string(1,0xfffd) == fs::detail::fromUtf8<std::u16string>(std::string("\xc3")));
-#endif
+#    else
+    CHECK(std::u16string(2, 0xfffd) == fs::detail::fromUtf8<std::u16string>(std::string("\xed\xa0\x80")));
+    CHECK(std::u16string(1, 0xfffd) == fs::detail::fromUtf8<std::u16string>(std::string("\xc3")));
+#    endif
 }
 
 TEST_CASE("fs::detail::toUtf8", "[filesystem][fs.detail.utf8]")
 {
     std::string t;
     CHECK(std::string("\xc3\xa4/\xe2\x82\xac\xf0\x9d\x84\x9e") == fs::detail::toUtf8(std::u16string(u"\u00E4/\u20AC\U0001D11E")));
-#ifdef GHC_RAISE_UNICODE_ERRORS
+#    ifdef GHC_RAISE_UNICODE_ERRORS
     CHECK_THROWS_AS(fs::detail::toUtf8(std::u16string(1, 0xd800)), fs::filesystem_error);
     CHECK_THROWS_AS(fs::detail::appendUTF8(t, 0x200000), fs::filesystem_error);
-#else
+#    else
     CHECK(std::string("\xEF\xBF\xBD") == fs::detail::toUtf8(std::u16string(1, 0xd800)));
     fs::detail::appendUTF8(t, 0x200000);
     CHECK(std::string("\xEF\xBF\xBD") == t);
-#endif
+#    endif
 }
 #endif
 
@@ -586,21 +585,21 @@ TEST_CASE("fs.path.modifiers - path modifiers", "[filesystem][path][fs.path.modi
 TEST_CASE("fs.path.native.obs - path native format observers", "[filesystem][path][fs.path.native.obs]")
 {
 #ifdef GHC_OS_WINDOWS
-#if defined(IS_WCHAR_PATH) || defined(GHC_USE_WCHAR_T)
+#    if defined(IS_WCHAR_PATH) || defined(GHC_USE_WCHAR_T)
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").native() == fs::path::string_type(L"\u00E4\\\u20AC"));
     // CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").string() == std::string("ä\\€")); // MSVCs returns local DBCS encoding
-#else
+#    else
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").native() == fs::path::string_type("\xc3\xa4\\\xe2\x82\xac"));
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").string() == std::string("\xc3\xa4\\\xe2\x82\xac"));
     CHECK(!::strcmp(fs::u8path("\xc3\xa4\\\xe2\x82\xac").c_str(), "\xc3\xa4\\\xe2\x82\xac"));
     CHECK((std::string)fs::u8path("\xc3\xa4\\\xe2\x82\xac") == std::string("\xc3\xa4\\\xe2\x82\xac"));
-#endif
+#    endif
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").wstring() == std::wstring(L"\u00E4\\\u20AC"));
-#if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
+#    if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").u8string() == std::u8string(u8"\u00E4\\\u20AC"));
-#else
+#    else
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").u8string() == std::string("\xc3\xa4\\\xe2\x82\xac"));
-#endif
+#    endif
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").u16string() == std::u16string(u"\u00E4\\\u20AC"));
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").u32string() == std::u32string(U"\U000000E4\\\U000020AC"));
 #else
@@ -609,11 +608,11 @@ TEST_CASE("fs.path.native.obs - path native format observers", "[filesystem][pat
     CHECK((std::string)fs::u8path("\xc3\xa4/\xe2\x82\xac") == std::string("\xc3\xa4/\xe2\x82\xac"));
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").string() == std::string("\xc3\xa4/\xe2\x82\xac"));
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").wstring() == std::wstring(L"ä/€"));
-#if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
+#    if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").u8string() == std::u8string(u8"\xc3\xa4/\xe2\x82\xac"));
-#else
+#    else
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").u8string() == std::string("\xc3\xa4/\xe2\x82\xac"));
-#endif
+#    endif
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").u16string() == std::u16string(u"\u00E4/\u20AC"));
     INFO("This check might fail on GCC8 (with \"Illegal byte sequence\") due to not detecting the valid unicode codepoint U+1D11E.");
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac\xf0\x9d\x84\x9e").u16string() == std::u16string(u"\u00E4/\u20AC\U0001D11E"));
@@ -624,33 +623,33 @@ TEST_CASE("fs.path.native.obs - path native format observers", "[filesystem][pat
 TEST_CASE("fs.path.generic.obs - path generic format observers", "[filesystem][path][fs.path.generic.obs]")
 {
 #ifdef GHC_OS_WINDOWS
-#ifndef IS_WCHAR_PATH
+#    ifndef IS_WCHAR_PATH
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_string() == std::string("\xc3\xa4/\xe2\x82\xac"));
-#endif
-#ifndef USE_STD_FS
+#    endif
+#    ifndef USE_STD_FS
     auto t = fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_string<char, std::char_traits<char>, TestAllocator<char>>();
     CHECK(t.c_str() == std::string("\xc3\xa4/\xe2\x82\xac"));
-#endif
+#    endif
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_wstring() == std::wstring(L"\U000000E4/\U000020AC"));
-#if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
+#    if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_u8string() == std::u8string(u8"\u00E4/\u20AC"));
-#else
+#    else
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_u8string() == std::string("\xc3\xa4/\xe2\x82\xac"));
-#endif
+#    endif
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_u16string() == std::u16string(u"\u00E4/\u20AC"));
     CHECK(fs::u8path("\xc3\xa4\\\xe2\x82\xac").generic_u32string() == std::u32string(U"\U000000E4/\U000020AC"));
 #else
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").generic_string() == std::string("\xc3\xa4/\xe2\x82\xac"));
-#ifndef USE_STD_FS
+#    ifndef USE_STD_FS
     auto t = fs::u8path("\xc3\xa4/\xe2\x82\xac").generic_string<char, std::char_traits<char>, TestAllocator<char>>();
     CHECK(t.c_str() == std::string("\xc3\xa4/\xe2\x82\xac"));
-#endif
+#    endif
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").generic_wstring() == std::wstring(L"ä/€"));
-#if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
+#    if defined(__cpp_lib_char8_t) && !defined(GHC_FILESYSTEM_ENFORCE_CPP17_API)
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").generic_u8string() == std::u8string(u8"\xc3\xa4/\xe2\x82\xac"));
-#else
+#    else
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").generic_u8string() == std::string("\xc3\xa4/\xe2\x82\xac"));
-#endif
+#    endif
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").generic_u16string() == std::u16string(u"\u00E4/\u20AC"));
     CHECK(fs::u8path("\xc3\xa4/\xe2\x82\xac").generic_u32string() == std::u32string(U"\U000000E4/\U000020AC"));
 #endif
@@ -679,7 +678,7 @@ TEST_CASE("fs.path.compare - path compare", "[filesystem][path][fs.path.compare]
 #ifdef LWG_2936_BEHAVIOUR
     CHECK(fs::path("/a/b/").compare("/a/b/c") < 0);
     CHECK(fs::path("/a/b/").compare("a/c") > 0);
-#endif // LWG_2936_BEHAVIOUR
+#endif  // LWG_2936_BEHAVIOUR
 }
 
 TEST_CASE("fs.path.decompose - path decomposition", "[filesystem][path][fs.path.decompose]")
@@ -1403,7 +1402,7 @@ TEST_CASE("fs.class.directory_iterator - class directory_iterator", "[filesystem
         CHECK(++iter == fs::directory_iterator());
         CHECK_THROWS_AS(fs::directory_iterator(t.path() / "non-existing"), fs::filesystem_error);
         int cnt = 0;
-        for(auto de : fs::directory_iterator(t.path())) {
+        for (auto de : fs::directory_iterator(t.path())) {
             ++cnt;
         }
         CHECK(cnt == 1);
@@ -1521,12 +1520,12 @@ TEST_CASE("fs.class.rec.dir.itr - class recursive_directory_iterator", "[filesys
         generateFile("e");
         auto iter = fs::recursive_directory_iterator(".");
         std::multimap<std::string, int> result;
-        while(iter != fs::recursive_directory_iterator()) {
+        while (iter != fs::recursive_directory_iterator()) {
             result.insert(std::make_pair(iter->path().generic_string(), iter.depth()));
             ++iter;
         }
         std::stringstream os;
-        for(auto p : result) {
+        for (auto p : result) {
             os << "[" << p.first << "," << p.second << "],";
         }
         CHECK(os.str() == "[./a,0],[./d1,0],[./d1/b,1],[./d1/c,1],[./d1/d2,1],[./d1/d2/d,2],[./e,0],");
@@ -1541,11 +1540,11 @@ TEST_CASE("fs.class.rec.dir.itr - class recursive_directory_iterator", "[filesys
         generateFile("d1/d2/d");
         generateFile("e");
         std::multiset<std::string> result;
-        for(auto de : fs::recursive_directory_iterator(".")) {
+        for (auto de : fs::recursive_directory_iterator(".")) {
             result.insert(de.path().generic_string());
         }
         std::stringstream os;
-        for(auto p : result) {
+        for (auto p : result) {
             os << p << ",";
         }
         CHECK(os.str() == "./a,./d1,./d1/b,./d1/c,./d1/d2,./d1/d2/d,./e,");
@@ -1559,15 +1558,15 @@ TEST_CASE("fs.class.rec.dir.itr - class recursive_directory_iterator", "[filesys
         generateFile("e");
         auto iter = fs::recursive_directory_iterator(".");
         std::multimap<std::string, int> result;
-        while(iter != fs::recursive_directory_iterator()) {
+        while (iter != fs::recursive_directory_iterator()) {
             result.insert(std::make_pair(iter->path().generic_string(), iter.depth()));
-            if(iter->path() == "./d1/d2") {
+            if (iter->path() == "./d1/d2") {
                 iter.disable_recursion_pending();
             }
             ++iter;
         }
         std::stringstream os;
-        for(auto p : result) {
+        for (auto p : result) {
             os << "[" << p.first << "," << p.second << "],";
         }
         CHECK(os.str() == "[./a,0],[./d1,0],[./d1/d2,1],[./e,0],");
@@ -1581,9 +1580,9 @@ TEST_CASE("fs.class.rec.dir.itr - class recursive_directory_iterator", "[filesys
         generateFile("e");
         auto iter = fs::recursive_directory_iterator(".");
         std::multimap<std::string, int> result;
-        while(iter != fs::recursive_directory_iterator()) {
+        while (iter != fs::recursive_directory_iterator()) {
             result.insert(std::make_pair(iter->path().generic_string(), iter.depth()));
-            if(iter->path() == "./d1/d2") {
+            if (iter->path() == "./d1/d2") {
                 iter.pop();
             }
             else {
@@ -1591,7 +1590,7 @@ TEST_CASE("fs.class.rec.dir.itr - class recursive_directory_iterator", "[filesys
             }
         }
         std::stringstream os;
-        for(auto p : result) {
+        for (auto p : result) {
             os << "[" << p.first << "," << p.second << "],";
         }
         CHECK(os.str() == "[./a,0],[./d1,0],[./d1/d2,1],[./e,0],");
@@ -1605,24 +1604,24 @@ TEST_CASE("fs.class.rec.dir.itr - class recursive_directory_iterator", "[filesys
         fs::create_directory_symlink("../d1", "d2/ds1");
         fs::create_directory_symlink("d3", "d2/ds2");
         std::multiset<std::string> result;
-        REQUIRE_NOTHROW([&](){
+        REQUIRE_NOTHROW([&]() {
             for (const auto& de : fs::recursive_directory_iterator("d2", fs::directory_options::follow_directory_symlink)) {
                 result.insert(de.path().generic_string());
             }
         }());
         std::stringstream os;
-        for(const auto& p : result) {
+        for (const auto& p : result) {
             os << p << ",";
         }
         CHECK(os.str() == "d2/b,d2/ds1,d2/ds1/a,d2/ds2,");
         os.str("");
         result.clear();
-        REQUIRE_NOTHROW([&](){
-          for (const auto& de : fs::recursive_directory_iterator("d2")) {
-              result.insert(de.path().generic_string());
-          }
+        REQUIRE_NOTHROW([&]() {
+            for (const auto& de : fs::recursive_directory_iterator("d2")) {
+                result.insert(de.path().generic_string());
+            }
         }());
-         for(const auto& p : result) {
+        for (const auto& p : result) {
             os << p << ",";
         }
         CHECK(os.str() == "d2/b,d2/ds1,d2/ds2,");
@@ -2048,7 +2047,7 @@ TEST_CASE("fs.op.exists - exists", "[filesystem][operations][fs.op.exists]")
     CHECK(!ec);
 #if defined(GHC_OS_WINDOWS) && !defined(GHC_FILESYSTEM_FWD)
     if (::GetFileAttributesW(L"C:\\fs-test") != INVALID_FILE_ATTRIBUTES) {
-        CHECK(fs::exists("C:\\fs-test"));    
+        CHECK(fs::exists("C:\\fs-test"));
     }
 #endif
 }
@@ -2089,20 +2088,20 @@ TEST_CASE("fs.op.hard_link_count - hard_link_count", "[filesystem][operations][f
 #ifndef GHC_OS_WEB
     TemporaryDirectory t(TempOpt::change_path);
     std::error_code ec;
-#ifdef GHC_OS_WINDOWS
+#    ifdef GHC_OS_WINDOWS
     // windows doesn't implement "."/".." as hardlinks, so it
     // starts with 1 and subdirectories don't change the count
     CHECK(fs::hard_link_count(t.path()) == 1);
     fs::create_directory("dir");
     CHECK(fs::hard_link_count(t.path()) == 1);
-#else
+#    else
     // unix/bsd/linux typically implements "."/".." as hardlinks
     // so an empty dir has 2 (from parent and the ".") and
     // adding a subdirectory adds one due to its ".."
     CHECK(fs::hard_link_count(t.path()) == getHardlinkCount(t.path()));
     fs::create_directory("dir");
     CHECK(fs::hard_link_count(t.path()) == getHardlinkCount(t.path()));
-#endif
+#    endif
     generateFile("foo");
     CHECK(fs::hard_link_count(t.path() / "foo") == 1);
     ec = std::error_code(42, std::system_category());
@@ -2675,7 +2674,7 @@ TEST_CASE("fs.op.space - space", "[filesystem][operations][fs.op.space]")
         CHECK(si.free >= si.available);
         CHECK(!ec);
     }
-#ifndef GHC_OS_WEB // statvfs under emscripten always returns a result, so this tests would fail
+#ifndef GHC_OS_WEB  // statvfs under emscripten always returns a result, so this tests would fail
     {
         std::error_code ec;
         fs::space_info si;
@@ -2770,7 +2769,7 @@ TEST_CASE("fs.op.weakly_canonical - weakly_canonical", "[filesystem][operations]
 {
     INFO("This might fail on std::implementations that return fs::current_path() for fs::canonical(\"\")");
     CHECK(fs::weakly_canonical("") == ".");
-    if(fs::weakly_canonical("") == ".") {
+    if (fs::weakly_canonical("") == ".") {
         CHECK(fs::weakly_canonical("foo/bar") == "foo/bar");
         CHECK(fs::weakly_canonical("foo/./bar") == "foo/bar");
         CHECK(fs::weakly_canonical("foo/../bar") == "bar");
@@ -2807,14 +2806,14 @@ TEST_CASE("std::string_view support", "[filesystem][fs.string_view]")
 {
 #if defined(GHC_HAS_STD_STRING_VIEW) || defined(GHC_HAS_STD_EXPERIMENTAL_STRING_VIEW)
 
-#if defined(GHC_HAS_STD_STRING_VIEW)
+#    if defined(GHC_HAS_STD_STRING_VIEW)
     using namespace std::literals;
     using string_view = std::string_view;
     using wstring_view = std::wstring_view;
-#elif defined(GHC_HAS_STD_EXPERIMENTAL_STRING_VIEW)
+#    elif defined(GHC_HAS_STD_EXPERIMENTAL_STRING_VIEW)
     using string_view = std::experimental::string_view;
     using wstring_view = std::experimental::wstring_view;
-#endif
+#    endif
 
     {
         std::string p("foo/bar");
@@ -2884,7 +2883,7 @@ TEST_CASE("Windows: path namespace handling", "[filesystem][path][fs.path.win.na
         CHECK(!ec);
         CHECK(p2 == p);
     }
-    
+
     struct TestInfo
     {
         std::string _path;
@@ -2895,13 +2894,13 @@ TEST_CASE("Windows: path namespace handling", "[filesystem][path][fs.path.win.na
     };
     std::vector<TestInfo> variants = {
         {R"(C:\Windows\notepad.exe)", R"(C:\Windows\notepad.exe)", "C:", "C:\\", "C:,/,Windows,notepad.exe"},
-#ifdef USE_STD_FS
+#    ifdef USE_STD_FS
         {R"(\\?\C:\Windows\notepad.exe)", R"(\\?\C:\Windows\notepad.exe)", "\\\\?", "\\\\?\\", "//?,/,C:,Windows,notepad.exe"},
         {R"(\??\C:\Windows\notepad.exe)", R"(\??\C:\Windows\notepad.exe)", "\\??", "\\??\\", "/??,/,C:,Windows,notepad.exe"},
-#else
+#    else
         {R"(\\?\C:\Windows\notepad.exe)", R"(\\?\C:\Windows\notepad.exe)", "C:", "C:\\", "//?/,C:,/,Windows,notepad.exe"},
         {R"(\??\C:\Windows\notepad.exe)", R"(\??\C:\Windows\notepad.exe)", "C:", "C:\\", "/?\?/,C:,/,Windows,notepad.exe"},
-#endif
+#    endif
         {R"(\\.\C:\Windows\notepad.exe)", R"(\\.\C:\Windows\notepad.exe)", "\\\\.", "\\\\.\\", "//.,/,C:,Windows,notepad.exe"},
         {R"(\\?\HarddiskVolume1\Windows\notepad.exe)", R"(\\?\HarddiskVolume1\Windows\notepad.exe)", "\\\\?", "\\\\?\\", "//?,/,HarddiskVolume1,Windows,notepad.exe"},
         {R"(\\?\Harddisk0Partition1\Windows\notepad.exe)", R"(\\?\Harddisk0Partition1\Windows\notepad.exe)", "\\\\?", "\\\\?\\", "//?,/,Harddisk0Partition1,Windows,notepad.exe"},
