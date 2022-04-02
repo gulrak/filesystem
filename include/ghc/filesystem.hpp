@@ -1316,22 +1316,38 @@ template <typename T>
 GHC_INLINE file_type file_type_from_dirent_impl(const T& t, std::true_type)
 {
     switch (t.d_type) {
+#ifdef DT_BLK
         case DT_BLK:
             return file_type::block;
+#endif
+#ifdef DT_CHR
         case DT_CHR:
             return file_type::character;
+#endif
+#ifdef DT_DIR
         case DT_DIR:
             return file_type::directory;
+#endif
+#ifdef DT_FIFO
         case DT_FIFO:
             return file_type::fifo;
+#endif
+#ifdef DT_LNK
         case DT_LNK:
             return file_type::symlink;
+#endif
+#ifdef DT_REG
         case DT_REG:
             return file_type::regular;
+#endif
+#ifdef DT_SOCK
         case DT_SOCK:
             return file_type::socket;
+#endif
+#ifdef DT_UNKNOWN
         case DT_UNKNOWN:
             return file_type::none;
+#endif
         default:
             return file_type::unknown;
     }
@@ -4624,7 +4640,7 @@ GHC_INLINE void last_write_time(const path& p, file_time_type new_time, std::err
 #if defined(__ANDROID_API__) && __ANDROID_API__ < 12
     if (syscall(__NR_utimensat, AT_FDCWD, p.c_str(), times, AT_SYMLINK_NOFOLLOW) != 0) {
 #else
-    if (::utimensat(AT_FDCWD, p.c_str(), times, AT_SYMLINK_NOFOLLOW) != 0) {
+    if (::utimensat((int)AT_FDCWD, p.c_str(), times, AT_SYMLINK_NOFOLLOW) != 0) {
 #endif
         ec = detail::make_system_error();
     }
