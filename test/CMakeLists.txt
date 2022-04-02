@@ -74,7 +74,7 @@ add_test(multifile_test multifile_test)
 add_executable(fwd_impl_test fwd_test.cpp impl_test.cpp)
 target_link_libraries(fwd_impl_test ghc_filesystem)
 if(${CMAKE_SYSTEM_NAME} MATCHES "(SunOS|Solaris)")
-    target_link_libraries(filesystem_test xnet)
+    target_link_libraries(fwd_impl_test xnet)
 endif()
 target_compile_options(fwd_impl_test PRIVATE
         $<$<BOOL:${EMSCRIPTEN}>:-s DISABLE_EXCEPTION_CATCHING=0>
