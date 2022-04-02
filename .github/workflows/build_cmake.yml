@@ -110,7 +110,7 @@ jobs:
             cxx: clang++-5.0
 
           - name: "Windows MSVC 2019"
-            os: windows-latest
+            os: windows-2019
             build_type: Release
             packages: ninja
             generator: "Visual Studio 16 2019"

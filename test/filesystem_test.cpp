@@ -2163,6 +2163,7 @@ public:
 
     fs::path character_path() const
     {
+#ifndef GHC_OS_SOLARIS
         std::error_code ec;
         if (fs::exists("/dev/null", ec)) {
             return "/dev/null";
@@ -2170,6 +2171,7 @@ public:
         else if (fs::exists("NUL", ec)) {
             return "NUL";
         }
+#endif
         return fs::path();
     }
     fs::path temp_path() const { return _t.path(); }

@@ -1,6 +1,5 @@
 macro(AddExecutableWithStdFS targetName)
-
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 7.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.0))
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 7.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.0))
     if(APPLE)
         include_directories(/usr/local/opt/llvm/include)
         link_directories(/usr/local/opt/llvm/lib)
@@ -20,6 +19,9 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND (CMAKE_CXX_COMPILER_VERSION 
             target_link_libraries(${targetName} -stdlib=libc++)
         endif()
     endif()
+    if(${CMAKE_SYSTEM_NAME} MATCHES "(SunOS|Solaris)")
+        target_link_libraries(filesystem_test xnet)
+    endif()
     target_compile_definitions(${targetName} PRIVATE USE_STD_FS)
 endif()
 
@@ -28,6 +30,9 @@ if (CMAKE_COMPILER_IS_GNUCXX AND (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 8.0 O
     set_property(TARGET ${targetName} PROPERTY CXX_STANDARD 17)
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
         target_link_libraries(${targetName} -lstdc++fs)
+    endif()
+    if(${CMAKE_SYSTEM_NAME} MATCHES "(SunOS|Solaris)")
+        target_link_libraries(${targetName} xnet)
     endif()
     target_compile_options(${targetName} PRIVATE $<$<BOOL:${CYGWIN}>:-Wa,-mbig-obj>)
     target_compile_definitions(${targetName} PRIVATE USE_STD_FS)
@@ -47,6 +52,9 @@ macro(AddTestExecutableWithStdCpp cppStd)
     add_executable(filesystem_test_cpp${cppStd} ${ARGN})
     set_property(TARGET filesystem_test_cpp${cppStd} PROPERTY CXX_STANDARD ${cppStd})
     target_link_libraries(filesystem_test_cpp${cppStd} ghc_filesystem)
+    if(${CMAKE_SYSTEM_NAME} MATCHES "(SunOS|Solaris)")
+        target_link_libraries(filesystem_test_cpp${cppStd} xnet)
+    endif()
     target_compile_options(filesystem_test_cpp${cppStd} PRIVATE
             $<$<BOOL:${EMSCRIPTEN}>:-s DISABLE_EXCEPTION_CATCHING=0>
             $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wpedantic -Werror -Wno-error=deprecated-declarations>
