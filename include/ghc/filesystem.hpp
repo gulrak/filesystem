@@ -1309,7 +1309,7 @@ struct has_d_type<T, decltype((void)T::d_type, 0)> : std::true_type {};
 template <typename T>
 GHC_INLINE file_type file_type_from_dirent_impl(const T&, std::false_type)
 {
-    return file_type::unknown;
+    return file_type::none;
 }
 
 template <typename T>
