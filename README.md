@@ -583,6 +583,15 @@ to the expected behavior.
 
 ## Release Notes
 
+### v1.5.11 (WIP)
+
+* Fix for [#142](https://github.com/gulrak/filesystem/issues/142), removed need
+  for `GHC_NO_DIRENT_D_TYPE` on systems that don't support `dirent::d_type` and
+  fixed build configuration and tests to support Solaris as new platform.
+* Pull request [#137](https://github.com/gulrak/filesystem/pull/137), update
+  of Catch2 to version v2.13.7
+* Added macOS 11 to the automatically tested platforms.
+
 ### [v1.5.10](https://github.com/gulrak/filesystem/releases/tag/v1.5.10)
 
 * Pull request [#136](https://github.com/gulrak/filesystem/pull/136), the Windows
@@ -599,7 +608,7 @@ to the expected behavior.
 
 ### [v1.5.8](https://github.com/gulrak/filesystem/releases/tag/v1.5.8)
 
-* Fix for [#125]((https://github.com/gulrak/filesystem/issues/124), where
+* Fix for [#125](https://github.com/gulrak/filesystem/issues/124), where
   `fs::create_directories` on Windows no longer breaks on long filenames.
 
 ### [v1.5.6](https://github.com/gulrak/filesystem/releases/tag/v1.5.6)
