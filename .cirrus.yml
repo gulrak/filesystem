@@ -25,7 +25,7 @@ centos7_task:
 
 centos8_task:
   container:
-    image: centos:8
+    image: quay.io/centos/centos:stream8
   install_script: |
     yum group install -y "Development Tools"
     curl -L https://github.com/Kitware/CMake/releases/download/v3.16.4/cmake-3.16.4-Linux-x86_64.tar.gz | tar xzvf - -C /usr/local --strip-components 1
