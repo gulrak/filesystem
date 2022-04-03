@@ -27,7 +27,7 @@
 #include <ghc/filesystem.hpp>
 namespace fs = ghc::filesystem;
 
-// This test and the one in multi2.cpp doesn't actualy test relevant functionality,
+// This test and the one in multi2.cpp doesn't actually test relevant functionality,
 // it is just used to check that it is possible to include filesystem.h in multiple
 // source files.
 TEST_CASE("Multifile-test 1", "[multi]")
