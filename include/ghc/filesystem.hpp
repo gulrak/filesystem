@@ -3956,6 +3956,14 @@ GHC_INLINE bool copy_file(const path& from, const path& to, copy_options options
         ::close(in);
         return false;
     }
+    if (st.permissions() != sf.permissions()) {
+        if (::fchmod(out, static_cast<int>(sf.permissions() & perms::all)) != 0) {
+            ec = detail::make_system_error();
+            ::close(in);
+            ::close(out);
+            return false;
+        }
+    }
     ssize_t br, bw;
     while ((br = ::read(in, buffer.data(), buffer.size())) > 0) {
         ssize_t offset = 0;
