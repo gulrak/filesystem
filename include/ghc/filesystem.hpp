@@ -3912,11 +3912,14 @@ GHC_INLINE bool copy_file(const path& from, const path& to, copy_options options
         ec = tecf;
         return false;
     }
-    if (exists(st) && (!is_regular_file(st) || equivalent(from, to, ec) || (options & (copy_options::skip_existing | copy_options::overwrite_existing | copy_options::update_existing)) == copy_options::none)) {
-        ec = tect ? tect : detail::make_error_code(detail::portable_error::exists);
-        return false;
-    }
     if (exists(st)) {
+        if ((options & copy_options::skip_existing) == copy_options::skip_existing) {
+            return false;
+        }
+        if (!is_regular_file(st) || equivalent(from, to, ec) || (options & (copy_options::overwrite_existing | copy_options::update_existing)) == copy_options::none) {
+            ec = tect ? tect : detail::make_error_code(detail::portable_error::exists);
+            return false;
+        }
         if ((options & copy_options::update_existing) == copy_options::update_existing) {
             auto from_time = last_write_time(from, ec);
             if (ec) {
