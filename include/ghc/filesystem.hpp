@@ -3957,7 +3957,7 @@ GHC_INLINE bool copy_file(const path& from, const path& to, copy_options options
         return false;
     }
     if (st.permissions() != sf.permissions()) {
-        if (::fchmod(out, static_cast<int>(sf.permissions() & perms::all)) != 0) {
+        if (::fchmod(out, static_cast<mode_t>(sf.permissions() & perms::all)) != 0) {
             ec = detail::make_system_error();
             ::close(in);
             ::close(out);
