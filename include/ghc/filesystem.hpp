@@ -2241,10 +2241,10 @@ GHC_INLINE time_t timeFromFILETIME(const FILETIME& ft)
 
 GHC_INLINE void timeToFILETIME(time_t t, FILETIME& ft)
 {
-    LONGLONG ll;
-    ll = Int32x32To64(t, 10000000) + 116444736000000000;
-    ft.dwLowDateTime = static_cast<DWORD>(ll);
-    ft.dwHighDateTime = static_cast<DWORD>(ll >> 32);
+    ULARGE_INTEGER ull;
+    ull.QuadPart = static_cast<ULONGLONG>((t * 10000000LL) + 116444736000000000LL);
+    ft.dwLowDateTime = ull.LowPart;
+    ft.dwHighDateTime = ull.HighPart;
 }
 
 template <typename INFO>
