@@ -73,7 +73,16 @@ if(GHC_FILESYSTEM_WITH_INSTALL)
         "${PROJECT_BINARY_DIR}/cmake/ghc_filesystem-config.cmake"
         INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ghc_filesystem"
         PATH_VARS CMAKE_INSTALL_INCLUDEDIR)
-    install(FILES "${PROJECT_BINARY_DIR}/cmake/ghc_filesystem-config.cmake"
-        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ghc_filesystem")
+    write_basic_package_version_file(
+        "${PROJECT_BINARY_DIR}/cmake/ghc_filesystem-config-version.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY SameMajorVersion
+    )
+    install(
+        FILES
+            "${PROJECT_BINARY_DIR}/cmake/ghc_filesystem-config.cmake"
+            "${PROJECT_BINARY_DIR}/cmake/ghc_filesystem-config-version.cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ghc_filesystem"
+    )
     add_library(ghcFilesystem::ghc_filesystem ALIAS ghc_filesystem)
 endif()
