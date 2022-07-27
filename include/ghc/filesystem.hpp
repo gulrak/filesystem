@@ -4604,9 +4604,9 @@ GHC_INLINE void last_write_time(const path& p, file_time_type new_time, std::err
     if (!::SetFileTime(file.get(), 0, 0, &ft)) {
         ec = detail::make_system_error();
     }
-#elif defined(GHC_OS_MACOS)
-#ifdef __MAC_OS_X_VERSION_MIN_REQUIRED
-#if __MAC_OS_X_VERSION_MIN_REQUIRED < 101300
+#elif defined(GHC_OS_MACOS) && \
+    (__MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_10_13) || (__IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0) || \
+    (__TV_OS_VERSION_MIN_REQUIRED < __TVOS_11_0) || (__WATCH_OS_VERSION_MIN_REQUIRED < __WATCHOS_4_0)
     struct ::stat fs;
     if (::stat(p.c_str(), &fs) == 0) {
         struct ::timeval tv[2];
@@ -4620,18 +4620,6 @@ GHC_INLINE void last_write_time(const path& p, file_time_type new_time, std::err
     }
     ec = detail::make_system_error();
     return;
-#else
-    struct ::timespec times[2];
-    times[0].tv_sec = 0;
-    times[0].tv_nsec = UTIME_OMIT;
-    times[1].tv_sec = std::chrono::duration_cast<std::chrono::seconds>(d).count();
-    times[1].tv_nsec = 0;  // std::chrono::duration_cast<std::chrono::nanoseconds>(d).count() % 1000000000;
-    if (::utimensat(AT_FDCWD, p.c_str(), times, AT_SYMLINK_NOFOLLOW) != 0) {
-        ec = detail::make_system_error();
-    }
-    return;
-#endif
-#endif
 #else
 #ifndef UTIME_OMIT
 #define UTIME_OMIT ((1l << 30) - 2l)
