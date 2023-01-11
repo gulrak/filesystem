@@ -37,6 +37,7 @@ message(STATUS "Compiler ID: ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "CMAKE_CXX_COMPILE_FEATURES: ${CMAKE_CXX_COMPILE_FEATURES}")
 
 add_library(ghc_filesystem INTERFACE)
+add_library(ghcFilesystem::ghc_filesystem ALIAS ghc_filesystem)
 target_include_directories(ghc_filesystem INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
@@ -72,5 +73,4 @@ if(GHC_FILESYSTEM_WITH_INSTALL)
         PATH_VARS CMAKE_INSTALL_INCLUDEDIR)
     install(FILES "${PROJECT_BINARY_DIR}/cmake/ghc_filesystem-config.cmake"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ghc_filesystem")
-    add_library(ghcFilesystem::ghc_filesystem ALIAS ghc_filesystem)
 endif()
