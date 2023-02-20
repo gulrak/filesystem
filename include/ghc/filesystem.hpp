@@ -78,6 +78,8 @@
 #include <wasi/api.h>
 #elif defined(__QNX__)
 #define GHC_OS_QNX
+#elif defined(__HAIKU__)
+#define GHC_OS_HAIKU
 #else
 #error "Operating system currently not supported!"
 #endif
