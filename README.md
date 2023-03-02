@@ -584,6 +584,23 @@ to the expected behavior.
 
 ## Release Notes
 
+###  v1.5.13 (wip)
+
+* Pull request [#163](https://github.com/gulrak/filesystem/pull/163), build
+  support for Haiku (also fixes [#159](https://github.com/gulrak/filesystem/issues/159))
+* Pull request [#162](https://github.com/gulrak/filesystem/pull/162), fix for
+  directory iterator treating all files subsequent to a symlink as symlink
+  on Windows
+* Fix for [#156](https://github.com/gulrak/filesystem/issues/156), on POSIX
+  `stem()`, `filename()` and `extension()` of `fs::path` would return wrong
+  result if a colon was in the filename
+* Pull request [#154](https://github.com/gulrak/filesystem/pull/145), build
+  support for GNU/Hurd
+* Pull request [#153](https://github.com/gulrak/filesystem/pull/153), fixed
+  `fs::last_write_time(path, time, ec)` setter on iOS, tvOS and watchOS
+* Pull request [#145](https://github.com/gulrak/filesystem/pull/145), fix for
+  Y2038 bug in timeToFILETIME on Windows
+
 ### [v1.5.12](https://github.com/gulrak/filesystem/releases/tag/v1.5.12)
 
 * Fix for [#142](https://github.com/gulrak/filesystem/issues/142), removed need
