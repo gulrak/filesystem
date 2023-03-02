@@ -3365,10 +3365,14 @@ GHC_INLINE path::impl_string_type::const_iterator path::iterator::increment(cons
             }
         }
         else {
+#ifdef GHC_OS_WINDOWS
             if (fromStart && i != _last && *i == ':') {
                 ++i;
             }
             else {
+#else
+            {
+#endif
                 i = std::find(i, _last, preferred_separator);
             }
         }

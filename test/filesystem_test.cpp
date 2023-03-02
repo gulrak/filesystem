@@ -790,6 +790,9 @@ TEST_CASE("fs.path.decompose - path decomposition", "[filesystem][path][fs.path.
     CHECK(fs::path("C:/foo").filename() == "foo");
     CHECK(fs::path("C:\\foo").filename() == "foo");
     CHECK(fs::path("C:foo").filename() == "foo");
+    CHECK(fs::path("t:est.txt").filename() == "est.txt");
+#else
+    CHECK(fs::path("t:est.txt").filename() == "t:est.txt");
 #endif
 
     // stem()
@@ -807,6 +810,11 @@ TEST_CASE("fs.path.decompose - path decomposition", "[filesystem][path][fs.path.
     CHECK(fs::path("/foo/.profile").stem() == ".profile");
     CHECK(fs::path(".bar").stem() == ".bar");
     CHECK(fs::path("..bar").stem() == ".");
+#ifdef GHC_OS_WINDOWS
+    CHECK(fs::path("t:est.txt").stem() == "est");
+#else
+    CHECK(fs::path("t:est.txt").stem() == "t:est");
+#endif
 
     // extension()
     CHECK(fs::path("/foo/bar.txt").extension() == ".txt");
@@ -814,6 +822,7 @@ TEST_CASE("fs.path.decompose - path decomposition", "[filesystem][path][fs.path.
     CHECK(fs::path("/foo/.profile").extension() == "");
     CHECK(fs::path(".bar").extension() == "");
     CHECK(fs::path("..bar").extension() == ".bar");
+    CHECK(fs::path("t:est.txt").extension() == ".txt");
 
     if (has_host_root_name_support()) {
         // //host-based root-names
