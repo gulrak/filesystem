@@ -76,7 +76,7 @@ if(GHC_FILESYSTEM_WITH_INSTALL)
     write_basic_package_version_file(
         "${PROJECT_BINARY_DIR}/cmake/ghc_filesystem-config-version.cmake"
         VERSION ${PROJECT_VERSION}
-        COMPATIBILITY SameMajorVersion
+        COMPATIBILITY SameMinorVersion
     )
     install(
         FILES
