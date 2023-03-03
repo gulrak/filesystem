@@ -3965,14 +3965,24 @@ GHC_INLINE bool copy_file(const path& from, const path& to, copy_options options
         return false;
     }
     ssize_t br, bw;
-    while ((br = ::read(in, buffer.data(), buffer.size())) > 0) {
+    while (true) {
+        do { br = ::read(in, buffer.data(), buffer.size()); } while(errno == EINTR);
+        if(!br) {
+            break;
+        }
+        if(br < 0) {
+            ec = detail::make_system_error();
+            ::close(in);
+            ::close(out);
+            return false;
+        }
         ssize_t offset = 0;
         do {
             if ((bw = ::write(out, buffer.data() + offset, static_cast<size_t>(br))) > 0) {
                 br -= bw;
                 offset += bw;
             }
-            else if (bw < 0) {
+            else if (bw < 0 && errno != EINTR) {
                 ec = detail::make_system_error();
                 ::close(in);
                 ::close(out);
@@ -5673,7 +5683,7 @@ public:
         , _entry(nullptr)
     {
         if (!path.empty()) {
-            _dir = ::opendir(path.native().c_str());
+            do { _dir = ::opendir(path.native().c_str()); } while(errno == EINTR);
             if (!_dir) {
                 auto error = errno;
                 _base = filesystem::path();
@@ -5700,7 +5710,7 @@ public:
             do {
                 skip = false;
                 errno = 0;
-                _entry = ::readdir(_dir);
+                do { _entry = ::readdir(_dir); } while(errno == EINTR);
                 if (_entry) {
                     _dir_entry._path = _base;
                     _dir_entry._path.append_name(_entry->d_name);
@@ -5714,7 +5724,7 @@ public:
                     ::closedir(_dir);
                     _dir = nullptr;
                     _dir_entry._path.clear();
-                    if (errno) {
+                    if (errno && errno != EINTR) {
                         ec = detail::make_system_error();
                     }
                     break;
