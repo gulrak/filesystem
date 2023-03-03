@@ -43,8 +43,9 @@ macOS 10.12/10.14/10.15/11.6, Windows 10, Ubuntu 18.04, Ubuntu 20.04, CentOS 7, 
 Alpine ARM/ARM64 Linux and Solaris 10 but should work on other systems too, as long as you have
 at least a C++11 compatible compiler. It should work with Android NDK, Emscripten and I even
 had reports of it being used on iOS (within sandboxing constraints) and with v1.5.6 there
-is experimental support for QNX. The support of Android NDK, Emscripten and QNX is not
-backed up by automated testing but PRs and bug reports are welcome for those too.
+is experimental support for QNX. The support of Android NDK, Emscripten, QNX, GNU/Hurd and Haiku is not
+backed up by automated testing but PRs and bug reports are welcome for those too and they are reported
+to work.
 It is of course in its own namespace `ghc::filesystem` to not interfere with a regular `std::filesystem`
 should you use it in a mixed C++17 environment (which is possible).
 
@@ -598,8 +599,14 @@ to the expected behavior.
   support for GNU/Hurd
 * Pull request [#153](https://github.com/gulrak/filesystem/pull/153), fixed
   `fs::last_write_time(path, time, ec)` setter on iOS, tvOS and watchOS
+* Pull request [#149](https://github.com/gulrak/filesystem/pull/149), add
+  version to CMake project and export it
 * Pull request [#145](https://github.com/gulrak/filesystem/pull/145), fix for
   Y2038 bug in timeToFILETIME on Windows
+* Pull request [#144](https://github.com/gulrak/filesystem/pull/144), `fs::copy_file()`
+  now also copies the permissions
+* Pull request [#143](https://github.com/gulrak/filesystem/pull/143), fix
+  for `fs::copy_file()` ignoring the `skip_existing` option.
 
 ### [v1.5.12](https://github.com/gulrak/filesystem/releases/tag/v1.5.12)
 
