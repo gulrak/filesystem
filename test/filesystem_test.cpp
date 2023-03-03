@@ -99,7 +99,7 @@ using fstream = ghc::filesystem::fstream;
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 template <typename TP>
-std::time_t to_time_t(TP tp)
+static std::time_t to_time_t(TP tp)
 {
     using namespace std::chrono;
     auto sctp = time_point_cast<system_clock::duration>(tp - TP::clock::now() + system_clock::now());
@@ -107,7 +107,7 @@ std::time_t to_time_t(TP tp)
 }
 
 template <typename TP>
-TP from_time_t(std::time_t t)
+static TP from_time_t(std::time_t t)
 {
     using namespace std::chrono;
     auto sctp = system_clock::from_time_t(t);
@@ -214,7 +214,7 @@ static void generateFile(const fs::path& pathname, int withSize = -1)
 }
 
 #ifdef GHC_OS_WINDOWS
-inline bool isWow64Proc()
+static bool isWow64Proc()
 {
     typedef BOOL(WINAPI * IsWow64Process_t)(HANDLE, PBOOL);
     BOOL bIsWow64 = FALSE;
@@ -303,13 +303,13 @@ public:
 };
 
 template <class T, class U>
-bool operator==(TestAllocator<T> const&, TestAllocator<U> const&) noexcept
+static bool operator==(TestAllocator<T> const&, TestAllocator<U> const&) noexcept
 {
     return true;
 }
 
 template <class T, class U>
-bool operator!=(TestAllocator<T> const& x, TestAllocator<U> const& y) noexcept
+static bool operator!=(TestAllocator<T> const& x, TestAllocator<U> const& y) noexcept
 {
     return !(x == y);
 }
@@ -1208,7 +1208,7 @@ TEST_CASE("fs.class.filesystem_error - class filesystem_error", "[filesystem][fi
     CHECK(fse.path2() == "some/other");
 }
 
-constexpr fs::perms constExprOwnerAll()
+static constexpr fs::perms constExprOwnerAll()
 {
     return fs::perms::owner_read | fs::perms::owner_write | fs::perms::owner_exec;
 }
@@ -1787,6 +1787,19 @@ TEST_CASE("fs.op.copy_file - copy_file", "[filesystem][operations][fs.op.copy_fi
     CHECK_NOTHROW(fs::copy_file("foobar", "foobar2", ec));
     CHECK(ec);
     CHECK(!fs::exists("foobar"));
+    fs::path file1("temp1.txt");
+    fs::path file2("temp2.txt");
+    generateFile(file1, 200);
+    generateFile(file2, 200);
+    auto allWrite = fs::perms::owner_write | fs::perms::group_write | fs::perms::others_write;
+    CHECK_NOTHROW(fs::permissions(file1, allWrite, fs::perm_options::remove));
+    CHECK((fs::status(file1).permissions() & fs::perms::owner_write) != fs::perms::owner_write);
+    CHECK_NOTHROW(fs::permissions(file2, allWrite, fs::perm_options::add));
+    CHECK((fs::status(file2).permissions() & fs::perms::owner_write) == fs::perms::owner_write);
+    fs::copy_file(file1, file2, fs::copy_options::overwrite_existing);
+    CHECK((fs::status(file2).permissions() & fs::perms::owner_write) != fs::perms::owner_write);
+    CHECK_NOTHROW(fs::permissions(file1, allWrite, fs::perm_options::add));
+    CHECK_NOTHROW(fs::permissions(file2, allWrite, fs::perm_options::add));
 }
 
 TEST_CASE("fs.op.copy_symlink - copy_symlink", "[filesystem][operations][fs.op.copy_symlink]")
