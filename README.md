@@ -595,6 +595,8 @@ to the expected behavior.
 * Fix for [#160](https://github.com/gulrak/filesystem/issues/160), the cmake
   config now only sets install targets by default if the project is no
   subproject, as documented
+* Fix for [#157](https://github.com/gulrak/filesystem/issues/157), suppress
+  C4191 warning on MSVC for GetProcAddress casts
 * Fix for [#156](https://github.com/gulrak/filesystem/issues/156), on POSIX
   `stem()`, `filename()` and `extension()` of `fs::path` would return wrong
   result if a colon was in the filename
