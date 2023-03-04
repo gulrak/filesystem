@@ -1957,10 +1957,15 @@ GHC_INLINE void create_symlink(const path& target_name, const path& new_symlink,
 #if defined(__GNUC__) && __GNUC__ >= 8
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-function-type"
+#elif defined(_MSC_VER) && !defined(__INTEL_COMPILER) && !defined(__clang__)
+#pragma warning(push)
+#pragma warning(disable : 4191)
 #endif
     static CreateSymbolicLinkW_fp api_call = reinterpret_cast<CreateSymbolicLinkW_fp>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "CreateSymbolicLinkW"));
 #if defined(__GNUC__) && __GNUC__ >= 8
 #pragma GCC diagnostic pop
+#elif defined(_MSC_VER) && !defined(__INTEL_COMPILER) && !defined(__clang__)
+#pragma warning(pop)
 #endif
     if (api_call) {
         if (api_call(GHC_NATIVEWP(new_symlink), GHC_NATIVEWP(target_name), to_directory ? 1 : 0) == 0) {
@@ -1981,10 +1986,15 @@ GHC_INLINE void create_hardlink(const path& target_name, const path& new_hardlin
 #if defined(__GNUC__) && __GNUC__ >= 8
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-function-type"
+#elif defined(_MSC_VER) && !defined(__INTEL_COMPILER) && !defined(__clang__)
+#pragma warning(push)
+#pragma warning(disable : 4191)
 #endif
     static CreateHardLinkW_fp api_call = reinterpret_cast<CreateHardLinkW_fp>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "CreateHardLinkW"));
 #if defined(__GNUC__) && __GNUC__ >= 8
 #pragma GCC diagnostic pop
+#elif defined(_MSC_VER) && !defined(__INTEL_COMPILER) && !defined(__clang__)
+#pragma warning(pop)
 #endif
     if (api_call) {
         if (api_call(GHC_NATIVEWP(new_hardlink), GHC_NATIVEWP(target_name), NULL) == 0) {
