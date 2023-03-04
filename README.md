@@ -592,6 +592,9 @@ to the expected behavior.
 * Pull request [#162](https://github.com/gulrak/filesystem/pull/162), fix for
   directory iterator treating all files subsequent to a symlink as symlink
   on Windows
+* Fix for [#160](https://github.com/gulrak/filesystem/issues/160), the cmake
+  config now only sets install targets by default if the project is no
+  subproject, as documented
 * Fix for [#156](https://github.com/gulrak/filesystem/issues/156), on POSIX
   `stem()`, `filename()` and `extension()` of `fs::path` would return wrong
   result if a colon was in the filename
@@ -599,6 +602,10 @@ to the expected behavior.
   support for GNU/Hurd
 * Pull request [#153](https://github.com/gulrak/filesystem/pull/153), fixed
   `fs::last_write_time(path, time, ec)` setter on iOS, tvOS and watchOS
+* Fix for [#151](https://github.com/gulrak/filesystem/issues/156),
+  `fs::directory_entry::refresh()` now, consistently with `status()` will not
+  throw on symlinks to non-existing targets, but make the entry have
+  `file_type::not_found` as the type
 * Pull request [#149](https://github.com/gulrak/filesystem/pull/149), add
   version to CMake project and export it
 * Pull request [#145](https://github.com/gulrak/filesystem/pull/145), fix for
