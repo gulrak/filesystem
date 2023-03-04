@@ -5273,7 +5273,7 @@ GHC_INLINE void directory_entry::refresh()
 {
     std::error_code ec;
     refresh(ec);
-    if (ec) {
+    if (ec && (_status.type() == file_type::none || _symlink_status.type() != file_type::symlink)) {
         throw filesystem_error(detail::systemErrorText(ec.value()), _path, ec);
     }
 }

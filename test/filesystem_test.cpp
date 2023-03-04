@@ -1386,6 +1386,16 @@ TEST_CASE("fs.dir.entry - class directory_entry", "[filesystem][directory_entry]
     CHECK(!(d2 != d2));
     CHECK(d1 == d1);
     CHECK(!(d1 == d2));
+    if(is_symlink_creation_supported()) {
+        fs::create_symlink(t.path() / "nonexistent", t.path() / "broken");
+        for (auto d3 : fs::directory_iterator(t.path())) {
+            CHECK_NOTHROW(d3.symlink_status());
+            CHECK_NOTHROW(d3.status());
+            CHECK_NOTHROW(d3.refresh());
+        }
+        fs::directory_entry entry(t.path() / "broken");
+        CHECK_NOTHROW(entry.refresh());
+    }
 }
 
 TEST_CASE("fs.class.directory_iterator - class directory_iterator", "[filesystem][directory_iterator][fs.class.directory_iterator]")
