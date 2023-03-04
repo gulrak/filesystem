@@ -214,6 +214,7 @@ static void generateFile(const fs::path& pathname, int withSize = -1)
 }
 
 #ifdef GHC_OS_WINDOWS
+#if !defined(_WIN64) && defined(KEY_WOW64_64KEY)
 static bool isWow64Proc()
 {
     typedef BOOL(WINAPI * IsWow64Process_t)(HANDLE, PBOOL);
@@ -226,6 +227,7 @@ static bool isWow64Proc()
     }
     return bIsWow64 == TRUE;
 }
+#endif
 
 static bool is_symlink_creation_supported()
 {
