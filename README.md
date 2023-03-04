@@ -610,6 +610,9 @@ to the expected behavior.
   `file_type::not_found` as the type
 * Pull request [#149](https://github.com/gulrak/filesystem/pull/149), add
   version to CMake project and export it
+* Fix for [#146](https://github.com/gulrak/filesystem/issues/146), handle `EINTR`
+  on POSIX directory iteration and file copy to avoid errors on network
+  filesystems 
 * Pull request [#145](https://github.com/gulrak/filesystem/pull/145), fix for
   Y2038 bug in timeToFILETIME on Windows
 * Pull request [#144](https://github.com/gulrak/filesystem/pull/144), `fs::copy_file()`
