@@ -99,7 +99,7 @@ using fstream = ghc::filesystem::fstream;
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 template <typename TP>
-std::time_t to_time_t(TP tp)
+static std::time_t to_time_t(TP tp)
 {
     using namespace std::chrono;
     auto sctp = time_point_cast<system_clock::duration>(tp - TP::clock::now() + system_clock::now());
@@ -107,7 +107,7 @@ std::time_t to_time_t(TP tp)
 }
 
 template <typename TP>
-TP from_time_t(std::time_t t)
+static TP from_time_t(std::time_t t)
 {
     using namespace std::chrono;
     auto sctp = system_clock::from_time_t(t);
@@ -214,7 +214,8 @@ static void generateFile(const fs::path& pathname, int withSize = -1)
 }
 
 #ifdef GHC_OS_WINDOWS
-inline bool isWow64Proc()
+#if !defined(_WIN64) && defined(KEY_WOW64_64KEY)
+static bool isWow64Proc()
 {
     typedef BOOL(WINAPI * IsWow64Process_t)(HANDLE, PBOOL);
     BOOL bIsWow64 = FALSE;
@@ -226,6 +227,7 @@ inline bool isWow64Proc()
     }
     return bIsWow64 == TRUE;
 }
+#endif
 
 static bool is_symlink_creation_supported()
 {
@@ -303,13 +305,13 @@ public:
 };
 
 template <class T, class U>
-bool operator==(TestAllocator<T> const&, TestAllocator<U> const&) noexcept
+static bool operator==(TestAllocator<T> const&, TestAllocator<U> const&) noexcept
 {
     return true;
 }
 
 template <class T, class U>
-bool operator!=(TestAllocator<T> const& x, TestAllocator<U> const& y) noexcept
+static bool operator!=(TestAllocator<T> const& x, TestAllocator<U> const& y) noexcept
 {
     return !(x == y);
 }
@@ -790,6 +792,9 @@ TEST_CASE("fs.path.decompose - path decomposition", "[filesystem][path][fs.path.
     CHECK(fs::path("C:/foo").filename() == "foo");
     CHECK(fs::path("C:\\foo").filename() == "foo");
     CHECK(fs::path("C:foo").filename() == "foo");
+    CHECK(fs::path("t:est.txt").filename() == "est.txt");
+#else
+    CHECK(fs::path("t:est.txt").filename() == "t:est.txt");
 #endif
 
     // stem()
@@ -807,6 +812,11 @@ TEST_CASE("fs.path.decompose - path decomposition", "[filesystem][path][fs.path.
     CHECK(fs::path("/foo/.profile").stem() == ".profile");
     CHECK(fs::path(".bar").stem() == ".bar");
     CHECK(fs::path("..bar").stem() == ".");
+#ifdef GHC_OS_WINDOWS
+    CHECK(fs::path("t:est.txt").stem() == "est");
+#else
+    CHECK(fs::path("t:est.txt").stem() == "t:est");
+#endif
 
     // extension()
     CHECK(fs::path("/foo/bar.txt").extension() == ".txt");
@@ -814,6 +824,7 @@ TEST_CASE("fs.path.decompose - path decomposition", "[filesystem][path][fs.path.
     CHECK(fs::path("/foo/.profile").extension() == "");
     CHECK(fs::path(".bar").extension() == "");
     CHECK(fs::path("..bar").extension() == ".bar");
+    CHECK(fs::path("t:est.txt").extension() == ".txt");
 
     if (has_host_root_name_support()) {
         // //host-based root-names
@@ -1199,7 +1210,7 @@ TEST_CASE("fs.class.filesystem_error - class filesystem_error", "[filesystem][fi
     CHECK(fse.path2() == "some/other");
 }
 
-constexpr fs::perms constExprOwnerAll()
+static constexpr fs::perms constExprOwnerAll()
 {
     return fs::perms::owner_read | fs::perms::owner_write | fs::perms::owner_exec;
 }
@@ -1377,6 +1388,16 @@ TEST_CASE("fs.dir.entry - class directory_entry", "[filesystem][directory_entry]
     CHECK(!(d2 != d2));
     CHECK(d1 == d1);
     CHECK(!(d1 == d2));
+    if(is_symlink_creation_supported()) {
+        fs::create_symlink(t.path() / "nonexistent", t.path() / "broken");
+        for (auto d3 : fs::directory_iterator(t.path())) {
+            CHECK_NOTHROW(d3.symlink_status());
+            CHECK_NOTHROW(d3.status());
+            CHECK_NOTHROW(d3.refresh());
+        }
+        fs::directory_entry entry(t.path() / "broken");
+        CHECK_NOTHROW(entry.refresh());
+    }
 }
 
 TEST_CASE("fs.class.directory_iterator - class directory_iterator", "[filesystem][directory_iterator][fs.class.directory_iterator]")
@@ -1778,6 +1799,19 @@ TEST_CASE("fs.op.copy_file - copy_file", "[filesystem][operations][fs.op.copy_fi
     CHECK_NOTHROW(fs::copy_file("foobar", "foobar2", ec));
     CHECK(ec);
     CHECK(!fs::exists("foobar"));
+    fs::path file1("temp1.txt");
+    fs::path file2("temp2.txt");
+    generateFile(file1, 200);
+    generateFile(file2, 200);
+    auto allWrite = fs::perms::owner_write | fs::perms::group_write | fs::perms::others_write;
+    CHECK_NOTHROW(fs::permissions(file1, allWrite, fs::perm_options::remove));
+    CHECK((fs::status(file1).permissions() & fs::perms::owner_write) != fs::perms::owner_write);
+    CHECK_NOTHROW(fs::permissions(file2, allWrite, fs::perm_options::add));
+    CHECK((fs::status(file2).permissions() & fs::perms::owner_write) == fs::perms::owner_write);
+    fs::copy_file(file1, file2, fs::copy_options::overwrite_existing);
+    CHECK((fs::status(file2).permissions() & fs::perms::owner_write) != fs::perms::owner_write);
+    CHECK_NOTHROW(fs::permissions(file1, allWrite, fs::perm_options::add));
+    CHECK_NOTHROW(fs::permissions(file2, allWrite, fs::perm_options::add));
 }
 
 TEST_CASE("fs.op.copy_symlink - copy_symlink", "[filesystem][operations][fs.op.copy_symlink]")

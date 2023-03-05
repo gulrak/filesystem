@@ -43,8 +43,9 @@ macOS 10.12/10.14/10.15/11.6, Windows 10, Ubuntu 18.04, Ubuntu 20.04, CentOS 7, 
 Alpine ARM/ARM64 Linux and Solaris 10 but should work on other systems too, as long as you have
 at least a C++11 compatible compiler. It should work with Android NDK, Emscripten and I even
 had reports of it being used on iOS (within sandboxing constraints) and with v1.5.6 there
-is experimental support for QNX. The support of Android NDK, Emscripten and QNX is not
-backed up by automated testing but PRs and bug reports are welcome for those too.
+is experimental support for QNX. The support of Android NDK, Emscripten, QNX, GNU/Hurd and Haiku is not
+backed up by automated testing but PRs and bug reports are welcome for those too and they are reported
+to work.
 It is of course in its own namespace `ghc::filesystem` to not interfere with a regular `std::filesystem`
 should you use it in a mixed C++17 environment (which is possible).
 
@@ -583,6 +584,41 @@ to the expected behavior.
 
 
 ## Release Notes
+
+###  v1.5.13 (wip)
+
+* Pull request [#163](https://github.com/gulrak/filesystem/pull/163), build
+  support for Haiku (also fixes [#159](https://github.com/gulrak/filesystem/issues/159))
+* Pull request [#162](https://github.com/gulrak/filesystem/pull/162), fix for
+  directory iterator treating all files subsequent to a symlink as symlink
+  on Windows
+* Fix for [#160](https://github.com/gulrak/filesystem/issues/160), the cmake
+  config now only sets install targets by default if the project is no
+  subproject, as documented
+* Fix for [#157](https://github.com/gulrak/filesystem/issues/157), suppress
+  C4191 warning on MSVC for GetProcAddress casts
+* Fix for [#156](https://github.com/gulrak/filesystem/issues/156), on POSIX
+  `stem()`, `filename()` and `extension()` of `fs::path` would return wrong
+  result if a colon was in the filename
+* Pull request [#154](https://github.com/gulrak/filesystem/pull/145), build
+  support for GNU/Hurd
+* Pull request [#153](https://github.com/gulrak/filesystem/pull/153), fixed
+  `fs::last_write_time(path, time, ec)` setter on iOS, tvOS and watchOS
+* Fix for [#151](https://github.com/gulrak/filesystem/issues/156),
+  `fs::directory_entry::refresh()` now, consistently with `status()` will not
+  throw on symlinks to non-existing targets, but make the entry have
+  `file_type::not_found` as the type
+* Pull request [#149](https://github.com/gulrak/filesystem/pull/149), add
+  version to CMake project and export it
+* Fix for [#146](https://github.com/gulrak/filesystem/issues/146), handle `EINTR`
+  on POSIX directory iteration and file copy to avoid errors on network
+  filesystems 
+* Pull request [#145](https://github.com/gulrak/filesystem/pull/145), fix for
+  Y2038 bug in timeToFILETIME on Windows
+* Pull request [#144](https://github.com/gulrak/filesystem/pull/144), `fs::copy_file()`
+  now also copies the permissions
+* Pull request [#143](https://github.com/gulrak/filesystem/pull/143), fix
+  for `fs::copy_file()` ignoring the `skip_existing` option.
 
 ### [v1.5.12](https://github.com/gulrak/filesystem/releases/tag/v1.5.12)
 

@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.7.2)
-project(ghcfilesystem)
+project(
+   ghcfilesystem,
+   VERSION 1.5.13
+)
 
 if (POLICY CMP0077)
     cmake_policy(SET CMP0077 NEW)
@@ -15,7 +18,7 @@ if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
 else()
     option(GHC_FILESYSTEM_BUILD_EXAMPLES "Build examples" OFF)
     option(GHC_FILESYSTEM_BUILD_TESTING "Enable tests" OFF)
-    option(GHC_FILESYSTEM_WITH_INSTALL "With install target" ON)
+    option(GHC_FILESYSTEM_WITH_INSTALL "With install target" OFF)
 endif()
 option(GHC_FILESYSTEM_BUILD_STD_TESTING "Enable STD tests" ${GHC_FILESYSTEM_BUILD_TESTING})
 if(NOT DEFINED GHC_FILESYSTEM_TEST_COMPILE_FEATURES)
@@ -71,6 +74,15 @@ if(GHC_FILESYSTEM_WITH_INSTALL)
         "${PROJECT_BINARY_DIR}/cmake/ghc_filesystem-config.cmake"
         INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ghc_filesystem"
         PATH_VARS CMAKE_INSTALL_INCLUDEDIR)
-    install(FILES "${PROJECT_BINARY_DIR}/cmake/ghc_filesystem-config.cmake"
-        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ghc_filesystem")
+    write_basic_package_version_file(
+        "${PROJECT_BINARY_DIR}/cmake/ghc_filesystem-config-version.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY SameMinorVersion
+    )
+    install(
+        FILES
+            "${PROJECT_BINARY_DIR}/cmake/ghc_filesystem-config.cmake"
+            "${PROJECT_BINARY_DIR}/cmake/ghc_filesystem-config-version.cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ghc_filesystem"
+    )
 endif()
