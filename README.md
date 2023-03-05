@@ -3,37 +3,40 @@
 [![CMake Build Matrix](https://github.com/gulrak/filesystem/actions/workflows/build_cmake.yml/badge.svg?branch=master)](https://github.com/gulrak/filesystem/actions/workflows/build_cmake.yml)
 [![Build Status](https://ci.appveyor.com/api/projects/status/t07wp3k2cddo0hpo/branch/master?svg=true)](https://ci.appveyor.com/project/gulrak/filesystem)
 [![Build Status](https://api.cirrus-ci.com/github/gulrak/filesystem.svg?branch=master)](https://cirrus-ci.com/github/gulrak/filesystem)
-[![Build Status](https://cloud.drone.io/api/badges/gulrak/filesystem/status.svg?ref=refs/heads/master)](https://cloud.drone.io/gulrak/filesystem)
 [![Coverage Status](https://coveralls.io/repos/github/gulrak/filesystem/badge.svg?branch=master)](https://coveralls.io/github/gulrak/filesystem?branch=master)
-[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.5.12)
+[![Latest Release Tag](https://img.shields.io/github/tag/gulrak/filesystem.svg)](https://github.com/gulrak/filesystem/tree/v1.5.14)
+<!-- [![Build Status](https://cloud.drone.io/api/badges/gulrak/filesystem/status.svg?ref=refs/heads/master)](https://cloud.drone.io/gulrak/filesystem) -->
 
-- [Filesystem](#filesystem)
-  - [Motivation](#motivation)
-  - [Why the namespace GHC?](#why-the-namespace-ghc)
-  - [Platforms](#platforms)
-  - [Tests](#tests)
-  - [Usage](#usage)
-    - [Downloads](#downloads)
-    - [Using it as Single-File-Header](#using-it-as-single-file-header)
-    - [Using it as Forwarding-/Implementation-Header](#using-it-as-forwarding-implementation-header)
-    - [Git Submodule and CMake](#git-submodule-and-cmake)
-    - [Versioning](#versioning)
-  - [Documentation](#documentation)
-    - [`ghc::filesystem::ifstream`, `ghc::filesystem::ofstream`, `ghc::filesystem::fstream`](#ghcfilesystemifstream-ghcfilesystemofstream-ghcfilesystemfstream)
-    - [`ghc::filesystem::u8arguments`](#ghcfilesystemu8arguments)
-  - [Differences](#differences)
-    - [LWG Defects](#lwg-defects)
-    - [Not Implemented on C++ before C++17](#not-implemented-on-c-before-c17)
-    - [Differences in API](#differences-in-api)
-      - [Differences of Specific Interfaces](#differences-of-specific-interfaces)
-    - [Differences in Behavior](#differences-in-behavior)
-      - [fs.path](#fspath-refhttpsencppreferencecomwcppfilesystempath)
-  - [Open Issues](#open-issues)
-    - [Windows](#windows)
-      - [Symbolic Links on Windows](#symbolic-links-on-windows)
-      - [Permissions](#permissions)
-  - [Release Notes](#release-notes)
-  
+
+<!-- TOC -->
+* [Filesystem](#filesystem)
+  * [Motivation](#motivation)
+  * [Why the namespace GHC?](#why-the-namespace-ghc)
+  * [Platforms](#platforms)
+  * [Tests](#tests)
+  * [Usage](#usage)
+    * [Downloads](#downloads)
+    * [Using it as Single-File-Header](#using-it-as-single-file-header)
+    * [Using it as Forwarding-/Implementation-Header](#using-it-as-forwarding-implementation-header)
+    * [Git Submodule and CMake](#git-submodule-and-cmake)
+    * [Versioning](#versioning)
+  * [Documentation](#documentation)
+    * [`ghc::filesystem::ifstream`, `ghc::filesystem::ofstream`, `ghc::filesystem::fstream`](#ghcfilesystemifstream--ghcfilesystemofstream--ghcfilesystemfstream)
+    * [`ghc::filesystem::u8arguments`](#ghcfilesystemu8arguments)
+  * [Differences](#differences)
+    * [LWG Defects](#lwg-defects)
+    * [Not Implemented on C++ before C++17](#not-implemented-on-c-before-c17)
+    * [Differences in API](#differences-in-api)
+      * [Differences of Specific Interfaces](#differences-of-specific-interfaces)
+    * [Differences in Behavior](#differences-in-behavior)
+      * [fs.path (ref)](#fspath--ref-)
+  * [Open Issues](#open-issues)
+    * [Windows](#windows)
+      * [Symbolic Links on Windows](#symbolic-links-on-windows)
+      * [Permissions](#permissions)
+  * [Release Notes](#release-notes)
+<!-- TOC -->
+
 # Filesystem
 
 This is a header-only single-file `std::filesystem` compatible helper library,
@@ -43,9 +46,9 @@ macOS 10.12/10.14/10.15/11.6, Windows 10, Ubuntu 18.04, Ubuntu 20.04, CentOS 7, 
 Alpine ARM/ARM64 Linux and Solaris 10 but should work on other systems too, as long as you have
 at least a C++11 compatible compiler. It should work with Android NDK, Emscripten and I even
 had reports of it being used on iOS (within sandboxing constraints) and with v1.5.6 there
-is experimental support for QNX. The support of Android NDK, Emscripten, QNX, GNU/Hurd and Haiku is not
-backed up by automated testing but PRs and bug reports are welcome for those too and they are reported
-to work.
+is experimental support for QNX. The support of Android NDK, Emscripten, QNX, and since 1.5.14
+GNU/Hurd and Haiku is not backed up by automated testing but PRs and bug reports are welcome
+for those too and they are reported to work.
 It is of course in its own namespace `ghc::filesystem` to not interfere with a regular `std::filesystem`
 should you use it in a mixed C++17 environment (which is possible).
 
@@ -108,7 +111,8 @@ Unit tests are currently run with:
 * macOS 10.12: Xcode 9.2 (clang-900.0.39.2), GCC 9.2, Clang 9.0, macOS 10.13: Xcode 10.1, macOS 10.14: Xcode 11.2, macOS 10.15: Xcode 11.6, Xcode 12.4
 * Windows: Visual Studio 2017, Visual Studio 2015, Visual Studio 2019, MinGW GCC 6.3 (Win32), GCC 7.2 (Win64), Cygwin GCC 10.2 (no CI yet)
 * Linux (Ubuntu): GCC (5.5, 6.5, 7.4, 8.3, 9.2), Clang (5.0, 6.0, 7.1, 8.0, 9.0)
-* Linux (Alpine ARM/ARM64): GCC 9.2.0
+* ~~Linux (Alpine ARM/ARM64): GCC 9.2.0~~ (The Drone build scripts stopped working,
+  as they where a contribution, I couldn't figure out what went wrong, any help appreciated.)
 * FreeBSD: Clang 8.0
 * Solaris: GCC 5.5 
 
@@ -150,8 +154,8 @@ in the standard, and there might be issues in these implementations too.
 
 ### Downloads
 
-The latest release version is [v1.5.12](https://github.com/gulrak/filesystem/tree/v1.5.12) and
-source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.5.12).
+The latest release version is [v1.5.14](https://github.com/gulrak/filesystem/tree/v1.5.14) and
+source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.5.14).
 
 The latest pre-native-backend version is [v1.4.0](https://github.com/gulrak/filesystem/tree/v1.4.0) and
 source archives can be found [here](https://github.com/gulrak/filesystem/releases/tag/v1.4.0).
@@ -585,13 +589,15 @@ to the expected behavior.
 
 ## Release Notes
 
-###  v1.5.13 (wip)
+###  [v1.5.14](https://github.com/gulrak/filesystem/releases/tag/v1.5.14)
 
 * Pull request [#163](https://github.com/gulrak/filesystem/pull/163), build
   support for Haiku (also fixes [#159](https://github.com/gulrak/filesystem/issues/159))
 * Pull request [#162](https://github.com/gulrak/filesystem/pull/162), fix for
   directory iterator treating all files subsequent to a symlink as symlink
   on Windows
+* Pull request [#161](https://github.com/gulrak/filesystem/pull/161), the
+  CMake alias `ghcFilesystem::ghc_filesystem` is now set unconditionally 
 * Fix for [#160](https://github.com/gulrak/filesystem/issues/160), the cmake
   config now only sets install targets by default if the project is no
   subproject, as documented
