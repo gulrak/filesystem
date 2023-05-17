@@ -817,6 +817,8 @@ TEST_CASE("fs.path.decompose - path decomposition", "[filesystem][path][fs.path.
 #else
     CHECK(fs::path("t:est.txt").stem() == "t:est");
 #endif
+    CHECK(fs::path("/foo/.").stem() == ".");
+    CHECK(fs::path("/foo/..").stem() == "..");
 
     // extension()
     CHECK(fs::path("/foo/bar.txt").extension() == ".txt");
@@ -825,6 +827,8 @@ TEST_CASE("fs.path.decompose - path decomposition", "[filesystem][path][fs.path.
     CHECK(fs::path(".bar").extension() == "");
     CHECK(fs::path("..bar").extension() == ".bar");
     CHECK(fs::path("t:est.txt").extension() == ".txt");
+    CHECK(fs::path("/foo/.").extension() == "");
+    CHECK(fs::path("/foo/..").extension() == "");
 
     if (has_host_root_name_support()) {
         // //host-based root-names

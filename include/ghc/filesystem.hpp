@@ -3170,7 +3170,7 @@ GHC_INLINE path path::extension() const
         auto iter = end();
         const auto& fn = *--iter;
         impl_string_type::size_type pos = fn._path.rfind('.');
-        if (pos != std::string::npos && pos > 0) {
+        if (pos != std::string::npos && pos > 0 && fn._path != "..") {
             return path(fn._path.substr(pos), native_format);
         }
     }
