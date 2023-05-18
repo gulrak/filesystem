@@ -589,6 +589,12 @@ to the expected behavior.
 
 ## Release Notes
 
+### v1.5.15 (wip)
+
+* Fix for [#166](https://github.com/gulrak/filesystem/issues/166),
+  `extension()` did return non empty result for the directory name
+  `".."`
+
 ###  [v1.5.14](https://github.com/gulrak/filesystem/releases/tag/v1.5.14)
 
 * Pull request [#163](https://github.com/gulrak/filesystem/pull/163), build
