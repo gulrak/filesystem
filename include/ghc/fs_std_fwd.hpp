@@ -25,7 +25,7 @@
 // SOFTWARE.
 //
 //---------------------------------------------------------------------------------------
-// fs_std_fwd.hpp - The forwarding header for the header/implementation seperated usage of
+// fs_std_fwd.hpp - The forwarding header for the header/implementation separated usage of
 //                  ghc::filesystem that uses std::filesystem if it detects it.
 // This file can be include at any place, where fs::filesystem api is needed while
 // not bleeding implementation details (e.g. system includes) into the global namespace,
