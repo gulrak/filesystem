@@ -36,7 +36,7 @@
 
 #ifndef GHC_OS_DETECTED
 #if defined(__APPLE__) && defined(__MACH__)
-#define GHC_OS_MACOS
+#define GHC_OS_APPLE
 #elif defined(__linux__)
 #define GHC_OS_LINUX
 #if defined(__ANDROID__)
@@ -164,7 +164,7 @@
 #include <langinfo.h>
 #endif
 #endif
-#ifdef GHC_OS_MACOS
+#ifdef GHC_OS_APPLE
 #include <Availability.h>
 #endif
 
@@ -4633,9 +4633,11 @@ GHC_INLINE void last_write_time(const path& p, file_time_type new_time, std::err
     if (!::SetFileTime(file.get(), 0, 0, &ft)) {
         ec = detail::make_system_error();
     }
-#elif defined(GHC_OS_MACOS) && \
-    (__MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_10_13) || (__IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0) || \
-    (__TV_OS_VERSION_MIN_REQUIRED < __TVOS_11_0) || (__WATCH_OS_VERSION_MIN_REQUIRED < __WATCHOS_4_0)
+#elif defined(GHC_OS_APPLE) && \
+    (__MAC_OS_X_VERSION_MIN_REQUIRED && __MAC_OS_X_VERSION_MIN_REQUIRED < 101300 \
+     || __IPHONE_OS_VERSION_MIN_REQUIRED && __IPHONE_OS_VERSION_MIN_REQUIRED < 110000 \
+     || __TV_OS_VERSION_MIN_REQUIRED && __TVOS_VERSION_MIN_REQUIRED < 110000 \
+     || __WATCH_OS_VERSION_MIN_REQUIRED && __WATCHOS_VERSION_MIN_REQUIRED < 40000)
     struct ::stat fs;
     if (::stat(p.c_str(), &fs) == 0) {
         struct ::timeval tv[2];
