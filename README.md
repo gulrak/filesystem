@@ -204,7 +204,7 @@ a fallback could be:
     #include <filesystem>
     namespace fs = std::filesystem;
 #else
-    #include <ghc/filesystem.hpp>
+    #include "filesystem.hpp"
     namespace fs = ghc::filesystem;
 #endif
 ```
@@ -246,7 +246,7 @@ you might use:
         using fstream = std::fstream;
     }
 #else
-    #include <ghc/filesystem.hpp>
+    #include "filesystem.hpp"
     namespace fs {
         using namespace ghc::filesystem;
         using ifstream = ghc::filesystem::ifstream;
@@ -325,7 +325,7 @@ switching like this:
         using fstream = std::fstream;
     }
 #else
-    #include <ghc/fs_fwd.hpp>
+    #include "fs_fwd.hpp"
     namespace fs {
         using namespace ghc::filesystem;
         using ifstream = ghc::filesystem::ifstream;
@@ -364,7 +364,7 @@ to take precedence:
 #endif
 
 #ifndef GHC_USE_STD_FS
-    #include <ghc/fs_impl.hpp>
+    #include "fs_impl.hpp"
 #endif
 ```
 

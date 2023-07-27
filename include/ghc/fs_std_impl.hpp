@@ -56,5 +56,5 @@
 #endif
 
 #ifndef GHC_USE_STD_FS
-    #include <ghc/fs_impl.hpp>
+    #include "fs_impl.hpp"
 #endif

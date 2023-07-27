@@ -67,7 +67,7 @@
         using fstream = std::fstream;
     }
 #else
-    #include <ghc/fs_fwd.hpp>
+    #include "fs_fwd.hpp"
     namespace fs {
         using namespace ghc::filesystem;
         using ifstream = ghc::filesystem::ifstream;
