@@ -157,7 +157,7 @@
 #else
 #include <sys/statvfs.h>
 #endif
-#ifdef GHC_OS_CYGWIN
+#if defined(GHC_OS_CYGWIN) || defined(GHC_OS_APPLE)
 #include <strings.h>
 #endif
 #if !defined(__ANDROID__) || __ANDROID_API__ >= 26
