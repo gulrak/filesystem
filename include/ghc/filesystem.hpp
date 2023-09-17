@@ -1195,7 +1195,7 @@ inline int permission_flags(std::ios::openmode mode) {
 }
 
 template< class charT, class traits = std::char_traits< charT>>
-__gnu_cxx::stdio_filebuf<charT, traits> open_filebuf(const path& file_path, std::ios::openmode mode) {
+__gnu_cxx::stdio_filebuf<charT, traits> open_filebuf_from_unicode_path(const path& file_path, std::ios::openmode mode) {
     // Opening a file handle/descriptor from the native (wide) string path.
     int file_handle = 0;
     _wsopen_s(&file_handle, GHC_NATIVEWP(file_path), open_flags(mode), _SH_DENYNO, permission_flags(mode));
@@ -1236,7 +1236,7 @@ public:
         if (this->is_open()) {
             return nullptr;
         }
-        auto filebuf = detail::open_filebuf<charT, traits>(p, mode);
+        auto filebuf = detail::open_filebuf_from_unicode_path<charT, traits>(p, mode);
         if (!filebuf.is_open()) {
             return nullptr;
         }
@@ -1266,7 +1266,7 @@ public:
     }
     void open(const path& p, std::ios_base::openmode mode = std::ios_base::in)
     {
-        *this->rdbuf() = detail::open_filebuf<charT, traits>(p, mode | std::ios_base::in);
+        *this->rdbuf() = detail::open_filebuf_from_unicode_path<charT, traits>(p, mode | std::ios_base::in);
         if (!this->is_open()) {
             this->setstate(std::ios_base::failbit);
         } else {
@@ -1303,7 +1303,7 @@ public:
     }
     void open(const path& p, std::ios_base::openmode mode = std::ios_base::out)
     {
-        *this->rdbuf() = detail::open_filebuf<charT, traits>(p, mode | std::ios_base::out);
+        *this->rdbuf() = detail::open_filebuf_from_unicode_path<charT, traits>(p, mode | std::ios_base::out);
         if (!this->is_open()) {
             this->setstate(std::ios_base::failbit);
         } else {
@@ -1340,7 +1340,7 @@ public:
     }
     void open(const path& p, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out)
     {
-        *this->rdbuf() = detail::open_filebuf<charT, traits>(p, mode | std::ios_base::in | std::ios_base::out);
+        *this->rdbuf() = detail::open_filebuf_from_unicode_path<charT, traits>(p, mode | std::ios_base::in | std::ios_base::out);
         if (!this->is_open()) {
             this->setstate(std::ios_base::failbit);
         } else {
