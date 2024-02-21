@@ -966,6 +966,7 @@ TEST_CASE("fs.path.gen - path generation", "[filesystem][path][fs.path.gen]")
     CHECK(fs::path("/a/d").lexically_relative("/a/b/c") == "../../d");
     CHECK(fs::path("/a/b/c").lexically_relative("/a/d") == "../b/c");
     CHECK(fs::path("/a/b/c").lexically_relative("/a/b/c/d/..") == ".");
+    CHECK(fs::path("/a/b/c/").lexically_relative("/a/b/c/d/..") == ".");
     CHECK(fs::path("").lexically_relative("/a/..") == "");
     CHECK(fs::path("").lexically_relative("a/..") == ".");
     CHECK(fs::path("a/b/c").lexically_relative("a") == "b/c");
