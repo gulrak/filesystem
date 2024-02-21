@@ -3306,6 +3306,9 @@ GHC_INLINE path path::lexically_relative(const path& base) const
             --count;
         }
     }
+    if (count == 0 && (a == end() || empty())) {
+        return path(".");
+    }
     if (count < 0) {
         return path();
     }
