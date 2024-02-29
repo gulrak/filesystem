@@ -300,6 +300,21 @@
 #error "Can't raise unicode errors with exception support disabled"
 #endif
 
+#if defined(GHC_OS_WINDOWS)
+#if !defined(__GLIBCXX__) || (defined(_GLIBCXX_HAVE__WFOPEN) && defined(_GLIBCXX_USE_WCHAR_T))
+#define GHC_HAS_FSTREAM_OPEN_WITH_WCHAR
+#elif defined(__GLIBCXX__) && defined(_WIO_DEFINED)
+#define GHC_HAS_WIO_DEFINED
+#include <ext/stdio_filebuf.h>
+#include <fcntl.h>
+#include <share.h>
+#ifndef _S_IREAD
+// Some tests disable the previous inclusion of sys/stat.h; however, we need it when using old versions of MinGW.
+#include <sys/stat.h>
+#endif
+#endif
+#endif
+
 namespace ghc {
 namespace filesystem {
 
@@ -1142,8 +1157,66 @@ GHC_FS_API void create_hard_link(const path& to, const path& new_hard_link, std:
 GHC_FS_API uintmax_t hard_link_count(const path& p, std::error_code& ec) noexcept;
 #endif
 
-#if defined(GHC_OS_WINDOWS) && (!defined(__GLIBCXX__) || (defined(_GLIBCXX_HAVE__WFOPEN) && defined(_GLIBCXX_USE_WCHAR_T)))
-#define GHC_HAS_FSTREAM_OPEN_WITH_WCHAR
+#ifdef GHC_HAS_WIO_DEFINED
+namespace detail {
+inline int open_flags(std::ios::openmode mode)
+{
+    const bool out = (mode & std::ios::out) != 0;
+    const bool in = (mode & std::ios::in) != 0;
+    int flags = 0;
+    if (in && out) {
+        flags |= _O_RDWR | _O_CREAT;
+    }
+    else if (out) {
+        flags |= _O_WRONLY | _O_CREAT;
+    }
+    else {
+        flags |= _O_RDONLY;
+    }
+    if ((mode & std::ios::app) != 0) {
+        flags |= _O_APPEND;
+    }
+    if ((mode & std::ios::trunc) != 0) {
+        flags |= _O_TRUNC;
+    }
+    flags |= (mode & std::ios::binary) != 0 ? _O_BINARY : _O_TEXT;
+    return flags;
+}
+
+inline int permission_flags(std::ios::openmode mode) {
+    int flags = 0;
+    if ((mode & std::ios::in) != 0) {
+        flags |= _S_IREAD;
+    }
+    if ((mode & std::ios::out) != 0) {
+        flags |= _S_IWRITE;
+    }
+    return flags;
+}
+
+template< class charT, class traits = std::char_traits< charT>>
+__gnu_cxx::stdio_filebuf<charT, traits> open_filebuf_from_unicode_path(const path& file_path, std::ios::openmode mode) {
+    // Opening a file handle/descriptor from the native (wide) string path.
+    int file_handle = 0;
+    _wsopen_s(&file_handle, GHC_NATIVEWP(file_path), open_flags(mode), _SH_DENYNO, permission_flags(mode));
+
+    // Creating a GLIBCXX stdio_filebuf object from the file handle (it will check if the handle is actually opened).
+    __gnu_cxx::stdio_filebuf<charT, traits> result{file_handle, mode};
+
+    // If mode has the flag std::ios::ate, we need to seek at the end of the filebuf.
+    if (result.is_open() && (mode & std::ios::ate) != 0){
+        const auto seek_result = result.pubseekoff(0, std::ios::end, mode);
+        const auto end_pos = typename traits::pos_type(typename traits::off_type(-1));
+        if (seek_result == end_pos) {
+            // If the seeking fails, we need to close the filebuf (as per the standard).
+            result.close();
+        }
+    }
+
+    // Returning the filebuf in any case, whether we successfully opened it or not (the caller will check it).
+    return result;
+}
+} // namespace detail
 #endif
 
 // Non-C++17 add-on std::fstream wrappers with path
@@ -1159,6 +1232,16 @@ public:
     {
 #ifdef GHC_HAS_FSTREAM_OPEN_WITH_WCHAR
         return std::basic_filebuf<charT, traits>::open(p.wstring().c_str(), mode) ? this : 0;
+#elif defined(GHC_HAS_WIO_DEFINED)
+        if (this->is_open()) {
+            return nullptr;
+        }
+        auto filebuf = detail::open_filebuf_from_unicode_path<charT, traits>(p, mode);
+        if (!filebuf.is_open()) {
+            return nullptr;
+        }
+        this->swap(filebuf);
+        return this;
 #else
         return std::basic_filebuf<charT, traits>::open(p.string().c_str(), mode) ? this : 0;
 #endif
@@ -1176,6 +1259,20 @@ public:
     {
     }
     void open(const path& p, std::ios_base::openmode mode = std::ios_base::in) { std::basic_ifstream<charT, traits>::open(p.wstring().c_str(), mode); }
+#elif defined(GHC_HAS_WIO_DEFINED)
+    explicit basic_ifstream(const path& p, std::ios_base::openmode mode = std::ios_base::in)
+    {
+        open(p, mode);
+    }
+    void open(const path& p, std::ios_base::openmode mode = std::ios_base::in)
+    {
+        *this->rdbuf() = detail::open_filebuf_from_unicode_path<charT, traits>(p, mode | std::ios_base::in);
+        if (!this->is_open()) {
+            this->setstate(std::ios_base::failbit);
+        } else {
+            this->clear();
+        }
+    }
 #else
     explicit basic_ifstream(const path& p, std::ios_base::openmode mode = std::ios_base::in)
         : std::basic_ifstream<charT, traits>(p.string().c_str(), mode)
@@ -1199,6 +1296,20 @@ public:
     {
     }
     void open(const path& p, std::ios_base::openmode mode = std::ios_base::out) { std::basic_ofstream<charT, traits>::open(p.wstring().c_str(), mode); }
+#elif defined(GHC_HAS_WIO_DEFINED)
+    explicit basic_ofstream(const path& p, std::ios_base::openmode mode = std::ios_base::out)
+    {
+        open(p, mode);
+    }
+    void open(const path& p, std::ios_base::openmode mode = std::ios_base::out)
+    {
+        *this->rdbuf() = detail::open_filebuf_from_unicode_path<charT, traits>(p, mode | std::ios_base::out);
+        if (!this->is_open()) {
+            this->setstate(std::ios_base::failbit);
+        } else {
+            this->clear();
+        }
+    }
 #else
     explicit basic_ofstream(const path& p, std::ios_base::openmode mode = std::ios_base::out)
         : std::basic_ofstream<charT, traits>(p.string().c_str(), mode)
@@ -1222,6 +1333,20 @@ public:
     {
     }
     void open(const path& p, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out) { std::basic_fstream<charT, traits>::open(p.wstring().c_str(), mode); }
+#elif defined(GHC_HAS_WIO_DEFINED)
+    explicit basic_fstream(const path& p, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out)
+    {
+        open(p, mode);
+    }
+    void open(const path& p, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out)
+    {
+        *this->rdbuf() = detail::open_filebuf_from_unicode_path<charT, traits>(p, mode | std::ios_base::in | std::ios_base::out);
+        if (!this->is_open()) {
+            this->setstate(std::ios_base::failbit);
+        } else {
+            this->clear();
+        }
+    }
 #else
     explicit basic_fstream(const path& p, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out)
         : std::basic_fstream<charT, traits>(p.string().c_str(), mode)
