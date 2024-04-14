@@ -397,6 +397,10 @@ The `CMakeLists.txt` offers a few options to customize its behavior:
   `CMAKE_CXX_COMPILE_FEATURES` when the detection of C++17 or C++20 for additional tests
   is not working (e.g. `cxx_std_20` to enforce building a `filesystem_test_cpp20` with C++20).
 
+### Bazel
+
+Please use [hedronvision/bazel-cc-filesystem-backport](https://github.com/hedronvision/bazel-cc-filesystem-backport), which will automatically set everything up for you.
+
 ### Versioning
 
 There is a version macro `GHC_FILESYSTEM_VERSION` defined in case future changes
