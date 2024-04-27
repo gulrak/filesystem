@@ -22,16 +22,16 @@ jobs:
           - name: "Ubuntu 22.04 Clang 13.0"
             os: ubuntu-22.04
             build_type: Release
-            packages: ninja-build
+            packages: ninja-build libc++-13-dev
             generator: Ninja
             compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
             cc: clang-13
             cxx: clang++-13
 
-          - name: "Ubuntu 20.04 Clang 15.0"
+          - name: "Ubuntu 22.04 Clang 15.0"
             os: ubuntu-22.04
             build_type: Release
-            packages: ninja-build
+            packages: ninja-build libc++-15-dev
             generator: Ninja
             compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
             cc: clang-15
