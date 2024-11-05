@@ -955,6 +955,7 @@ TEST_CASE("fs.path.gen - path generation", "[filesystem][path][fs.path.gen]")
     CHECK(fs::path("ab/cd/ef/../../qw").lexically_normal() == "ab/qw");
     CHECK(fs::path("a/b/../../../c").lexically_normal() == "../c");
     CHECK(fs::path("../").lexically_normal() == "..");
+    CHECK(fs::path("../foo/../../bar/").lexically_normal() == "../../bar/");
 #ifdef GHC_OS_WINDOWS
     CHECK(fs::path("\\/\\///\\/").lexically_normal() == "/");
     CHECK(fs::path("a/b/..\\//..///\\/../c\\\\/").lexically_normal() == "../c/");
