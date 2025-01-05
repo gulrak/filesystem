@@ -3261,11 +3261,12 @@ GHC_INLINE path path::lexically_normal() const
             continue;
         }
         else if (s == ".." && !dest.empty()) {
-            auto root = root_path();
-            if (dest == root) {
+            if (dest == root_path()) {
                 continue;
             }
-            else if (*(--dest.end()) != "..") {
+
+            const auto filename = *(--dest.end());
+            if (filename != ".." && !(filename.empty() && dest.has_parent_path() && dest.parent_path() == "..")) {
                 if (dest._path.back() == preferred_separator) {
                     dest._path.pop_back();
                 }
