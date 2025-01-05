@@ -34,7 +34,7 @@
 #ifndef GHC_FILESYSTEM_STD_FWD_H
 #define GHC_FILESYSTEM_STD_FWD_H
 
-#if _MSVC_LANG >= 201703L || __cplusplus >= 201703L && defined(__has_include)
+#if defined(_MSVC_LANG) && _MSVC_LANG >= 201703L || __cplusplus >= 201703L && defined(__has_include)
     // ^ Supports MSVC prior to 15.7 without setting /Zc:__cplusplus to fix __cplusplus
     // _MSVC_LANG works regardless. But without the switch, the compiler always reported 199711L: https://blogs.msdn.microsoft.com/vcblog/2018/04/09/msvc-now-correctly-reports-__cplusplus/
     #if __has_include(<filesystem>) // Two stage __has_include needed for MSVC 2015 and per https://gcc.gnu.org/onlinedocs/cpp/_005f_005fhas_005finclude.html
@@ -48,12 +48,12 @@
             // Note: This intentionally uses std::filesystem on any new Apple OS, like visionOS
             // released after std::filesystem, where std::filesystem is always available.
             // (All other __<platform>_VERSION_MIN_REQUIREDs will be undefined and thus 0.)
-            #if __MAC_OS_X_VERSION_MIN_REQUIRED && __MAC_OS_X_VERSION_MIN_REQUIRED < 101500 \
-             || __IPHONE_OS_VERSION_MIN_REQUIRED && __IPHONE_OS_VERSION_MIN_REQUIRED < 130000 \
-             || __TV_OS_VERSION_MIN_REQUIRED && __TV_OS_VERSION_MIN_REQUIRED < 130000 \
-             || __WATCH_OS_VERSION_MAX_ALLOWED && __WATCH_OS_VERSION_MAX_ALLOWED < 60000
+            #if defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED < 101500 \
+             || defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && __IPHONE_OS_VERSION_MIN_REQUIRED < 130000 \
+             || defined(__TV_OS_VERSION_MIN_REQUIRED) && __TV_OS_VERSION_MIN_REQUIRED < 130000 \
+             || defined(__WATCH_OS_VERSION_MAX_ALLOWED) && __WATCH_OS_VERSION_MAX_ALLOWED < 60000
                 #undef GHC_USE_STD_FS
-            #endif  
+            #endif
         #endif
     #endif
 #endif
