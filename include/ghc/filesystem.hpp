@@ -4354,7 +4354,7 @@ GHC_INLINE path current_path(std::error_code& ec)
     }
     return path(std::wstring(buffer.get()), path::native_format);
 #elif defined(__GLIBC__)
-    std::unique_ptr<char, decltype(&std::free)> buffer { ::getcwd(NULL, 0), std::free };
+    std::unique_ptr<char, decltype(&std::free)> buffer { ::get_current_dir_name(), std::free };
     if (buffer == nullptr) {
         ec = detail::make_system_error();
         return path();
