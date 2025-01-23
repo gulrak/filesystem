@@ -100,24 +100,6 @@ jobs:
             cc: clang
             cxx: clang++
 
-          - name: "macOS 12 AppleClang"
-            os: macos-12
-            build_type: Release
-            packages: ninja
-            generator: Ninja
-            compatibility: "cxx_std_11;cxx_std_17"
-            cc: clang
-            cxx: clang++
-
-          - name: "macOS 11 AppleClang"
-            os: macos-11
-            build_type: Release
-            packages: ninja
-            generator: Ninja
-            compatibility: "cxx_std_11;cxx_std_17"
-            cc: clang
-            cxx: clang++
-
     steps:
       - uses: actions/checkout@v2
 
