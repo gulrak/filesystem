@@ -14,7 +14,7 @@ function(SetTestCompileOptions target_name)
         $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wpedantic -Werror -Wno-deprecated-declarations>
         $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wshadow -Wconversion -Wsign-conversion -Wpedantic -Wno-psabi -Werror -Wno-deprecated-declarations>
         $<$<CXX_COMPILER_ID:MSVC>:/WX /wd4996>
-        $<$<BOOL:${CYGWIN}>:-Wa,-mbig-obj>)
+        $<$<OR:$<BOOL:${CYGWIN}>,$<BOOL:${MINGW}>>:-Wa,-mbig-obj>)
 endfunction()
 
 if(GHC_COVERAGE)
