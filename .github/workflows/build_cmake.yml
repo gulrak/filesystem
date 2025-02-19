@@ -85,11 +85,33 @@ jobs:
           - name: "Windows MSVC 2019"
             os: windows-2019
             build_type: Release
+            build_std_testing: 'OFF'
             packages: ninja
             generator: "Visual Studio 16 2019"
             compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
             cc: cl
             cxx: cl
+
+          - name: "Windows MSYS2 UCRT64"
+            os: windows-2019
+            msystem: ucrt64
+            build_type: Release
+            build_std_testing: 'OFF'
+            packages: mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-ninja
+            generator: Ninja
+            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
+            cc: gcc
+            cxx: g++
+
+          - name: "Windows MSYS2 CLANG64"
+            os: windows-2019
+            msystem: clang64
+            build_type: Release
+            packages: mingw-w64-clang-x86_64-cmake mingw-w64-clang-x86_64-clang mingw-w64-clang-x86_64-ninja
+            generator: Ninja
+            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
+            cc: clang
+            cxx: clang++
 
           - name: "macOS 13 AppleClang"
             os: macos-13
@@ -116,10 +138,18 @@ jobs:
           sudo apt update
           sudo apt install ${{ matrix.config.packages }}
 
-      - name: Install dependencies on windows
+      - name: Install dependencies on windows (MSVC)
         if: startsWith(matrix.config.os, 'windows')
         run: |
           choco install ${{ matrix.config.packages }}
+
+      - name: Install dependencies on windows (MSYS2)
+        if: matrix.config.msystem != ''
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.config.msystem }}
+          update: true
+          pacboy: ${{ matrix.config.packages }}
 
       - name: Install dependencies on macOS
         if: startsWith(matrix.config.os, 'macos')
@@ -135,11 +165,11 @@ jobs:
           cmake --version
           mkdir build
           mkdir install
-          if [[ "${{ matrix.config.build_type }}" == "Debug" ]]; then
-            cmake -G "${{ matrix.config.generator }}" -S . -B build -DCMAKE_BUILD_TYPE=Debug -DGHC_COVERAGE=ON -DGHC_FILESYSTEM_TEST_COMPILE_FEATURES="${{ matrix.config.compatibility }}" -DCMAKE_INSTALL_PREFIX:PATH=install
-          else
-            cmake -G "${{ matrix.config.generator }}" -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} -DGHC_FILESYSTEM_TEST_COMPILE_FEATURES="${{ matrix.config.compatibility }}" -DCMAKE_INSTALL_PREFIX:PATH=install
-          fi
+          args=(-G "${{ matrix.config.generator }}" -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }})
+          [[ "${{ matrix.config.build_type }}" == "Debug" ]] && args+=(-DGHC_COVERAGE=ON)
+          [[ -n "${{ matrix.config.msystem }}" ]] && args+=(-DGHC_FILESYSTEM_BUILD_STD_TESTING=NO)
+          args+=(-DCMAKE_INSTALL_PREFIX:PATH=install)
+          cmake "${args[@]}"
 
       - name: Build project
         shell: bash
@@ -167,4 +197,3 @@ jobs:
         with:
           path-to-lcov: ${{ github.workspace }}/build/coverage.info
           github-token: ${{ secrets.GITHUB_TOKEN }}
-
