@@ -97,7 +97,7 @@ jobs:
             msystem: ucrt64
             build_type: Release
             build_std_testing: 'OFF'
-            packages: mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-ninja
+            packages: cmake gcc ninja
             generator: Ninja
             compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
             cc: gcc
@@ -107,7 +107,7 @@ jobs:
             os: windows-2019
             msystem: clang64
             build_type: Release
-            packages: mingw-w64-clang-x86_64-cmake mingw-w64-clang-x86_64-clang mingw-w64-clang-x86_64-ninja
+            packages: cmake clang ninja
             generator: Ninja
             compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
             cc: clang
