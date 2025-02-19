@@ -157,6 +157,7 @@ jobs:
           brew install ${{ matrix.config.packages }}
 
       - name: Configure project
+        if: matrix.config.msystem == ''
         shell: bash
         run: |
           export CC=${{ matrix.config.cc }}
@@ -171,12 +172,43 @@ jobs:
           args+=(-DCMAKE_INSTALL_PREFIX:PATH=install)
           cmake "${args[@]}"
 
+      - name: Configure project (MSYS2)
+        if: matrix.config.msystem != ''
+        shell: msys2 {0}
+        run: |
+          export CC=${{ matrix.config.cc }}
+          export CXX=${{ matrix.config.cxx }}
+          ninja --version
+          cmake --version
+          mkdir build
+          mkdir install
+          args=(-G "${{ matrix.config.generator }}" -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }})
+          [[ "${{ matrix.config.build_type }}" == "Debug" ]] && args+=(-DGHC_COVERAGE=ON)
+          [[ -n "${{ matrix.config.msystem }}" ]] && args+=(-DGHC_FILESYSTEM_BUILD_STD_TESTING=NO)
+          args+=(-DCMAKE_INSTALL_PREFIX:PATH=install)
+          cmake "${args[@]}"
+
       - name: Build project
+        if: matrix.config.msystem == ''
         shell: bash
         run: |
           cmake --build build --config ${{ matrix.config.build_type }}
 
+      - name: Build project (MSYS2)
+        if: matrix.config.msystem != ''
+        shell: msys2 {0}
+        run: |
+          cmake --build build --config ${{ matrix.config.build_type }}
+
       - name: Run tests
+        if: matrix.config.msystem == ''
+        shell: bash
+        run: |
+          cd build && ctest -C ${{ matrix.config.build_type }}
+
+      - name: Run tests (MSYS2)
+        if: matrix.config.msystem != ''
+        shell: msys2 {0}
         run: |
           cd build && ctest -C ${{ matrix.config.build_type }}
 
