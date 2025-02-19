@@ -139,7 +139,7 @@ jobs:
           sudo apt install ${{ matrix.config.packages }}
 
       - name: Install dependencies on windows (MSVC)
-        if: startsWith(matrix.config.os, 'windows')
+        if: matrix.config.msystem == ''
         run: |
           choco install ${{ matrix.config.packages }}
 
