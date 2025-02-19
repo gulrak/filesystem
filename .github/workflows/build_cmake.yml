@@ -139,12 +139,12 @@ jobs:
           sudo apt install ${{ matrix.config.packages }}
 
       - name: Install dependencies on windows (MSVC)
-        if: matrix.config.msystem == ''
+        if: startsWith(matrix.config.os, 'windows') && matrix.config.msystem == ''
         run: |
           choco install ${{ matrix.config.packages }}
 
       - name: Install dependencies on windows (MSYS2)
-        if: matrix.config.msystem != ''
+        if: startsWith(matrix.config.os, 'windows') && matrix.config.msystem != ''
         uses: msys2/setup-msys2@v2
         with:
           msystem: ${{ matrix.config.msystem }}
