@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.7.2)
 project(
-    ghcfilesystem
+    ghc_filesystem
     VERSION 1.5.15
     HOMEPAGE_URL "https://github.com/gulrak/filesystem"
     LANGUAGES CXX
