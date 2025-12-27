@@ -3977,7 +3977,7 @@ GHC_INLINE bool copy_file(const path& from, const path& to, copy_options options
     }
     ssize_t br, bw;
     while (true) {
-        do { br = ::read(in, buffer.data(), buffer.size()); } while(errno == EINTR && !br);
+        do { br = ::read(in, buffer.data(), buffer.size()); } while(br == -1 && errno == EINTR);
         if(!br) {
             break;
         }
@@ -5722,8 +5722,10 @@ public:
             bool skip;
             do {
                 skip = false;
-                errno = 0;
-                do { _entry = ::readdir(_dir); } while(errno == EINTR && !_entry);
+                do {
+                    errno = 0;
+                    _entry = ::readdir(_dir);
+                } while (errno == EINTR && !_entry);
                 if (_entry) {
                     _dir_entry._path = _base;
                     _dir_entry._path.append_name(_entry->d_name);
