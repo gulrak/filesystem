@@ -238,7 +238,18 @@ jobs:
 
       - name: Configure
         run: |
-          cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=Release
+          # GCC 5-6 have CMake 3.0.2 which doesn't support -S/-B flags (added in 3.13)
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            if [ "${{ matrix.version }}" = "5" ] || [ "${{ matrix.version }}" = "6" ]; then
+              mkdir build
+              cd build
+              cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
+            else
+              cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=Release
+            fi
+          else
+            cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=Release
+          fi
 
       - name: Build
         run: cmake --build build
