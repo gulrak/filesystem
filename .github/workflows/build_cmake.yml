@@ -11,19 +11,37 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - name: "Ubuntu 22.04 GCC 11"
-            os: ubuntu-22.04
+          - name: "Ubuntu 24.04 GCC 13"
+            os: ubuntu-24.04
             build_type: Release
             packages: ninja-build
             generator: Ninja
             compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
-            cc: gcc
-            cxx: g++
+            cc: gcc-13
+            cxx: g++-13
 
-          - name: "Ubuntu 22.04 Clang 15.0"
+          - name: "Ubuntu 24.04 Clang 18"
+            os: ubuntu-24.04
+            build_type: Release
+            packages: ninja-build clang-18 libc++-18-dev libc++abi-18-dev
+            generator: Ninja
+            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
+            cc: clang-18
+            cxx: clang++-18
+
+          - name: "Ubuntu 22.04 GCC 12"
             os: ubuntu-22.04
             build_type: Release
-            packages: ninja-build libc++-15-dev libc++abi-15-dev
+            packages: ninja-build gcc-12 g++-12
+            generator: Ninja
+            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
+            cc: gcc-12
+            cxx: g++-12
+
+          - name: "Ubuntu 22.04 Clang 15"
+            os: ubuntu-22.04
+            build_type: Release
+            packages: ninja-build clang-15 libc++-15-dev libc++abi-15-dev
             generator: Ninja
             compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
             cc: clang-15
@@ -35,26 +53,8 @@ jobs:
             packages: ninja-build lcov
             generator: Ninja
             compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
-            cc: gcc
-            cxx: g++
-
-          - name: "Ubuntu 20.04 GCC 9.3"
-            os: ubuntu-20.04
-            build_type: Release
-            packages: ninja-build
-            generator: Ninja
-            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
-            cc: gcc
-            cxx: g++
-
-          - name: "Ubuntu 20.04 Clang 10.0"
-            os: ubuntu-20.04
-            build_type: Release
-            packages: ninja-build
-            generator: Ninja
-            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
-            cc: clang-10
-            cxx: clang++-10
+            cc: gcc-11
+            cxx: g++-11
 
           - name: "Windows MSVC 2019"
             os: windows-2019
@@ -74,6 +74,7 @@ jobs:
             cc: cl
             cxx: cl
 
+          # FIXED: Replace macos-13 with macos-14 (Apple Silicon)
           - name: "macOS 14 AppleClang (ARM)"
             os: macos-14
             build_type: Release
@@ -83,6 +84,7 @@ jobs:
             cc: clang
             cxx: clang++
 
+          # ADDED: macOS 15 for latest testing
           - name: "macOS 15 AppleClang (ARM)"
             os: macos-15
             build_type: Release
@@ -93,7 +95,7 @@ jobs:
             cxx: clang++
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4  # UPDATED from v2
 
       - name: print environment
         run: |
@@ -167,27 +169,47 @@ jobs:
           # GCC 5.5 is minimum supported version
           - compiler: gcc
             version: 5
+            checkout_version: v1  # Old containers need v1 (no Node.js dependency)
           - compiler: gcc
             version: 6
+            checkout_version: v1
           - compiler: gcc
             version: 7
+            checkout_version: v4
           - compiler: gcc
             version: 8
+            checkout_version: v4
           # Clang 6 is minimum supported version
           - compiler: clang
             version: 6
+            checkout_version: v4
           - compiler: clang
             version: 7
+            checkout_version: v4
           - compiler: clang
             version: 8
+            checkout_version: v4
           - compiler: clang
             version: 9
+            checkout_version: v4
 
     container:
       image: ${{ matrix.compiler == 'gcc' && format('gcc:{0}', matrix.version) || format('silkeh/clang:{0}', matrix.version) }}
 
     steps:
-      - uses: actions/checkout@v4
+      # Use older checkout for GCC 5-6 (ancient glibc doesn't support Node 20)
+      - name: Checkout code
+        uses: actions/checkout@${{ matrix.checkout_version }}
+
+      # Fix Debian Buster EOL repository issues (GCC 7-8, Clang 7-9)
+      - name: Fix Debian repositories for EOL releases
+        if: matrix.version == 7 || matrix.version == 8 || matrix.version == 9
+        run: |
+          # Debian Buster reached EOL, repositories moved to archive
+          sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list
+          sed -i 's|security.debian.org/debian-security|archive.debian.org/debian-security|g' /etc/apt/sources.list
+          sed -i '/stretch-updates/d' /etc/apt/sources.list
+          sed -i '/buster-updates/d' /etc/apt/sources.list
 
       - name: Install CMake and Ninja
         run: |
