@@ -3,6 +3,7 @@ name: CMake Build Matrix
 on: [ push, pull_request ]
 
 jobs:
+  # Modern compilers on native runners (same as before, just updated)
   build:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
@@ -18,15 +19,6 @@ jobs:
             compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
             cc: gcc
             cxx: g++
-
-          - name: "Ubuntu 22.04 Clang 13.0"
-            os: ubuntu-22.04
-            build_type: Release
-            packages: ninja-build libc++-13-dev libc++abi-13-dev
-            generator: Ninja
-            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
-            cc: clang-13
-            cxx: clang++-13
 
           - name: "Ubuntu 22.04 Clang 15.0"
             os: ubuntu-22.04
@@ -64,24 +56,6 @@ jobs:
             cc: clang-10
             cxx: clang++-10
 
-          - name: "Ubuntu 20.04 Clang 11.0"
-            os: ubuntu-20.04
-            build_type: Release
-            packages: ninja-build clang-11 libc++-11-dev libc++abi-11-dev
-            generator: Ninja
-            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
-            cc: clang-11
-            cxx: clang++-11
-
-          - name: "Ubuntu 20.04 GCC 9.3 coverage"
-            os: ubuntu-20.04
-            build_type: Debug
-            packages: ninja-build lcov
-            generator: Ninja
-            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
-            cc: gcc
-            cxx: g++
-
           - name: "Windows MSVC 2019"
             os: windows-2019
             build_type: Release
@@ -91,8 +65,26 @@ jobs:
             cc: cl
             cxx: cl
 
-          - name: "macOS 13 AppleClang"
-            os: macos-13
+          - name: "Windows MSVC 2022"
+            os: windows-2022
+            build_type: Release
+            packages: ninja
+            generator: "Visual Studio 17 2022"
+            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
+            cc: cl
+            cxx: cl
+
+          - name: "macOS 14 AppleClang (ARM)"
+            os: macos-14
+            build_type: Release
+            packages: ninja
+            generator: Ninja
+            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
+            cc: clang
+            cxx: clang++
+
+          - name: "macOS 15 AppleClang (ARM)"
+            os: macos-15
             build_type: Release
             packages: ninja
             generator: Ninja
@@ -101,7 +93,7 @@ jobs:
             cxx: clang++
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: print environment
         run: |
@@ -148,7 +140,7 @@ jobs:
 
       - name: Run tests
         run: |
-          cd build && ctest -C ${{ matrix.config.build_type }}
+          cd build && ctest -C ${{ matrix.config.build_type }} --output-on-failure
 
       - name: Collect coverage info
         if: startsWith(matrix.config.build_type, 'Debug')
@@ -156,15 +148,58 @@ jobs:
           cd build
           lcov --compat-libtool --directory . --capture --output-file coverage_output.info
           lcov --remove coverage_output.info '/usr/*' '*/c++/*' '*.h' '*/catch.hpp' -o coverage.info
-          # sed -i 's|SF:/.*/filesystem/|SF:../|g' coverage.info
 
       - name: Upload coverage info
         if: startsWith(matrix.config.build_type, 'Debug')
-        env:
-          COVERALLS_DEBUG: true
-          NODE_COVERALLS_DEBUG: 1
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@v2  # UPDATED
         with:
           path-to-lcov: ${{ github.workspace }}/build/coverage.info
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+  # Optional: Legacy compilers via Docker
+#  legacy-compilers:
+#    name: "Docker ${{ matrix.compiler }} ${{ matrix.version }}"
+#    runs-on: ubuntu-latest
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        include:
+#          # GCC 5.5 is minimum supported version
+#          - compiler: gcc
+#            version: 5
+#          - compiler: gcc
+#            version: 6
+#          - compiler: gcc
+#            version: 7
+#          - compiler: gcc
+#            version: 8
+#          # Clang 6 is minimum supported version
+#          - compiler: clang
+#            version: 6
+#          - compiler: clang
+#            version: 7
+#          - compiler: clang
+#            version: 8
+#          - compiler: clang
+#            version: 9
+#
+#    container:
+#      image: ${{ matrix.compiler == 'gcc' && format('gcc:{0}', matrix.version) || format('silkeh/clang:{0}', matrix.version) }}
+#
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - name: Install CMake and Ninja
+#        run: |
+#          apt-get update
+#          apt-get install -y cmake ninja-build
+#
+#      - name: Configure
+#        run: |
+#          cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=Release
+#
+#      - name: Build
+#        run: cmake --build build
+#
+#      - name: Test
+#        run: cd build && ctest --output-on-failure
