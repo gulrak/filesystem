@@ -207,22 +207,22 @@ jobs:
         if: matrix.checkout_version == 'v4'
         uses: actions/checkout@v4
 
-      # Fix Debian Jessie EOL repository issues (GCC 5-6)
+      # Fix Debian Jessie EOL repository issues (GCC 5-6 only)
       - name: Fix Debian repositories for Jessie (GCC 5-6)
-        if: matrix.version == 5 || matrix.version == 6
+        if: matrix.compiler == 'gcc' && (matrix.version == 5 || matrix.version == 6)
         run: |
           # Debian Jessie reached EOL, repositories moved to archive
           sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list
-          sed -i 's|security.debian.org|archive.debian.org/debian-security|g' /etc/apt/sources.list
+          sed -i 's|http://security.debian.org/debian-security|http://archive.debian.org/debian-security|g' /etc/apt/sources.list
           sed -i '/jessie-updates/d' /etc/apt/sources.list
 
       # Fix Debian Buster EOL repository issues (GCC 7-8, Clang 7-9)
       - name: Fix Debian repositories for Buster (GCC 7-8, Clang 7-9)
-        if: matrix.version == 7 || matrix.version == 8 || matrix.version == 9
+        if: (matrix.compiler == 'gcc' && (matrix.version == 7 || matrix.version == 8)) || (matrix.compiler == 'clang' && (matrix.version == 7 || matrix.version == 8 || matrix.version == 9))
         run: |
           # Debian Buster reached EOL, repositories moved to archive
           sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list
-          sed -i 's|security.debian.org/debian-security|archive.debian.org/debian-security|g' /etc/apt/sources.list
+          sed -i 's|http://security.debian.org/debian-security|http://archive.debian.org/debian-security|g' /etc/apt/sources.list
           sed -i '/stretch-updates/d' /etc/apt/sources.list
           sed -i '/buster-updates/d' /etc/apt/sources.list
 
