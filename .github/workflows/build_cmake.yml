@@ -230,26 +230,19 @@ jobs:
         run: |
           apt-get update
           # GCC 5-6 need --allow-unauthenticated due to expired Jessie GPG keys
-          if [ "${{ matrix.compiler }}" = "gcc" ] && ([ "${{ matrix.version }}" = "5" ] || [ "${{ matrix.version }}" = "6" ]); then
-            apt-get install -y --allow-unauthenticated cmake ninja-build
+          if [ "${{ matrix.compiler }}" = "gcc" ] && [ "${{ matrix.version }}" = "5" -o "${{ matrix.version }}" = "6" ]; then
+            apt-get install -y --allow-unauthenticated ninja-build wget ca-certificates
+            # Debian Jessie has CMake 3.0.2, but project needs 3.7.2+
+            # Download CMake 3.16.9 (supports -S/-B flags, works with old glibc)
+            wget -qO- "https://cmake.org/files/v3.16/cmake-3.16.9-Linux-x86_64.tar.gz" | tar --strip-components=1 -xz -C /usr/local
           else
             apt-get install -y cmake ninja-build
           fi
 
       - name: Configure
         run: |
-          # GCC 5-6 have CMake 3.0.2 which doesn't support -S/-B flags (added in 3.13)
-          if [ "${{ matrix.compiler }}" = "gcc" ]; then
-            if [ "${{ matrix.version }}" = "5" ] || [ "${{ matrix.version }}" = "6" ]; then
-              mkdir build
-              cd build
-              cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
-            else
-              cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=Release
-            fi
-          else
-            cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=Release
-          fi
+          # Now all versions have CMake 3.10+, so we can use -S/-B flags
+          cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
         run: cmake --build build
