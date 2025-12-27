@@ -158,7 +158,8 @@ jobs:
           path-to-lcov: ${{ github.workspace }}/build/coverage.info
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-  # Optional: Legacy compilers via Docker
+  # Legacy compilers via Docker
+  # Tests with officially supported minimum versions (GCC 5.5+, Clang 6+)
   legacy-compilers:
     name: "Docker ${{ matrix.compiler }} ${{ matrix.version }}"
     runs-on: ubuntu-latest
