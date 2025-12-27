@@ -157,49 +157,49 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
   # Optional: Legacy compilers via Docker
-#  legacy-compilers:
-#    name: "Docker ${{ matrix.compiler }} ${{ matrix.version }}"
-#    runs-on: ubuntu-latest
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        include:
-#          # GCC 5.5 is minimum supported version
-#          - compiler: gcc
-#            version: 5
-#          - compiler: gcc
-#            version: 6
-#          - compiler: gcc
-#            version: 7
-#          - compiler: gcc
-#            version: 8
-#          # Clang 6 is minimum supported version
-#          - compiler: clang
-#            version: 6
-#          - compiler: clang
-#            version: 7
-#          - compiler: clang
-#            version: 8
-#          - compiler: clang
-#            version: 9
-#
-#    container:
-#      image: ${{ matrix.compiler == 'gcc' && format('gcc:{0}', matrix.version) || format('silkeh/clang:{0}', matrix.version) }}
-#
-#    steps:
-#      - uses: actions/checkout@v4
-#
-#      - name: Install CMake and Ninja
-#        run: |
-#          apt-get update
-#          apt-get install -y cmake ninja-build
-#
-#      - name: Configure
-#        run: |
-#          cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=Release
-#
-#      - name: Build
-#        run: cmake --build build
-#
-#      - name: Test
-#        run: cd build && ctest --output-on-failure
+  legacy-compilers:
+    name: "Docker ${{ matrix.compiler }} ${{ matrix.version }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # GCC 5.5 is minimum supported version
+          - compiler: gcc
+            version: 5
+          - compiler: gcc
+            version: 6
+          - compiler: gcc
+            version: 7
+          - compiler: gcc
+            version: 8
+          # Clang 6 is minimum supported version
+          - compiler: clang
+            version: 6
+          - compiler: clang
+            version: 7
+          - compiler: clang
+            version: 8
+          - compiler: clang
+            version: 9
+
+    container:
+      image: ${{ matrix.compiler == 'gcc' && format('gcc:{0}', matrix.version) || format('silkeh/clang:{0}', matrix.version) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install CMake and Ninja
+        run: |
+          apt-get update
+          apt-get install -y cmake ninja-build
+
+      - name: Configure
+        run: |
+          cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        run: cd build && ctest --output-on-failure
