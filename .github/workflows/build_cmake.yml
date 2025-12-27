@@ -229,7 +229,12 @@ jobs:
       - name: Install CMake and Ninja
         run: |
           apt-get update
-          apt-get install -y cmake ninja-build
+          # GCC 5-6 need --allow-unauthenticated due to expired Jessie GPG keys
+          if [ "${{ matrix.compiler }}" = "gcc" ] && ([ "${{ matrix.version }}" = "5" ] || [ "${{ matrix.version }}" = "6" ]); then
+            apt-get install -y --allow-unauthenticated cmake ninja-build
+          else
+            apt-get install -y cmake ninja-build
+          fi
 
       - name: Configure
         run: |
