@@ -199,8 +199,13 @@ jobs:
 
     steps:
       # Use older checkout for GCC 5-6 (ancient glibc doesn't support Node 20)
-      - name: Checkout code
-        uses: actions/checkout@${{ matrix.checkout_version }}
+      - name: Checkout code (v1 for old glibc)
+        if: matrix.checkout_version == 'v1'
+        uses: actions/checkout@v1
+
+      - name: Checkout code (v4 for modern containers)
+        if: matrix.checkout_version == 'v4'
+        uses: actions/checkout@v4
 
       # Fix Debian Buster EOL repository issues (GCC 7-8, Clang 7-9)
       - name: Fix Debian repositories for EOL releases
