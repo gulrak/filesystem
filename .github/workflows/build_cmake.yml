@@ -3,6 +3,7 @@ name: CMake Build Matrix
 on: [ push, pull_request ]
 
 jobs:
+  # Modern compilers on native runners (same as before, just updated)
   build:
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
@@ -10,28 +11,37 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - name: "Ubuntu 22.04 GCC 11"
-            os: ubuntu-22.04
+          - name: "Ubuntu 24.04 GCC 13"
+            os: ubuntu-24.04
             build_type: Release
             packages: ninja-build
             generator: Ninja
             compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
-            cc: gcc
-            cxx: g++
+            cc: gcc-13
+            cxx: g++-13
 
-          - name: "Ubuntu 22.04 Clang 13.0"
-            os: ubuntu-22.04
+          - name: "Ubuntu 24.04 Clang 18"
+            os: ubuntu-24.04
             build_type: Release
-            packages: ninja-build libc++-13-dev libc++abi-13-dev
+            packages: ninja-build clang-18 libc++-18-dev libc++abi-18-dev
             generator: Ninja
             compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
-            cc: clang-13
-            cxx: clang++-13
+            cc: clang-18
+            cxx: clang++-18
 
-          - name: "Ubuntu 22.04 Clang 15.0"
+          - name: "Ubuntu 22.04 GCC 12"
             os: ubuntu-22.04
             build_type: Release
-            packages: ninja-build libc++-15-dev libc++abi-15-dev
+            packages: ninja-build gcc-12 g++-12
+            generator: Ninja
+            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
+            cc: gcc-12
+            cxx: g++-12
+
+          - name: "Ubuntu 22.04 Clang 15"
+            os: ubuntu-22.04
+            build_type: Release
+            packages: ninja-build clang-15 libc++-15-dev libc++abi-15-dev
             generator: Ninja
             compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
             cc: clang-15
@@ -43,44 +53,8 @@ jobs:
             packages: ninja-build lcov
             generator: Ninja
             compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
-            cc: gcc
-            cxx: g++
-
-          - name: "Ubuntu 20.04 GCC 9.3"
-            os: ubuntu-20.04
-            build_type: Release
-            packages: ninja-build
-            generator: Ninja
-            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
-            cc: gcc
-            cxx: g++
-
-          - name: "Ubuntu 20.04 Clang 10.0"
-            os: ubuntu-20.04
-            build_type: Release
-            packages: ninja-build
-            generator: Ninja
-            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
-            cc: clang-10
-            cxx: clang++-10
-
-          - name: "Ubuntu 20.04 Clang 11.0"
-            os: ubuntu-20.04
-            build_type: Release
-            packages: ninja-build clang-11 libc++-11-dev libc++abi-11-dev
-            generator: Ninja
-            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
-            cc: clang-11
-            cxx: clang++-11
-
-          - name: "Ubuntu 20.04 GCC 9.3 coverage"
-            os: ubuntu-20.04
-            build_type: Debug
-            packages: ninja-build lcov
-            generator: Ninja
-            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
-            cc: gcc
-            cxx: g++
+            cc: gcc-11
+            cxx: g++-11
 
           - name: "Windows MSVC 2019"
             os: windows-2019
@@ -91,8 +65,28 @@ jobs:
             cc: cl
             cxx: cl
 
-          - name: "macOS 13 AppleClang"
-            os: macos-13
+          - name: "Windows MSVC 2022"
+            os: windows-2022
+            build_type: Release
+            packages: ninja
+            generator: "Visual Studio 17 2022"
+            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
+            cc: cl
+            cxx: cl
+
+          # FIXED: Replace macos-13 with macos-14 (Apple Silicon)
+          - name: "macOS 14 AppleClang (ARM)"
+            os: macos-14
+            build_type: Release
+            packages: ninja
+            generator: Ninja
+            compatibility: "cxx_std_11;cxx_std_17;cxx_std_20"
+            cc: clang
+            cxx: clang++
+
+          # ADDED: macOS 15 for latest testing
+          - name: "macOS 15 AppleClang (ARM)"
+            os: macos-15
             build_type: Release
             packages: ninja
             generator: Ninja
@@ -101,7 +95,7 @@ jobs:
             cxx: clang++
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4  # UPDATED from v2
 
       - name: print environment
         run: |
@@ -148,7 +142,7 @@ jobs:
 
       - name: Run tests
         run: |
-          cd build && ctest -C ${{ matrix.config.build_type }}
+          cd build && ctest -C ${{ matrix.config.build_type }} --output-on-failure
 
       - name: Collect coverage info
         if: startsWith(matrix.config.build_type, 'Debug')
@@ -156,15 +150,102 @@ jobs:
           cd build
           lcov --compat-libtool --directory . --capture --output-file coverage_output.info
           lcov --remove coverage_output.info '/usr/*' '*/c++/*' '*.h' '*/catch.hpp' -o coverage.info
-          # sed -i 's|SF:/.*/filesystem/|SF:../|g' coverage.info
 
       - name: Upload coverage info
         if: startsWith(matrix.config.build_type, 'Debug')
-        env:
-          COVERALLS_DEBUG: true
-          NODE_COVERALLS_DEBUG: 1
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@v2  # UPDATED
         with:
           path-to-lcov: ${{ github.workspace }}/build/coverage.info
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+  # Legacy compilers via Docker
+  # Tests with officially supported minimum versions (GCC 5.5+, Clang 6+)
+  legacy-compilers:
+    name: "Docker ${{ matrix.compiler }} ${{ matrix.version }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # GCC 5.5 is minimum supported version
+          - compiler: gcc
+            version: 5
+            checkout_version: v1  # Old containers need v1 (no Node.js dependency)
+          - compiler: gcc
+            version: 6
+            checkout_version: v1
+          - compiler: gcc
+            version: 7
+            checkout_version: v4
+          - compiler: gcc
+            version: 8
+            checkout_version: v4
+          # Clang 6 is minimum supported version
+          - compiler: clang
+            version: 6
+            checkout_version: v4
+          - compiler: clang
+            version: 7
+            checkout_version: v4
+          - compiler: clang
+            version: 8
+            checkout_version: v4
+          - compiler: clang
+            version: 9
+            checkout_version: v4
+
+    container:
+      image: ${{ matrix.compiler == 'gcc' && format('gcc:{0}', matrix.version) || format('silkeh/clang:{0}', matrix.version) }}
+
+    steps:
+      # Use older checkout for GCC 5-6 (ancient glibc doesn't support Node 20)
+      - name: Checkout code (v1 for old glibc)
+        if: matrix.checkout_version == 'v1'
+        uses: actions/checkout@v1
+
+      - name: Checkout code (v4 for modern containers)
+        if: matrix.checkout_version == 'v4'
+        uses: actions/checkout@v4
+
+      # Fix Debian Jessie EOL repository issues (GCC 5-6 only)
+      - name: Fix Debian repositories for Jessie (GCC 5-6)
+        if: matrix.compiler == 'gcc' && (matrix.version == 5 || matrix.version == 6)
+        run: |
+          # Debian Jessie reached EOL, repositories moved to archive
+          sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list
+          sed -i 's|http://security.debian.org/debian-security|http://archive.debian.org/debian-security|g' /etc/apt/sources.list
+          sed -i '/jessie-updates/d' /etc/apt/sources.list
+
+      # Fix Debian Buster EOL repository issues (GCC 7-8, Clang 7-9)
+      - name: Fix Debian repositories for Buster (GCC 7-8, Clang 7-9)
+        if: (matrix.compiler == 'gcc' && (matrix.version == 7 || matrix.version == 8)) || (matrix.compiler == 'clang' && (matrix.version == 7 || matrix.version == 8 || matrix.version == 9))
+        run: |
+          # Debian Buster reached EOL, repositories moved to archive
+          sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list
+          sed -i 's|http://security.debian.org/debian-security|http://archive.debian.org/debian-security|g' /etc/apt/sources.list
+          sed -i '/stretch-updates/d' /etc/apt/sources.list
+          sed -i '/buster-updates/d' /etc/apt/sources.list
+
+      - name: Install CMake and Ninja
+        run: |
+          apt-get update
+          # GCC 5-6 need --allow-unauthenticated due to expired Jessie GPG keys
+          if [ "${{ matrix.compiler }}" = "gcc" ] && [ "${{ matrix.version }}" = "5" -o "${{ matrix.version }}" = "6" ]; then
+            apt-get install -y --allow-unauthenticated ninja-build wget ca-certificates
+            # Debian Jessie has CMake 3.0.2, but project needs 3.7.2+
+            # Download CMake 3.16.9 (supports -S/-B flags, works with old glibc)
+            wget -qO- "https://cmake.org/files/v3.16/cmake-3.16.9-Linux-x86_64.tar.gz" | tar --strip-components=1 -xz -C /usr/local
+          else
+            apt-get install -y cmake ninja-build
+          fi
+
+      - name: Configure
+        run: |
+          # Now all versions have CMake 3.10+, so we can use -S/-B flags
+          cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        run: cd build && ctest --output-on-failure
