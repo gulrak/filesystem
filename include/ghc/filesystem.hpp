@@ -5594,7 +5594,8 @@ public:
         if (!_base.empty()) {
             ZeroMemory(&_findData, sizeof(WIN32_FIND_DATAW));
             if ((_dirHandle = FindFirstFileW(GHC_NATIVEWP((_base / "*")), &_findData)) != INVALID_HANDLE_VALUE) {
-                if (std::wstring(_findData.cFileName) == L"." || std::wstring(_findData.cFileName) == L"..") {
+                if (wcscmp(_findData.cFileName, L".") == 0 ||
+                    wcscmp(_findData.cFileName, L"..") == 0) {
                     increment(_ec);
                 }
                 else {
@@ -5652,7 +5653,7 @@ public:
                     _dir_entry._path.clear();
                     break;
                 }
-            } while (std::wstring(_findData.cFileName) == L"." || std::wstring(_findData.cFileName) == L"..");
+            } while (wcscmp(_findData.cFileName, L".") == 0 || wcscmp(_findData.cFileName, L"..") == 0);
         }
         else {
             ec = _ec;
