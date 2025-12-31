@@ -1941,7 +1941,7 @@ GHC_INLINE void create_symlink(const path& target_name, const path& new_symlink,
         ec = detail::make_error_code(detail::portable_error::not_supported);
         return;
     }
-#if defined(__GNUC__) && __GNUC__ >= 8
+#if defined(__GNUC__) && __GNUC__ >= 8  || defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-function-type"
 #elif defined(_MSC_VER) && !defined(__INTEL_COMPILER) && !defined(__clang__)
@@ -1949,7 +1949,7 @@ GHC_INLINE void create_symlink(const path& target_name, const path& new_symlink,
 #pragma warning(disable : 4191)
 #endif
     static CreateSymbolicLinkW_fp api_call = reinterpret_cast<CreateSymbolicLinkW_fp>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "CreateSymbolicLinkW"));
-#if defined(__GNUC__) && __GNUC__ >= 8
+#if defined(__GNUC__) && __GNUC__ >= 8 || defined(__clang__)
 #pragma GCC diagnostic pop
 #elif defined(_MSC_VER) && !defined(__INTEL_COMPILER) && !defined(__clang__)
 #pragma warning(pop)
@@ -1970,7 +1970,7 @@ GHC_INLINE void create_symlink(const path& target_name, const path& new_symlink,
 
 GHC_INLINE void create_hardlink(const path& target_name, const path& new_hardlink, std::error_code& ec)
 {
-#if defined(__GNUC__) && __GNUC__ >= 8
+#if defined(__GNUC__) && __GNUC__ >= 8 || defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-function-type"
 #elif defined(_MSC_VER) && !defined(__INTEL_COMPILER) && !defined(__clang__)
@@ -1978,7 +1978,7 @@ GHC_INLINE void create_hardlink(const path& target_name, const path& new_hardlin
 #pragma warning(disable : 4191)
 #endif
     static CreateHardLinkW_fp api_call = reinterpret_cast<CreateHardLinkW_fp>(GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "CreateHardLinkW"));
-#if defined(__GNUC__) && __GNUC__ >= 8
+#if defined(__GNUC__) && __GNUC__ >= 8 || defined(__clang__)
 #pragma GCC diagnostic pop
 #elif defined(_MSC_VER) && !defined(__INTEL_COMPILER) && !defined(__clang__)
 #pragma warning(pop)
@@ -2116,6 +2116,13 @@ private:
     element_type _handle;
 };
 
+// It seems GCC doesn't catch this, but Clang does
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=72751
+#if defined(__clang__) && defined(__MINGW32__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnested-anon-types"
+#endif
+
 #ifndef REPARSE_DATA_BUFFER_HEADER_SIZE
 typedef struct _REPARSE_DATA_BUFFER
 {
@@ -2150,6 +2157,10 @@ typedef struct _REPARSE_DATA_BUFFER
 #ifndef MAXIMUM_REPARSE_DATA_BUFFER_SIZE
 #define MAXIMUM_REPARSE_DATA_BUFFER_SIZE (16 * 1024)
 #endif
+#endif
+
+#if defined(__clang__) && defined(__MINGW32__)
+#pragma clang diagnostic pop
 #endif
 
 template <class T>
@@ -2247,7 +2258,7 @@ GHC_INLINE void timeToFILETIME(time_t t, FILETIME& ft)
 }
 
 template <typename INFO>
-GHC_INLINE uintmax_t hard_links_from_INFO(const INFO* info)
+GHC_INLINE uintmax_t hard_links_from_INFO(const INFO*)
 {
     return static_cast<uintmax_t>(-1);
 }
@@ -5594,7 +5605,8 @@ public:
         if (!_base.empty()) {
             ZeroMemory(&_findData, sizeof(WIN32_FIND_DATAW));
             if ((_dirHandle = FindFirstFileW(GHC_NATIVEWP((_base / "*")), &_findData)) != INVALID_HANDLE_VALUE) {
-                if (std::wstring(_findData.cFileName) == L"." || std::wstring(_findData.cFileName) == L"..") {
+                if (wcscmp(_findData.cFileName, L".") == 0 ||
+                    wcscmp(_findData.cFileName, L"..") == 0) {
                     increment(_ec);
                 }
                 else {
@@ -5652,7 +5664,7 @@ public:
                     _dir_entry._path.clear();
                     break;
                 }
-            } while (std::wstring(_findData.cFileName) == L"." || std::wstring(_findData.cFileName) == L"..");
+            } while (wcscmp(_findData.cFileName, L".") == 0 || wcscmp(_findData.cFileName, L"..") == 0);
         }
         else {
             ec = _ec;
