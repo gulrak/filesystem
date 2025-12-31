@@ -158,6 +158,46 @@ jobs:
           path-to-lcov: ${{ github.workspace }}/build/coverage.info
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+  # Windows MSYS2 builds (MinGW64, UCRT64, Clang64)
+  windows-msys2:
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { sys: mingw64, env: x86_64, compiler: gcc }
+          - { sys: ucrt64, env: ucrt-x86_64, compiler: gcc }
+          - { sys: clang64, env: clang-x86_64, compiler: clang }
+
+    name: Windows MSYS2 ${{ matrix.sys }} (${{ matrix.compiler }})
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.sys }}
+          update: true
+          install: >-
+            mingw-w64-${{ matrix.env }}-cmake
+            mingw-w64-${{ matrix.env }}-ninja
+            mingw-w64-${{ matrix.env }}-${{ matrix.compiler }}
+
+      - name: Configure
+        shell: msys2 {0}
+        run: |
+          cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        shell: msys2 {0}
+        run: cmake --build build
+
+      - name: Test
+        shell: msys2 {0}
+        run: cd build && ctest --output-on-failure
+
   # Legacy compilers via Docker
   # Tests with officially supported minimum versions (GCC 5.5+, Clang 6+)
   legacy-compilers:
