@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.7.2)
 project(
-   ghcfilesystem,
-   VERSION 1.5.15
+    ghc_filesystem
+    VERSION 1.5.15
+    HOMEPAGE_URL "https://github.com/gulrak/filesystem"
+    LANGUAGES CXX
 )
 
 if (POLICY CMP0077)
@@ -87,4 +89,10 @@ if(GHC_FILESYSTEM_WITH_INSTALL)
             "${PROJECT_BINARY_DIR}/cmake/ghc_filesystem-config-version.cmake"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ghc_filesystem"
     )
+
+    set(CPACK_PACKAGE_VENDOR "gulraks")
+    set(CPACK_GENERATOR "TGZ")
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+    set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+    include(CPack)
 endif()
