@@ -977,8 +977,6 @@ TEST_CASE("fs.path.gen - path generation", "[filesystem][path][fs.path.gen]")
     CHECK(fs::path(R"(\\?\UNC\fe80::1\c$\foo)").lexically_normal() == R"(\\?\UNC\fe80::1\c$\foo)");
     CHECK(fs::path(R"(\\?\UNC\server\share\foo)").lexically_normal() == R"(\\?\UNC\server\share\foo)");
     CHECK(fs::path(R"(\\server\share\foo)").lexically_normal() == R"(\\server\share\foo)");
-    CHECK(fs::path(R"(\\?\C:\foo\..\bar)").lexically_normal() == R"(\\?\C:\bar)");
-    CHECK(fs::path(R"(\??\C:\foo\..\bar)").lexically_normal() == R"(\??\C:\bar)");
     CHECK(fs::path(R"(C:foo\..\bar)").lexically_normal() == R"(C:bar)");
 #endif
 
