@@ -653,6 +653,8 @@ to the expected behavior.
   support, with iteration errors terminating the process.
 * Fix for [#191](https://github.com/gulrak/filesystem/issues/191), appending
   to a host-only UNC path now inserts the missing separator.
+* Fix for [#170](https://github.com/gulrak/filesystem/issues/170),
+  `lexically_normal()` now preserves IPv6 components in device UNC paths.
 * Fix for [#185](https://github.com/gulrak/filesystem/issues/185),
   `lexically_normal()` now preserves unresolved parent components in relative
   paths.

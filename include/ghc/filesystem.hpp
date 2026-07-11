@@ -3290,7 +3290,12 @@ GHC_INLINE path path::lexically_normal() const
             }
         }
         if (!(s.empty() && lastDotDot)) {
-            dest /= s;
+            if (dest.has_relative_path()) {
+                dest.append_name(s.c_str());
+            }
+            else {
+                dest /= s;
+            }
         }
         lastDotDot = s == "..";
     }
