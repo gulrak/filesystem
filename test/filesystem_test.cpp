@@ -2868,11 +2868,18 @@ TEST_CASE("fs.op.weakly_canonical - weakly_canonical", "[filesystem][operations]
         CHECK(!ec);
 
         const auto invalid = dir / std::string(1024, 'x');
-        CHECK(fs::weakly_canonical(invalid, ec).empty());
-        CHECK(ec);
-#ifdef GHC_WITH_EXCEPTIONS
-        CHECK_THROWS_AS(fs::weakly_canonical(invalid), fs::filesystem_error);
+        std::error_code lookupError;
+        CHECK_FALSE(fs::exists(invalid, lookupError));
+#ifndef GHC_OS_WINDOWS
+        REQUIRE(lookupError);
 #endif
+        if (lookupError) {
+            CHECK(fs::weakly_canonical(invalid, ec).empty());
+            CHECK(ec == lookupError);
+#ifdef GHC_WITH_EXCEPTIONS
+            CHECK_THROWS_AS(fs::weakly_canonical(invalid), fs::filesystem_error);
+#endif
+        }
     }
 }
 
