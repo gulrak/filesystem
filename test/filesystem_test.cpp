@@ -2862,6 +2862,17 @@ TEST_CASE("fs.op.weakly_canonical - weakly_canonical", "[filesystem][operations]
         CHECK(fs::weakly_canonical(rel / "d1/../f0") == dir / "f0");
         CHECK(fs::weakly_canonical(rel / "d1/../f1") == dir / "f1");
         CHECK(fs::weakly_canonical(rel / "d1/../f1/../f2") == dir / "f2");
+
+        std::error_code ec(42, std::system_category());
+        CHECK(fs::weakly_canonical(dir / "missing/child", ec) == dir / "missing/child");
+        CHECK(!ec);
+
+        const auto invalid = dir / std::string(1024, 'x');
+        CHECK(fs::weakly_canonical(invalid, ec).empty());
+        CHECK(ec);
+#ifdef GHC_WITH_EXCEPTIONS
+        CHECK_THROWS_AS(fs::weakly_canonical(invalid), fs::filesystem_error);
+#endif
     }
 }
 

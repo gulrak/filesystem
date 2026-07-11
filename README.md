@@ -659,6 +659,8 @@ to the expected behavior.
   `lexically_normal()` now preserves IPv6 components in device UNC paths.
 * Fix for [#171](https://github.com/gulrak/filesystem/issues/171), `canonical()`
   now supports device UNC paths.
+* Fix for [#204](https://github.com/gulrak/filesystem/issues/204),
+  `weakly_canonical()` now propagates component lookup errors.
 * Fix for [#185](https://github.com/gulrak/filesystem/issues/185),
   `lexically_normal()` now preserves unresolved parent components in relative
   paths.

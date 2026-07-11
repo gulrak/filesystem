@@ -5150,8 +5150,7 @@ GHC_INLINE path weakly_canonical(const path& p, std::error_code& ec) noexcept
     bool scan = true;
     for (auto pe : p) {
         if (scan) {
-            std::error_code tec;
-            if (exists(result / pe, tec)) {
+            if (exists(result / pe, ec)) {
                 result /= pe;
             }
             else {
