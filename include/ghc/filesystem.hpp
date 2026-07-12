@@ -6047,12 +6047,13 @@ GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::operator+
 GHC_INLINE recursive_directory_iterator& recursive_directory_iterator::increment(std::error_code& ec) noexcept
 {
     bool isSymLink = (*this)->is_symlink(ec);
-    bool isDir = !ec && (*this)->is_directory(ec);
+    const bool followSymlink = (options() & directory_options::follow_directory_symlink) != directory_options::none;
+    bool isDir = !ec && (!isSymLink || followSymlink) && (*this)->is_directory(ec);
     if (isSymLink && detail::is_not_found_error(ec)) {
         ec.clear();
     }
     if (!ec) {
-        if (recursion_pending() && isDir && (!isSymLink || (options() & directory_options::follow_directory_symlink) != directory_options::none)) {
+        if (recursion_pending() && isDir) {
             _impl->_dir_iter_stack.push(directory_iterator((*this)->path(), _impl->_options, ec));
         }
         else {

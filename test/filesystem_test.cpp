@@ -1681,6 +1681,21 @@ TEST_CASE("fs.class.rec.dir.itr - class recursive_directory_iterator", "[filesys
         }
         CHECK(os.str() == "d2/b,d2/ds1,d2/ds2,");
     }
+    if (is_symlink_creation_supported()) {
+        TemporaryDirectory t(TempOpt::change_path);
+        generateFile("regular");
+        fs::create_symlink("self", "self");
+        std::multiset<std::string> result;
+        REQUIRE_NOTHROW([&]() {
+            for (const auto& de : fs::recursive_directory_iterator(".")) {
+                result.insert(de.path().generic_string());
+            }
+        }());
+        CHECK(result.size() == 2);
+        CHECK(result.count("./regular") == 1);
+        CHECK(result.count("./self") == 1);
+        CHECK(fs::remove("self"));
+    }
 }
 
 TEST_CASE("fs.op.absolute - absolute", "[filesystem][operations][fs.op.absolute]")
