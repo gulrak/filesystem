@@ -1820,8 +1820,11 @@ TEST_CASE("fs.op.copy_file - copy_file", "[filesystem][operations][fs.op.copy_fi
     CHECK(fs::file_size("foo") == fs::file_size("bar"));
     CHECK(fs::copy_file("foo", "bar2", ec));
     CHECK(!ec);
-    std::this_thread::sleep_for(std::chrono::seconds(1));
     generateFile("foo2", 200);
+    const auto copyTime = fs::file_time_type(std::chrono::seconds(1445401800));
+    fs::last_write_time("foo", copyTime);
+    fs::last_write_time("bar", copyTime + std::chrono::milliseconds(100));
+    fs::last_write_time("foo2", copyTime + std::chrono::milliseconds(200));
     CHECK(fs::copy_file("foo2", "bar", fs::copy_options::update_existing));
     CHECK(fs::file_size("bar") == 200);
     CHECK(!fs::copy_file("foo", "bar", fs::copy_options::update_existing));
@@ -2568,6 +2571,12 @@ TEST_CASE("fs.op.last_write_time - last_write_time", "[filesystem][operations][f
     CHECK_NOTHROW(fs::last_write_time("foo", nt, ec));
     CHECK(std::abs(std::chrono::duration_cast<std::chrono::seconds>(fs::last_write_time("foo") - nt).count()) < 1);
     CHECK(!ec);
+    const auto preciseTime = nt + std::chrono::milliseconds(123);
+    CHECK_NOTHROW(fs::last_write_time("foo", preciseTime, ec));
+    REQUIRE(!ec);
+    CHECK(fs::last_write_time("foo") == preciseTime);
+    const fs::directory_entry preciseEntry("foo");
+    CHECK(preciseEntry.last_write_time() == preciseTime);
     if (is_symlink_creation_supported()) {
 #if !defined(GHC_OS_WINDOWS) && !defined(GHC_OS_WEB)
         struct ::stat linkStatBefore;

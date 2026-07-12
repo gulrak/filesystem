@@ -667,6 +667,8 @@ to the expected behavior.
   formatting now handles unknown error codes safely.
 * Fix for [#207](https://github.com/gulrak/filesystem/issues/207),
   `last_write_time()` now consistently follows symlinks.
+* Fix for [#208](https://github.com/gulrak/filesystem/issues/208), filesystem
+  metadata now preserves subsecond modification times.
 * Fix for [#185](https://github.com/gulrak/filesystem/issues/185),
   `lexically_normal()` now preserves unresolved parent components in relative
   paths.

@@ -890,7 +890,7 @@ private:
 #ifndef GHC_OS_WINDOWS
     uintmax_t _hard_link_count = static_cast<uintmax_t>(-1);
 #endif
-    time_t _last_write_time = 0;
+    file_time_type _last_write_time = (file_time_type::min)();
 };
 
 // [fs.class.directory.iterator] Class directory_iterator
@@ -2237,12 +2237,14 @@ GHC_INLINE path resolveSymlink(const path& p, std::error_code& ec)
 }
 
 #ifdef GHC_OS_WINDOWS
-GHC_INLINE time_t timeFromFILETIME(const FILETIME& ft)
+GHC_INLINE file_time_type timeFromFILETIME(const FILETIME& ft)
 {
     ULARGE_INTEGER ull;
     ull.LowPart = ft.dwLowDateTime;
     ull.HighPart = ft.dwHighDateTime;
-    return static_cast<time_t>(ull.QuadPart / 10000000ULL - 11644473600ULL);
+    const int64_t ticks = static_cast<int64_t>(ull.QuadPart) - 116444736000000000LL;
+    const auto duration = std::chrono::duration<int64_t, std::ratio<1, 10000000>>(ticks);
+    return file_time_type(std::chrono::duration_cast<file_time_type::duration>(duration));
 }
 
 GHC_INLINE void timeToFILETIME(time_t t, FILETIME& ft)
@@ -2292,7 +2294,7 @@ GHC_INLINE bool is_symlink_from_INFO(const path &, const WIN32_FIND_DATAW* info,
 }
 
 template <typename INFO>
-GHC_INLINE file_status status_from_INFO(const path& p, const INFO* info, std::error_code& ec, uintmax_t* sz = nullptr, time_t* lwt = nullptr)
+GHC_INLINE file_status status_from_INFO(const path& p, const INFO* info, std::error_code& ec, uintmax_t* sz = nullptr, file_time_type* lwt = nullptr)
 {
     file_type ft = file_type::unknown;
     if (is_symlink_from_INFO(p, info, ec)) {
@@ -2331,7 +2333,7 @@ GHC_INLINE bool is_not_found_error(std::error_code& ec)
 #endif
 }
 
-GHC_INLINE file_status symlink_status_ex(const path& p, std::error_code& ec, uintmax_t* sz = nullptr, uintmax_t* nhl = nullptr, time_t* lwt = nullptr) noexcept
+GHC_INLINE file_status symlink_status_ex(const path& p, std::error_code& ec, uintmax_t* sz = nullptr, uintmax_t* nhl = nullptr, file_time_type* lwt = nullptr) noexcept
 {
 #ifdef GHC_OS_WINDOWS
     file_status fs;
@@ -2369,7 +2371,7 @@ GHC_INLINE file_status symlink_status_ex(const path& p, std::error_code& ec, uin
 #endif
 }
 
-GHC_INLINE file_status status_ex(const path& p, std::error_code& ec, file_status* sls = nullptr, uintmax_t* sz = nullptr, uintmax_t* nhl = nullptr, time_t* lwt = nullptr, int recurse_count = 0) noexcept
+GHC_INLINE file_status status_ex(const path& p, std::error_code& ec, file_status* sls = nullptr, uintmax_t* sz = nullptr, uintmax_t* nhl = nullptr, file_time_type* lwt = nullptr, int recurse_count = 0) noexcept
 {
     ec.clear();
 #ifdef GHC_OS_WINDOWS
@@ -2435,7 +2437,13 @@ GHC_INLINE file_status status_ex(const path& p, std::error_code& ec, file_status
             *nhl = st.st_nlink;
         }
         if (lwt) {
-            *lwt = st.st_mtime;
+#ifdef GHC_OS_APPLE
+            const auto subsecond = std::chrono::nanoseconds(st.st_mtimespec.tv_nsec);
+#else
+            const auto subsecond = std::chrono::nanoseconds(st.st_mtim.tv_nsec);
+#endif
+            const auto duration = std::chrono::seconds(st.st_mtime) + subsecond;
+            *lwt = file_time_type(std::chrono::duration_cast<file_time_type::duration>(duration));
         }
         return fs;
     }
@@ -4655,10 +4663,10 @@ GHC_INLINE file_time_type last_write_time(const path& p)
 
 GHC_INLINE file_time_type last_write_time(const path& p, std::error_code& ec) noexcept
 {
-    time_t result = 0;
+    file_time_type result = (file_time_type::min)();
     ec.clear();
     file_status fs = detail::status_ex(p, ec, nullptr, nullptr, nullptr, &result);
-    return ec ? (file_time_type::min)() : std::chrono::system_clock::from_time_t(result);
+    return ec ? (file_time_type::min)() : result;
 }
 
 #ifdef GHC_WITH_EXCEPTIONS
@@ -5270,7 +5278,7 @@ GHC_INLINE directory_entry::directory_entry(const filesystem::path& p)
 #ifndef GHC_OS_WINDOWS
     , _hard_link_count(static_cast<uintmax_t>(-1))
 #endif
-    , _last_write_time(0)
+    , _last_write_time((file_time_type::min)())
 {
     refresh();
 }
@@ -5282,7 +5290,7 @@ GHC_INLINE directory_entry::directory_entry(const filesystem::path& p, std::erro
 #ifndef GHC_OS_WINDOWS
     , _hard_link_count(static_cast<uintmax_t>(-1))
 #endif
-    , _last_write_time(0)
+    , _last_write_time((file_time_type::min)())
 {
     refresh(ec);
 }
@@ -5530,8 +5538,8 @@ GHC_INLINE uintmax_t directory_entry::hard_link_count(std::error_code& ec) const
 #ifdef GHC_WITH_EXCEPTIONS
 GHC_INLINE file_time_type directory_entry::last_write_time() const
 {
-    if (_last_write_time != 0) {
-        return std::chrono::system_clock::from_time_t(_last_write_time);
+    if (_last_write_time != (file_time_type::min)()) {
+        return _last_write_time;
     }
     return filesystem::last_write_time(path());
 }
@@ -5539,9 +5547,9 @@ GHC_INLINE file_time_type directory_entry::last_write_time() const
 
 GHC_INLINE file_time_type directory_entry::last_write_time(std::error_code& ec) const noexcept
 {
-    if (_last_write_time != 0) {
+    if (_last_write_time != (file_time_type::min)()) {
         ec.clear();
-        return std::chrono::system_clock::from_time_t(_last_write_time);
+        return _last_write_time;
     }
     return filesystem::last_write_time(path(), ec);
 }
@@ -5716,7 +5724,7 @@ public:
             }
             else {
                 _dir_entry._file_size = static_cast<uintmax_t>(-1);
-                _dir_entry._last_write_time = 0;
+                _dir_entry._last_write_time = (file_time_type::min)();
             }
         }
     }
@@ -5805,7 +5813,7 @@ public:
         }
         _dir_entry._file_size = static_cast<uintmax_t>(-1);
         _dir_entry._hard_link_count = static_cast<uintmax_t>(-1);
-        _dir_entry._last_write_time = 0;
+        _dir_entry._last_write_time = (file_time_type::min)();
     }
     path _base;
     directory_options _options;
