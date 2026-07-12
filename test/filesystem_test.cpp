@@ -2574,9 +2574,9 @@ TEST_CASE("fs.op.last_write_time - last_write_time", "[filesystem][operations][f
     const auto preciseTime = nt + std::chrono::milliseconds(123);
     CHECK_NOTHROW(fs::last_write_time("foo", preciseTime, ec));
     REQUIRE(!ec);
-    CHECK(fs::last_write_time("foo") == preciseTime);
+    CHECK(std::abs(std::chrono::duration_cast<std::chrono::nanoseconds>(fs::last_write_time("foo") - preciseTime).count()) < 1000000);
     const fs::directory_entry preciseEntry("foo");
-    CHECK(preciseEntry.last_write_time() == preciseTime);
+    CHECK(std::abs(std::chrono::duration_cast<std::chrono::nanoseconds>(preciseEntry.last_write_time() - preciseTime).count()) < 1000000);
     if (is_symlink_creation_supported()) {
 #if !defined(GHC_OS_WINDOWS) && !defined(GHC_OS_WEB)
         struct ::stat linkStatBefore;

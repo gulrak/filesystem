@@ -805,7 +805,10 @@ class GHC_FS_API_CLASS directory_entry
 {
 public:
     // [fs.dir.entry.cons] constructors and destructor
-    directory_entry() noexcept = default;
+    directory_entry() noexcept
+        : _last_write_time((file_time_type::min)())
+    {
+    }
     directory_entry(const directory_entry&) = default;
     directory_entry(directory_entry&&) noexcept = default;
 #ifdef GHC_WITH_EXCEPTIONS
@@ -4687,7 +4690,7 @@ GHC_INLINE void last_write_time(const path& p, file_time_type new_time, std::err
 #ifdef GHC_OS_WINDOWS
     detail::unique_handle file(::CreateFileW(GHC_NATIVEWP(p), FILE_WRITE_ATTRIBUTES, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL));
     FILETIME ft;
-    auto tt = std::chrono::duration_cast<std::chrono::microseconds>(d).count() * 10 + 116444736000000000;
+    const auto tt = std::chrono::duration_cast<std::chrono::duration<int64_t, std::ratio<1, 10000000>>>(d).count() + 116444736000000000LL;
     ft.dwLowDateTime = static_cast<DWORD>(tt);
     ft.dwHighDateTime = static_cast<DWORD>(tt >> 32);
     if (!::SetFileTime(file.get(), 0, 0, &ft)) {
