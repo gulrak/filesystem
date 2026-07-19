@@ -2199,7 +2199,7 @@ GHC_INLINE std::unique_ptr<REPARSE_DATA_BUFFER, free_deleter<REPARSE_DATA_BUFFER
 }
 #endif
 
-GHC_INLINE path resolveSymlink(const path& p, std::error_code& ec)
+GHC_INLINE path resolveSymlink(const path& p, std::error_code& ec, bool resolve_relative)
 {
 #ifdef GHC_OS_WINDOWS
     path result;
@@ -2217,7 +2217,7 @@ GHC_INLINE path resolveSymlink(const path& p, std::error_code& ec)
                     else {
                         result = substituteName;
                     }
-                    if (reparseData->SymbolicLinkReparseBuffer.Flags & 0x1 /*SYMLINK_FLAG_RELATIVE*/) {
+                    if (resolve_relative && reparseData->SymbolicLinkReparseBuffer.Flags & 0x1 /*SYMLINK_FLAG_RELATIVE*/) {
                         result = p.parent_path() / result;
                     }
                     break;
@@ -2233,6 +2233,7 @@ GHC_INLINE path resolveSymlink(const path& p, std::error_code& ec)
     }
     return result;
 #else
+    (void)resolve_relative;
     size_t bufferSize = 256;
     while (true) {
         std::vector<char> buffer(bufferSize, static_cast<char>(0));
@@ -2248,6 +2249,11 @@ GHC_INLINE path resolveSymlink(const path& p, std::error_code& ec)
     }
     return path();
 #endif
+}
+
+GHC_INLINE path resolveSymlink(const path& p, std::error_code& ec)
+{
+    return resolveSymlink(p, ec, true);
 }
 
 #ifdef GHC_OS_WINDOWS
@@ -4088,16 +4094,18 @@ GHC_INLINE void copy_symlink(const path& existing_symlink, const path& new_symli
 GHC_INLINE void copy_symlink(const path& existing_symlink, const path& new_symlink, std::error_code& ec) noexcept
 {
     ec.clear();
-    auto to = read_symlink(existing_symlink, ec);
+    auto resolved_to = read_symlink(existing_symlink, ec);
     if (!ec) {
 #ifdef GHC_OS_WINDOWS
-        auto resolved_to = to.is_absolute() ? to : existing_symlink.parent_path() / to;
-        auto to_directory = exists(resolved_to, ec) && is_directory(resolved_to, ec);
+        auto to = detail::resolveSymlink(existing_symlink, ec, false);
         if (!ec) {
-            detail::create_symlink_unchecked(to, new_symlink, to_directory, ec);
+            auto to_directory = exists(resolved_to, ec) && is_directory(resolved_to, ec);
+            if (!ec) {
+                detail::create_symlink_unchecked(to, new_symlink, to_directory, ec);
+            }
         }
 #else
-        create_symlink(to, new_symlink, ec);
+        create_symlink(resolved_to, new_symlink, ec);
 #endif
     }
 }
