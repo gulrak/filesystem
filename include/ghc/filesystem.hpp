@@ -1938,14 +1938,8 @@ GHC_INLINE std::string systemErrorText(ErrorNumber code = 0)
 using CreateSymbolicLinkW_fp = BOOLEAN(WINAPI*)(LPCWSTR, LPCWSTR, DWORD);
 using CreateHardLinkW_fp = BOOLEAN(WINAPI*)(LPCWSTR, LPCWSTR, LPSECURITY_ATTRIBUTES);
 
-GHC_INLINE void create_symlink(const path& target_name, const path& new_symlink, bool to_directory, std::error_code& ec)
+GHC_INLINE void create_symlink_unchecked(const path& target_name, const path& new_symlink, bool to_directory, std::error_code& ec)
 {
-    std::error_code tec;
-    auto fs = status(target_name, tec);
-    if ((fs.type() == file_type::directory && !to_directory) || (fs.type() == file_type::regular && to_directory)) {
-        ec = detail::make_error_code(detail::portable_error::not_supported);
-        return;
-    }
 #if defined(__GNUC__) && __GNUC__ >= 8  || defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-function-type"
@@ -1971,6 +1965,17 @@ GHC_INLINE void create_symlink(const path& target_name, const path& new_symlink,
     else {
         ec = detail::make_system_error(ERROR_NOT_SUPPORTED);
     }
+}
+
+GHC_INLINE void create_symlink(const path& target_name, const path& new_symlink, bool to_directory, std::error_code& ec)
+{
+    std::error_code tec;
+    auto fs = status(target_name, tec);
+    if ((fs.type() == file_type::directory && !to_directory) || (fs.type() == file_type::regular && to_directory)) {
+        ec = detail::make_error_code(detail::portable_error::not_supported);
+        return;
+    }
+    create_symlink_unchecked(target_name, new_symlink, to_directory, ec);
 }
 
 GHC_INLINE void create_hardlink(const path& target_name, const path& new_hardlink, std::error_code& ec)
@@ -4085,12 +4090,15 @@ GHC_INLINE void copy_symlink(const path& existing_symlink, const path& new_symli
     ec.clear();
     auto to = read_symlink(existing_symlink, ec);
     if (!ec) {
-        if (exists(to, ec) && is_directory(to, ec)) {
-            create_directory_symlink(to, new_symlink, ec);
+#ifdef GHC_OS_WINDOWS
+        auto resolved_to = to.is_absolute() ? to : existing_symlink.parent_path() / to;
+        auto to_directory = exists(resolved_to, ec) && is_directory(resolved_to, ec);
+        if (!ec) {
+            detail::create_symlink_unchecked(to, new_symlink, to_directory, ec);
         }
-        else {
-            create_symlink(to, new_symlink, ec);
-        }
+#else
+        create_symlink(to, new_symlink, ec);
+#endif
     }
 }
 

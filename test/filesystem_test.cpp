@@ -1918,6 +1918,33 @@ TEST_CASE("fs.op.copy_symlink - copy_symlink", "[filesystem][operations][fs.op.c
         CHECK_NOTHROW(fs::copy_symlink("sdir", "sdirc2", ec));
         CHECK(fs::exists("sdirc2"));
         CHECK(!ec);
+
+        fs::create_directories("links/dir-target");
+        generateFile("links/file-target");
+        fs::create_directory_symlink("dir-target", "links/relative-dir-link");
+        fs::create_symlink("file-target", "links/relative-file-link");
+        fs::create_directory("file-target");
+
+        CHECK_NOTHROW(fs::copy_symlink("links/relative-dir-link", "links/relative-dir-copy"));
+        CHECK(fs::is_directory("links/relative-dir-copy"));
+        CHECK(fs::read_symlink("links/relative-dir-copy") == fs::path("dir-target"));
+
+        ec = std::make_error_code(std::errc::invalid_argument);
+        CHECK_NOTHROW(fs::copy_symlink("links/relative-file-link", "links/relative-file-copy", ec));
+        CHECK(!ec);
+        CHECK(fs::is_regular_file("links/relative-file-copy"));
+        CHECK(fs::read_symlink("links/relative-file-copy") == fs::path("file-target"));
+
+        fs::create_symlink("missing-target", "links/dangling-link");
+        CHECK_NOTHROW(fs::copy_symlink("links/dangling-link", "links/dangling-copy", ec));
+        CHECK(!ec);
+        CHECK(fs::is_symlink("links/dangling-copy"));
+        CHECK(fs::read_symlink("links/dangling-copy") == fs::path("missing-target"));
+
+        fs::create_symlink(fs::absolute("foo"), "links/absolute-link");
+        CHECK_NOTHROW(fs::copy_symlink("links/absolute-link", "links/absolute-copy"));
+        CHECK(fs::is_regular_file("links/absolute-copy"));
+        CHECK(fs::read_symlink("links/absolute-copy") == fs::absolute("foo"));
     }
     CHECK_THROWS_AS(fs::copy_symlink("bar", "barc"), fs::filesystem_error);
     CHECK_NOTHROW(fs::copy_symlink("bar", "barc", ec));

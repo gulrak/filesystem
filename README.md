@@ -673,6 +673,8 @@ to the expected behavior.
   UTF-16 no longer drops subsequent valid code units.
 * Fix for [#210](https://github.com/gulrak/filesystem/issues/210),
   `equivalent()` now compares only filesystem identity.
+* Fix for [#211](https://github.com/gulrak/filesystem/issues/211), Windows
+  `copy_symlink()` now resolves relative targets from the source link.
 * Fix for [#178](https://github.com/gulrak/filesystem/issues/178), recursive
   iteration no longer resolves symlinks unless requested.
 * Fix for [#185](https://github.com/gulrak/filesystem/issues/185),
