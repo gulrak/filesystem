@@ -1,0 +1,31 @@
+name: FreeBSD
+
+on: [push, pull_request]
+
+jobs:
+
+  freebsd:
+    name: FreeBSD 14
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build and test
+        uses: vmactions/freebsd-vm@v1
+        with:
+          release: '14'
+          usesh: true
+          copyback: false
+          cache-after-prepare: true
+          prepare: pkg install -y cmake
+          run: |
+            set -e
+            set -u
+            set -x
+            # Same as .cirrus.yml did: the suite must not run as root, or the
+            # permission tests never see the errors they check for.
+            pw groupadd testgrp
+            pw useradd testuser -g testgrp -w none -m
+            chown -R testuser:testgrp .
+            wd=$(pwd)
+            su -l testuser -c "cd $wd && sh .ci/unix-build.sh"
+            su -l testuser -c "cd $wd && sh .ci/unix-test.sh"
