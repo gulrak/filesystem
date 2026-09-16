@@ -4085,7 +4085,9 @@ GHC_INLINE void copy_symlink(const path& existing_symlink, const path& new_symli
     ec.clear();
     auto to = read_symlink(existing_symlink, ec);
     if (!ec) {
-        if (exists(to, ec) && is_directory(to, ec)) {
+        // Relative targets are relative to the source link parent (#211).
+        path lookup = to.is_absolute() ? to : (existing_symlink.parent_path() / to);
+        if (exists(lookup, ec) && is_directory(lookup, ec)) {
             create_directory_symlink(to, new_symlink, ec);
         }
         else {

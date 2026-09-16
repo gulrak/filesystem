@@ -1918,6 +1918,18 @@ TEST_CASE("fs.op.copy_symlink - copy_symlink", "[filesystem][operations][fs.op.c
         CHECK_NOTHROW(fs::copy_symlink("sdir", "sdirc2", ec));
         CHECK(fs::exists("sdirc2"));
         CHECK(!ec);
+
+        // Relative targets must be resolved against the source link parent
+        // (not cwd) when classifying directory vs file links on Windows.
+        fs::create_directories("nested/dir");
+        fs::create_directory_symlink("dir", "nested/slink");
+        CHECK_NOTHROW(fs::copy_symlink("nested/slink", "nested/slink_copy"));
+        CHECK(fs::read_symlink("nested/slink_copy") == "dir");
+        CHECK(fs::is_directory("nested/slink_copy"));
+        CHECK_NOTHROW(fs::copy_symlink("nested/slink", "nested/slink_copy2", ec));
+        CHECK(!ec);
+        CHECK(fs::read_symlink("nested/slink_copy2") == "dir");
+        CHECK(fs::is_directory("nested/slink_copy2"));
     }
     CHECK_THROWS_AS(fs::copy_symlink("bar", "barc"), fs::filesystem_error);
     CHECK_NOTHROW(fs::copy_symlink("bar", "barc", ec));
