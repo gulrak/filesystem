@@ -2384,6 +2384,10 @@ GHC_INLINE file_status status_ex(const path& p, std::error_code& ec, file_status
 {
     ec.clear();
 #ifdef GHC_OS_WINDOWS
+    // 2026-10-03：查询新路径前使旧链接缓存失效，避免错误沿用先前条目的类型。
+    if (sls) {
+        *sls = file_status();
+    }
     if (recurse_count > 16) {
         ec = detail::make_system_error(0x2A9 /*ERROR_STOPPED_ON_SYMLINK*/);
         return file_status(file_type::unknown);
@@ -2415,7 +2419,12 @@ GHC_INLINE file_status status_ex(const path& p, std::error_code& ec, file_status
     if (nhl) {
         *nhl = 0;
     }
-    return detail::status_from_INFO(p, &attr, ec, sz, lwt);
+    // 2026-10-03：非符号链接的两个状态相同，刷新缓存供目录条目复用。
+    file_status result = detail::status_from_INFO(p, &attr, ec, sz, lwt);
+    if (sls && !ec) {
+        *sls = result;
+    }
+    return result;
 #else
     (void)recurse_count;
     struct ::stat st;

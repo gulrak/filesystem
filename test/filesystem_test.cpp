@@ -1445,6 +1445,86 @@ TEST_CASE("fs.dir.entry - class directory_entry", "[filesystem][directory_entry]
     }
 }
 
+// 2026-10-03：目录迭代器缓存的条目在刷新或改路径后必须返回当前文件类型。
+TEST_CASE("fs.dir.entry - update cached symlink status", "[filesystem][directory_entry][fs.dir.entry]")
+{
+    TemporaryDirectory t;
+    std::error_code ec;
+    fs::create_directory(t.path() / "directory");
+    auto entry = *fs::directory_iterator(t.path());
+    REQUIRE(entry.symlink_status().type() == fs::file_type::directory);
+    generateFile(t.path() / "file");
+
+    SECTION("refresh with error code")
+    {
+        fs::remove(entry.path());
+        generateFile(entry.path());
+        entry.refresh(ec);
+    }
+    SECTION("refresh with exceptions")
+    {
+        fs::remove(entry.path());
+        generateFile(entry.path());
+        entry.refresh();
+    }
+    SECTION("assign")
+    {
+        entry.assign(t.path() / "file", ec);
+    }
+    SECTION("replace filename")
+    {
+        entry.replace_filename("file", ec);
+    }
+    REQUIRE(!ec);
+    CHECK(entry.status().type() == fs::file_type::regular);
+    CHECK(entry.symlink_status().type() == fs::file_type::regular);
+    CHECK(entry.symlink_status(ec).type() == fs::file_type::regular);
+    CHECK(!ec);
+    CHECK(entry.symlink_status().permissions() == fs::symlink_status(entry.path()).permissions());
+}
+
+// 2026-10-03：复用符号链接条目时保留链接分类，并让后续不存在的路径正常报错。
+TEST_CASE("fs.dir.entry - update cached symlink and errors", "[filesystem][directory_entry][fs.dir.entry]")
+{
+    if (is_symlink_creation_supported()) {
+        TemporaryDirectory t;
+        std::error_code ec;
+        generateFile(t.path() / "file");
+        fs::create_symlink(t.path() / "file", t.path() / "link");
+        fs::directory_entry entry(t.path() / "link");
+        REQUIRE(entry.is_symlink());
+        CHECK(entry.status().type() == fs::file_type::regular);
+        CHECK_NOTHROW(entry.refresh());
+        CHECK(entry.symlink_status().type() == fs::file_type::symlink);
+        SECTION("assign a non-symlink and refresh a removed link")
+        {
+            entry.assign(t.path() / "file", ec);
+            REQUIRE(!ec);
+            CHECK(entry.symlink_status().type() == fs::file_type::regular);
+            CHECK(!entry.is_symlink());
+            entry.assign(t.path() / "link");
+            REQUIRE(entry.is_symlink());
+#if defined(GHC_OS_WINDOWS) && !defined(USE_STD_FS)
+            fs::remove(t.path() / "link");
+            CHECK_THROWS_AS(entry.refresh(), fs::filesystem_error);
+            entry.refresh(ec);
+            CHECK(ec);
+            CHECK(entry.symlink_status(ec).type() == fs::file_type::not_found);
+            CHECK(ec);
+#endif
+        }
+        SECTION("refresh a dangling link")
+        {
+            fs::remove(t.path() / "file");
+            CHECK_NOTHROW(entry.refresh());
+            CHECK(entry.symlink_status().type() == fs::file_type::symlink);
+            CHECK(entry.symlink_status(ec).type() == fs::file_type::symlink);
+            CHECK(!ec);
+            CHECK(entry.is_symlink());
+        }
+    }
+}
+
 TEST_CASE("fs.class.directory_iterator - class directory_iterator", "[filesystem][directory_iterator][fs.class.directory_iterator]")
 {
     {
